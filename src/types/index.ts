@@ -17,8 +17,13 @@ export interface ModelConnection {
 export interface Persona {
   id: string;
   name: string;
-  systemPrompt: string;
-  icon: string;
+  category: string;
+  description: string;
+  system_prompt: string;
+  tags?: string[];
+  default_temp?: number;
+  usecases?: string[];
+  keypoints?: string[];
   isCustom?: boolean;
 }
 
@@ -26,19 +31,28 @@ export interface Framework {
   id: string;
   name: string;
   description: string;
-  systemPrompt: string;
-  tools: string[];
+  category: string;
+  complexity: 'Beginner' | 'Intermediate' | 'Advanced';
+  tags: string[];
+  usecases: string[];
+  keypoints: string[];
+  content: string; // The system instructions or prompt framework
+  tools?: string[];
   isCustom?: boolean;
 }
 
 export interface LinguisticControl {
   id: string;
   name: string;
-  temperature: number;
-  topP: number;
-  maxTokens: number;
-  format: 'markdown' | 'json' | 'step-by-step';
+  category: string;
   description: string;
+  system_instruction: string;
+  usecases: string[];
+  keypoints: string[];
+  temperature?: number;
+  topP?: number;
+  maxTokens?: number;
+  format?: 'markdown' | 'json' | 'step-by-step';
   isCustom?: boolean;
 }
 
@@ -66,6 +80,7 @@ export interface ChatSession {
   activeModelId: string;
   personaId: string;
   frameworkId?: string;
+  linguisticId?: string;
   settings: {
     temperature: number;
     topP: number;

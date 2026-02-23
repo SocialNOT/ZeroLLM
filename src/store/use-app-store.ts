@@ -3,6 +3,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
 import { testConnectionAction, fetchModelsAction, loadModelAction } from '@/ai/actions/engine-actions';
+import { PERSONAS } from '@/lib/personas';
+import { FRAMEWORKS } from '@/lib/frameworks';
+import { LINGUISTICS } from '@/lib/linguistics';
 
 interface AppState {
   workspaces: Workspace[];
@@ -60,23 +63,9 @@ export const useAppStore = create<AppState>()(
       connections: [],
       activeConnectionId: null,
       
-      personas: [
-        { id: 'p-1', name: 'Socratic Professor', icon: 'graduation-cap', systemPrompt: 'You are a wise Socratic professor. Answer questions with guided questions.' },
-        { id: 'p-2', name: 'Expert Coder', icon: 'code', systemPrompt: 'You are a world-class senior software engineer. Provide clean, documented code.' },
-        { id: 'p-3', name: 'UX Strategist', icon: 'layout', systemPrompt: 'You are a senior UX strategist. Focus on user empathy, accessibility, and clean design patterns.' }
-      ],
-
-      frameworks: [
-        { id: 'f-1', name: 'Deep Research', description: 'Optimized for cross-referencing and factual verification.', systemPrompt: 'Act as a research scientist. Use knowledge_search and web_search tools to verify all claims.', tools: ['web_search', 'knowledge_search'] },
-        { id: 'f-2', name: 'Logic Auditor', description: 'Focused on security, performance, and best practices.', systemPrompt: 'Analyze the provided code or logic. Use code_interpreter for complex tasks.', tools: ['code_interpreter'] },
-        { id: 'f-3', name: 'Mathematical Engine', description: 'High precision calculations and symbolic math.', systemPrompt: 'Solve complex mathematical problems with step-by-step proofs using the calculator tool.', tools: ['calculator'] }
-      ],
-
-      linguisticControls: [
-        { id: 'l-1', name: 'Academic Formal', temperature: 0.3, topP: 0.8, maxTokens: 2048, format: 'markdown', description: 'Structured, precise, and objective language.' },
-        { id: 'l-2', name: 'Casual Direct', temperature: 0.8, topP: 0.9, maxTokens: 512, format: 'markdown', description: 'Concise, friendly, and easy to understand.' },
-        { id: 'l-3', name: 'Creative Explosive', temperature: 1.0, topP: 1.0, maxTokens: 1024, format: 'markdown', description: 'High variability, poetic, and imaginative.' }
-      ],
+      personas: PERSONAS,
+      frameworks: FRAMEWORKS,
+      linguisticControls: LINGUISTICS,
 
       sessions: [],
       activeSessionId: null,
@@ -234,16 +223,28 @@ export const useAppStore = create<AppState>()(
             s.id === sessionId ? { 
               ...s, 
               frameworkId,
-              settings: { ...s.settings, enabledTools: framework.tools }
+              settings: { 
+                ...s.settings, 
+                enabledTools: framework.tools || [] 
+              }
             } : s
           )
         }));
       },
 
       applyPersona: (sessionId, personaId) => {
+        const persona = get().personas.find(p => p.id === personaId);
+        if (!persona) return;
         set((state) => ({
           sessions: state.sessions.map(s => 
-            s.id === sessionId ? { ...s, personaId } : s
+            s.id === sessionId ? { 
+              ...s, 
+              personaId,
+              settings: {
+                ...s.settings,
+                temperature: persona.default_temp !== undefined ? persona.default_temp : s.settings.temperature
+              }
+            } : s
           )
         }));
       },
@@ -255,12 +256,13 @@ export const useAppStore = create<AppState>()(
           sessions: state.sessions.map(s => 
             s.id === sessionId ? { 
               ...s, 
+              linguisticId,
               settings: { 
                 ...s.settings, 
-                temperature: control.temperature, 
-                topP: control.topP, 
-                maxTokens: control.maxTokens,
-                format: control.format as any
+                temperature: control.temperature !== undefined ? control.temperature : s.settings.temperature, 
+                topP: control.topP !== undefined ? control.topP : s.settings.topP, 
+                maxTokens: control.maxTokens !== undefined ? control.maxTokens : s.settings.maxTokens,
+                format: (control.format as any) || s.settings.format
               }
             } : s
           )
