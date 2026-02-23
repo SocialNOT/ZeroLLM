@@ -18,36 +18,33 @@ function normalizeUrl(url: string): string {
   if (!/^https?:\/\//i.test(normalized)) {
     normalized = `http://${normalized}`;
   }
-  // Ensure no trailing slashes that cause double slashes in concatenation
   return normalized.replace(/\/+$/, '');
 }
 
 /**
  * Safely parses JSON from a response, checking the content type first.
- * Does not log to console to avoid Next.js error overlays.
  */
 async function safeJsonParse(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
-    throw new Error('Not JSON');
+    // Fail silently to the caller rather than crashing
+    return null;
   }
   
   try {
     return await response.json();
   } catch (e) {
-    throw new Error('Invalid JSON');
+    return null;
   }
 }
 
 export async function testConnection(baseUrl: string): Promise<boolean> {
   const normalizedBase = normalizeUrl(baseUrl);
   
-  // Try multiple common endpoints to see if any return a valid response (JSON or even 401/405)
+  // Based on logs, /v1/models is the most reliable endpoint for LM Studio
   const endpoints = [
     `${normalizedBase}/v1/models`, 
-    `${normalizedBase}/api/tags`, // Ollama specific
-    `${normalizedBase}/api/v1/models`,
-    `${normalizedBase}/models`,
+    `${normalizedBase}/api/tags`, 
     normalizedBase
   ];
   
@@ -57,18 +54,15 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         mode: 'cors',
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(5000)
       });
       
-      // If we get JSON back, it's definitely an API
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return true;
+      if (response.ok) {
+        const data = await safeJsonParse(response);
+        if (data) return true;
       }
-
-      // If we get 401/405/200 but it's not JSON, it might just be the root UI.
-      // We'll return true only if it's a "standard" API status or if it explicitly allows CORS
-      if (response.ok || response.status === 401 || response.status === 405) {
+      
+      if (response.status === 401 || response.status === 405) {
         return true;
       }
     } catch (e) {
@@ -82,9 +76,7 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
   const normalizedBase = normalizeUrl(baseUrl);
   const endpoints = [
     `${normalizedBase}/v1/models`, 
-    `${normalizedBase}/api/tags`, // Ollama specific
-    `${normalizedBase}/api/v1/models`,
-    `${normalizedBase}/models`
+    `${normalizedBase}/api/tags`
   ];
   
   for (const url of endpoints) {
@@ -93,32 +85,22 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         mode: 'cors',
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(5000)
       });
       
       if (!response.ok) continue;
       
-      const data = await safeJsonParse(response).catch(() => null);
+      const data = await safeJsonParse(response);
       if (!data) continue;
       
-      // Handle different formats
-      // 1. OpenAI format: { data: [...] }
       if (data.data && Array.isArray(data.data)) {
         return data.data.map((m: any) => ({ id: m.id, name: m.id }));
       }
-      // 2. Ollama format: { models: [...] }
       if (data.models && Array.isArray(data.models)) {
         return data.models.map((m: any) => ({ id: m.name, name: m.name }));
       }
-      // 3. Raw array
-      if (Array.isArray(data)) {
-        return data.map((m: any) => ({ 
-          id: typeof m === 'string' ? m : (m.id || m.name), 
-          name: typeof m === 'string' ? m : (m.name || m.id) 
-        }));
-      }
     } catch (error) {
-      // Silently fail and try next endpoint
+      // Try next
     }
   }
   return [];
@@ -127,61 +109,53 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
 export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
   const normalizedBase = normalizeUrl(baseUrl);
   
-  // Try to find the correct chat endpoint
-  let chatUrl = `${normalizedBase}/chat/completions`;
-  if (normalizedBase.includes('/v1')) {
+  // Prioritize OpenAI-compatible /v1/chat/completions as it worked in logs
+  let chatUrl = `${normalizedBase}/v1/chat/completions`;
+  if (normalizedBase.endsWith('/v1')) {
     chatUrl = `${normalizedBase}/chat/completions`;
   } else if (normalizedBase.includes(':11434')) {
-    // Ollama specific
     chatUrl = `${normalizedBase}/api/chat`;
-  } else if (!normalizedBase.includes('/api/')) {
-    chatUrl = `${normalizedBase}/v1/chat/completions`;
   }
 
-  try {
-    // For Ollama, the payload is slightly different if using /api/chat
-    const isOllamaApi = chatUrl.endsWith('/api/chat');
-    const body = isOllamaApi ? {
-      model: modelId,
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
-      stream: false,
-      options: {
-        temperature: settings.temperature,
-        top_p: settings.topP,
-        num_predict: settings.maxTokens
-      }
-    } : {
-      model: modelId,
-      messages,
+  const isOllamaApi = chatUrl.endsWith('/api/chat');
+  const body = isOllamaApi ? {
+    model: modelId,
+    messages: messages.map(m => ({ role: m.role, content: m.content })),
+    stream: false,
+    options: {
       temperature: settings.temperature,
       top_p: settings.topP,
-      max_tokens: settings.maxTokens,
-      stream: false
-    };
-
-    const response = await fetch(chatUrl, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(body),
-      mode: 'cors'
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unknown server error');
-      throw new Error(`Engine Error (${response.status}): ${errorText.substring(0, 100)}`);
+      num_predict: settings.maxTokens
     }
+  } : {
+    model: modelId,
+    messages,
+    temperature: settings.temperature,
+    top_p: settings.topP,
+    max_tokens: settings.maxTokens,
+    stream: false
+  };
 
-    const data = await safeJsonParse(response);
-    
-    // Extract content based on format
-    if (isOllamaApi) {
-      return data.message?.content || "No response.";
-    }
-    return data.choices?.[0]?.message?.content || "No response.";
-  } catch (error: any) {
-    throw error;
+  const response = await fetch(chatUrl, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(body),
+    mode: 'cors'
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Engine error');
+    throw new Error(`Engine Error: ${errorText.substring(0, 50)}`);
   }
+
+  const data = await safeJsonParse(response);
+  if (!data) throw new Error('Invalid response from engine');
+  
+  if (isOllamaApi) {
+    return data.message?.content || "No response.";
+  }
+  return data.choices?.[0]?.message?.content || "No response.";
 }

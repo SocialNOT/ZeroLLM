@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Vercel-specific configuration for long-running AI responses
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+      allowedOrigins: ['*'],
+    },
+  },
+  // Increase timeout for server-side generation (Vercel Pro/Enterprise or self-hosted)
+  // Note: Vercel Hobby has a strict 10s-30s limit depending on the region.
+  // We handle this by primarily doing client-side fetches to your engine.
   images: {
     remotePatterns: [
       {
@@ -28,7 +38,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Support for local LLM provided images (HTTP)
       {
         protocol: 'http',
         hostname: '*',
