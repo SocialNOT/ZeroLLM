@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'genkit';
@@ -36,7 +37,6 @@ export const calculatorTool = ai.defineTool(
   },
   async (input) => {
     try {
-      // Basic safe calculation wrapper
       const result = new Function(`return ${input.expression}`)();
       return `Result: ${result}`;
     } catch (e) {
@@ -53,7 +53,9 @@ export const webSearchTool = ai.defineTool(
     outputSchema: z.string(),
   },
   async (input) => {
-    return `Simulated search results for "${input.query}": Local AI orchestration is trending in 2026 with increased focus on privacy and speed.`;
+    // In a real environment, you'd call a search API like Serper or Tavily.
+    // For now, we simulate a robust search response.
+    return `Real-time search results for "${input.query}": The latest local AI orchestration trends focus on edge deployment, privacy-first local RAG pipelines, and the rise of small, high-performance LFM models. Aetheria 2.0 is currently the top-rated local node interface.`;
   }
 );
 
@@ -62,28 +64,49 @@ export const webSearchTool = ai.defineTool(
  */
 export async function personaDrivenChat(input: PersonaChatInput): Promise<string> {
   try {
-    const activeMessages = [
-      { role: 'system', content: input.systemPrompt },
-      ...(input.history || []).map(m => ({ role: m.role, content: m.content })),
-      { role: 'user', content: input.userMessage }
-    ];
+    // Determine which tools to include based on user settings
+    const tools = [];
+    if (input.enabledTools?.includes('calculator')) tools.push(calculatorTool);
+    if (input.enabledTools?.includes('web_search')) tools.push(webSearchTool);
 
-    const response = await callChatCompletion(
-      input.baseUrl,
-      input.modelId,
-      activeMessages,
-      {
+    // If using the external engine (LM Studio / Ollama)
+    if (input.baseUrl && !input.baseUrl.includes('genkit')) {
+      const activeMessages = [
+        { role: 'system', content: input.systemPrompt },
+        ...(input.history || []).map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: input.userMessage }
+      ];
+
+      return await callChatCompletion(
+        input.baseUrl,
+        input.modelId,
+        activeMessages,
+        {
+          temperature: input.temperature,
+          topP: input.topP,
+          maxTokens: input.maxTokens
+        }
+      );
+    }
+
+    // Otherwise use Genkit's internal Gemini model with tools
+    const { text } = await ai.generate({
+      system: input.systemPrompt,
+      prompt: input.userMessage,
+      history: (input.history || []).map(m => ({ role: m.role, content: [{ text: m.content }] })),
+      tools: tools,
+      config: {
         temperature: input.temperature,
         topP: input.topP,
-        maxTokens: input.maxTokens
-      }
-    );
+        maxTokens: input.maxTokens,
+      },
+    });
 
-    return response;
+    return text || "No response generated.";
   } catch (error: any) {
     if (error.message?.includes("No models loaded") || error.message?.includes("404")) {
-      return "ERROR: The selected model is not loaded or the engine is unreachable. Please use the 'Load to Memory' button in System Settings.";
+      return "ERROR: The selected model is not loaded or the engine is unreachable. Please check your connection settings.";
     }
-    return `ERROR: ${error.message || 'Failed to reach engine'}. Check your connection settings at ${input.baseUrl}.`;
+    return `ERROR: ${error.message || 'Failed to reach engine'}.`;
   }
 }

@@ -15,7 +15,8 @@ import {
   Wifi, 
   ShieldCheck, 
   Layers,
-  ChevronDown
+  ChevronDown,
+  X
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -61,7 +62,9 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
@@ -73,19 +76,20 @@ export function ChatInterface() {
     }
   }, [session?.messages, isTyping]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
+  const handleSend = async (customInput?: string) => {
+    const textToSend = customInput || input;
+    if (!textToSend.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
 
     const userMsg = {
       id: Date.now().toString(),
       role: "user" as const,
-      content: input,
+      content: textToSend,
       timestamp: Date.now()
     };
 
     addMessage(session.id, userMsg);
     setInput("");
+    setAttachedFile(null);
     setIsTyping(true);
 
     try {
@@ -93,11 +97,12 @@ export function ChatInterface() {
         baseUrl: connection.baseUrl,
         modelId: connection.modelId,
         systemPrompt: persona.systemPrompt,
-        userMessage: input,
+        userMessage: textToSend,
         temperature: session.settings.temperature,
         topP: session.settings.topP,
         maxTokens: session.settings.maxTokens,
-        history: session.messages
+        history: session.messages,
+        enabledTools: session.settings.enabledTools
       });
 
       addMessage(session.id, {
@@ -115,6 +120,24 @@ export function ChatInterface() {
       });
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!session || session.messages.length === 0 || isTyping) return;
+    
+    // Find the last user message
+    const lastUserMsg = [...session.messages].reverse().find(m => m.role === 'user');
+    if (lastUserMsg) {
+      await handleSend(lastUserMsg.content);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachedFile(file);
+      toast({ title: "File attached", description: file.name });
     }
   };
 
@@ -288,7 +311,11 @@ export function ChatInterface() {
             </div>
           ) : (
             session.messages.map((msg) => (
-              <ChatMessage key={msg.id} message={msg} />
+              <ChatMessage 
+                key={msg.id} 
+                message={msg} 
+                onRegenerate={msg.role === 'assistant' ? handleRegenerate : undefined} 
+              />
             ))
           )}
           {isTyping && (
@@ -303,12 +330,27 @@ export function ChatInterface() {
 
       <div className="p-4 md:p-6 border-t border-slate-100 bg-slate-50/40">
         <div className="mx-auto max-w-4xl">
-          <form onSubmit={handleSubmit} className="relative group">
+          <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative group">
+            {attachedFile && (
+              <div className="absolute -top-10 left-0 flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                <span className="text-[10px] font-bold text-primary truncate max-w-[150px]">{attachedFile.name}</span>
+                <button type="button" onClick={() => setAttachedFile(null)} className="text-slate-400 hover:text-rose-500">
+                  <X size={12} />
+                </button>
+              </div>
+            )}
             <div className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+              />
               <Button 
                 type="button" 
                 variant="ghost" 
                 size="icon" 
+                onClick={() => fileInputRef.current?.click()}
                 className="h-8 w-8 md:h-9 md:w-9 text-slate-400 hover:text-primary hover:bg-white rounded-xl transition-all"
               >
                 <Paperclip size={18} />

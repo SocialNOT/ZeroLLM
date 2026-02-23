@@ -1,22 +1,91 @@
+
 "use client";
 
+import React, { useState } from "react";
 import { Message } from "@/types";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Copy, User, Bot, Layers } from "lucide-react";
+import { 
+  Copy, 
+  User, 
+  Bot, 
+  Play, 
+  RefreshCw, 
+  Languages, 
+  Share2, 
+  Volume2,
+  Check,
+  Loader2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { generateSpeech } from "@/ai/flows/speech-generation-flow";
+import { translateText } from "@/ai/flows/translate-flow";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 interface ChatMessageProps {
   message: Message;
+  onRegenerate?: () => void;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   const isAssistant = message.role === "assistant";
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
+    setIsCopied(true);
     toast({ title: "Copied to clipboard", duration: 1500 });
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleSpeech = async () => {
+    if (isPlaying) return;
+    setIsPlaying(true);
+    try {
+      const { audioUri } = await generateSpeech({ text: message.content });
+      const audio = new Audio(audioUri);
+      audio.onended = () => setIsPlaying(false);
+      audio.play();
+    } catch (error) {
+      toast({ variant: "destructive", title: "Audio Error", description: "Failed to generate speech." });
+      setIsPlaying(false);
+    }
+  };
+
+  const handleTranslate = async (lang: string) => {
+    setIsTranslating(true);
+    try {
+      const { translatedText } = await translateText({ text: message.content, targetLanguage: lang });
+      toast({ title: `Translated to ${lang}`, description: translatedText });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Translation Error" });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Aetheria AI Response',
+          text: message.content,
+        });
+      } catch (err) {
+        console.error('Share failed', err);
+      }
+    } else {
+      handleCopy();
+      toast({ title: "Sharing not supported", description: "Copied to clipboard instead." });
+    }
   };
 
   return (
@@ -47,14 +116,39 @@ export function ChatMessage({ message }: ChatMessageProps) {
               <div className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             )}
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-primary hover:bg-white" 
-            onClick={handleCopy}
-          >
-            <Copy size={14} />
-          </Button>
+          
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {isAssistant && (
+              <>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={handleSpeech}>
+                  {isPlaying ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={12} />}
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={onRegenerate}>
+                  <RefreshCw size={12} />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary">
+                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Languages size={12} />}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl">
+                    <DropdownMenuItem onClick={() => handleTranslate('Spanish')}>Spanish</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTranslate('French')}>French</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTranslate('German')}>German</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTranslate('Chinese')}>Chinese</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTranslate('Japanese')}>Japanese</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={handleShare}>
+              <Share2 size={12} />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={handleCopy}>
+              {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+            </Button>
+          </div>
         </div>
 
         <div className={cn(
