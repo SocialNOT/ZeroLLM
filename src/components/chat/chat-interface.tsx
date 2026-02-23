@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles, Paperclip, Loader2, ArrowDown, Wifi, ShieldCheck, Wrench } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
-import { documentAwareAIChat } from "@/ai/flows/document-aware-ai-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ParameterControls } from "./parameter-controls";
 import { Separator } from "@/components/ui/separator";
@@ -29,8 +28,6 @@ export function ChatInterface() {
     personas, 
     connections,
     activeConnectionId,
-    workspaces,
-    activeWorkspaceId,
     currentUserRole,
     connectionStatus 
   } = useAppStore();
@@ -40,7 +37,6 @@ export function ChatInterface() {
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
-  const workspace = workspaces.find(w => w.id === activeWorkspaceId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
@@ -67,42 +63,31 @@ export function ChatInterface() {
     setIsTyping(true);
 
     try {
-      let responseContent = "";
-      let citations = undefined;
+      if (!connection) throw new Error("No active connection configured.");
 
-      if (workspace?.knowledgeBaseId) {
-        const ragResponse = await documentAwareAIChat({
-          query: input,
-          knowledgeBaseId: workspace.knowledgeBaseId
-        });
-        responseContent = ragResponse.answer;
-        citations = ragResponse.citations;
-      } else {
-        responseContent = await personaDrivenChat({
-          systemPrompt: persona.systemPrompt,
-          userMessage: input,
-          temperature: session.settings.temperature,
-          topP: session.settings.topP,
-          maxTokens: session.settings.maxTokens,
-          memoryType: session.settings.memoryType,
-          enabledTools: session.settings.enabledTools || [],
-          history: session.messages
-        });
-      }
+      const responseContent = await personaDrivenChat({
+        baseUrl: connection.baseUrl,
+        modelId: connection.modelId,
+        systemPrompt: persona.systemPrompt,
+        userMessage: input,
+        temperature: session.settings.temperature,
+        topP: session.settings.topP,
+        maxTokens: session.settings.maxTokens,
+        history: session.messages
+      });
 
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: responseContent,
-        timestamp: Date.now(),
-        citations
+        timestamp: Date.now()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Error:", error);
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I encountered an error connecting to the model backend. Please check your connection settings in the control panel.",
+        content: `Connection failed: ${error.message}. Please check your engine settings.`,
         timestamp: Date.now()
       });
     } finally {
@@ -118,7 +103,7 @@ export function ChatInterface() {
         </div>
         <h2 className="mb-2 font-headline text-2xl font-bold">Select or start a conversation</h2>
         <p className="max-w-md text-sm text-muted-foreground leading-relaxed">
-          Choose a workspace from the sidebar and start interacting with Aetheria's high-performance LLM engine.
+          Choose a workspace from the sidebar and start interacting with your high-performance LLM engine.
         </p>
       </div>
     );
