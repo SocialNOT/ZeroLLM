@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -14,7 +15,7 @@ import {
   Wifi, 
   ShieldCheck, 
   Layers,
-  Menu
+  ChevronDown
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,10 +26,22 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
 import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { toast } from "@/hooks/use-toast";
 
 export function ChatInterface() {
   const { 
@@ -39,11 +52,15 @@ export function ChatInterface() {
     connections,
     activeConnectionId,
     currentUserRole,
-    connectionStatus 
+    connectionStatus,
+    availableModels,
+    updateConnection,
+    checkConnection
   } = useAppStore();
   
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [tempUrl, setTempUrl] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
@@ -101,6 +118,14 @@ export function ChatInterface() {
     }
   };
 
+  const handleUpdateUrl = async () => {
+    if (connection && tempUrl) {
+      updateConnection(connection.id, { baseUrl: tempUrl });
+      await checkConnection();
+      toast({ title: "Endpoint Updated", description: `Target set to ${tempUrl}` });
+    }
+  };
+
   if (!session) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-slate-50/30">
@@ -136,15 +161,88 @@ export function ChatInterface() {
             </span>
           </div>
           <div className="hidden sm:block h-4 w-[1px] bg-slate-200" />
-          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
-            <Wifi size={10} />
-            {connection?.baseUrl.replace(/https?:\/\//, '').split(':')[0]}
-          </div>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <div 
+                className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium text-slate-400 cursor-pointer hover:text-primary transition-colors"
+                onClick={() => setTempUrl(connection?.baseUrl || "")}
+              >
+                <Wifi size={10} />
+                <span className="truncate max-w-[120px] md:max-w-none">
+                  {connection?.baseUrl.replace(/https?:\/\//, '').split('/')[0]}
+                </span>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-[320px] p-4 rounded-2xl shadow-2xl border-white/20 bg-white/95 backdrop-blur-xl">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Node</div>
+                  <Badge variant="outline" className="text-[8px] h-4">HTTP / HTTPS</Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Input 
+                    value={tempUrl} 
+                    onChange={(e) => setTempUrl(e.target.value)}
+                    placeholder="http://localhost:11434/v1"
+                    className="h-9 rounded-xl border-slate-200 bg-white font-mono text-xs focus:ring-primary/20"
+                  />
+                  <Button 
+                    size="sm" 
+                    className="h-9 rounded-xl bg-primary px-3 text-[10px] font-bold uppercase" 
+                    onClick={handleUpdateUrl}
+                  >
+                    Sync
+                  </Button>
+                </div>
+                <p className="text-[9px] text-slate-400 italic">Changing this will re-validate the engine connection.</p>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
+
         <div className="flex items-center gap-2 md:gap-3">
-          <Badge variant="outline" className="bg-slate-50 text-[9px] md:text-[10px] text-slate-600 border-slate-200 py-0 h-5 max-w-[80px] md:max-w-none truncate">
-            {connection?.modelId || "AUTO"}
-          </Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Badge 
+                variant="outline" 
+                className="cursor-pointer bg-slate-50 hover:bg-white text-[9px] md:text-[10px] text-slate-600 border-slate-200 py-0 h-6 max-w-[100px] md:max-w-none truncate transition-all flex items-center gap-1.5 pr-2"
+              >
+                <div className="max-w-[80px] truncate">{connection?.modelId || "AUTO"}</div>
+                <ChevronDown size={10} className="text-slate-400" />
+              </Badge>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[220px] rounded-2xl p-2 bg-white/95 backdrop-blur-xl border-slate-100 shadow-xl">
+              <div className="px-2 py-1.5 mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-50">
+                Active Engine Node
+              </div>
+              {availableModels.length > 0 ? (
+                availableModels.map((model) => (
+                  <DropdownMenuItem 
+                    key={model} 
+                    onClick={() => updateConnection(connection.id, { modelId: model })}
+                    className={cn(
+                      "text-xs font-semibold rounded-xl cursor-pointer py-2 transition-colors",
+                      model === connection.modelId ? "bg-primary/5 text-primary" : "text-slate-600 hover:bg-slate-50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      {model === connection.modelId && <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(75,0,130,0.4)]" />}
+                      <span className="truncate">{model}</span>
+                    </div>
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <div className="p-4 text-center">
+                  <p className="text-[10px] text-slate-400 font-medium italic">No discovered models</p>
+                  <Button variant="ghost" size="sm" className="mt-2 h-7 text-[9px] font-bold uppercase" onClick={() => checkConnection()}>
+                    Refresh Node
+                  </Button>
+                </div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <div className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-bold text-primary/70 uppercase">
             <ShieldCheck size={12} className="hidden xs:inline" />
             {currentUserRole}
