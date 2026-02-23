@@ -12,6 +12,7 @@ export interface LLMModel {
 
 /**
  * Normalizes the base URL to ensure it has a protocol and correct slashes.
+ * Supports both HTTP and HTTPS for local/remote self-hosted engines.
  */
 function normalizeUrl(url: string): string {
   let normalized = url.trim();
@@ -23,6 +24,7 @@ function normalizeUrl(url: string): string {
 
 /**
  * Safely parses JSON from a response, checking the content type first.
+ * Returns null if the response is not valid JSON instead of throwing.
  */
 async function safeJsonParse(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type');
@@ -39,13 +41,15 @@ async function safeJsonParse(response: Response): Promise<any> {
 
 export async function testConnection(baseUrl: string): Promise<boolean> {
   const normalizedBase = normalizeUrl(baseUrl);
-  const url = normalizedBase.endsWith('/v1') ? `${normalizedBase}/models` : `${normalizedBase}/v1/models`;
+  // Try standard model list endpoint to verify connection
+  const url = normalizedBase.includes('/v1') ? `${normalizedBase}/models` : `${normalizedBase}/v1/models`;
   
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       mode: 'cors',
+      // Short timeout for initial ping
       signal: AbortSignal.timeout(5000)
     });
     
@@ -57,14 +61,14 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
 
 export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
   const normalizedBase = normalizeUrl(baseUrl);
-  const url = normalizedBase.endsWith('/v1') ? `${normalizedBase}/models` : `${normalizedBase}/v1/models`;
+  const url = normalizedBase.includes('/v1') ? `${normalizedBase}/models` : `${normalizedBase}/v1/models`;
   
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       mode: 'cors',
-      signal: AbortSignal.timeout(8000)
+      signal: AbortSignal.timeout(10000)
     });
     
     if (!response.ok) return [];
@@ -72,14 +76,16 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
     const data = await safeJsonParse(response);
     if (!data) return [];
     
+    // Support standard OpenAI format
     if (data.data && Array.isArray(data.data)) {
       return data.data.map((m: any) => ({ id: m.id, name: m.id }));
     }
+    // Support some older or custom provider formats
     if (data.models && Array.isArray(data.models)) {
       return data.models.map((m: any) => ({ id: m.name, name: m.name }));
     }
   } catch (error) {
-    console.error('Fetch models failed', error);
+    // Fail silently for model discovery to avoid UI noise
   }
   return [];
 }
@@ -89,7 +95,7 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
  */
 export async function loadModel(baseUrl: string, modelId: string): Promise<boolean> {
   const normalizedBase = normalizeUrl(baseUrl);
-  // LM Studio specific endpoint
+  // LM Studio specific endpoint usually sits alongside /v1
   const url = normalizedBase.replace('/v1', '') + '/api/v1/models/load';
   
   try {
@@ -101,14 +107,13 @@ export async function loadModel(baseUrl: string, modelId: string): Promise<boole
     });
     return response.ok;
   } catch (e) {
-    console.error('Load model failed', e);
     return false;
   }
 }
 
 export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
   const normalizedBase = normalizeUrl(baseUrl);
-  const chatUrl = normalizedBase.endsWith('/v1') ? `${normalizedBase}/chat/completions` : `${normalizedBase}/v1/chat/completions`;
+  const chatUrl = normalizedBase.includes('/v1') ? `${normalizedBase}/chat/completions` : `${normalizedBase}/v1/chat/completions`;
   
   const body = {
     model: modelId || "default",
@@ -131,12 +136,12 @@ export async function callChatCompletion(baseUrl: string, modelId: string, messa
 
   if (!response.ok) {
     const errorData = await safeJsonParse(response);
-    const errorMessage = errorData?.error?.message || errorData?.message || 'Engine error';
+    const errorMessage = errorData?.error?.message || errorData?.message || `Engine Error (${response.status})`;
     throw new Error(errorMessage);
   }
 
   const data = await safeJsonParse(response);
-  if (!data) throw new Error('Invalid JSON response from engine');
+  if (!data) throw new Error('Engine returned an invalid response format (Expected JSON).');
   
-  return data.choices?.[0]?.message?.content || "No response.";
+  return data.choices?.[0]?.message?.content || "Engine produced an empty response.";
 }

@@ -73,7 +73,9 @@ export function ChatInterface() {
         temperature: session.settings.temperature,
         topP: session.settings.topP,
         maxTokens: session.settings.maxTokens,
-        history: session.messages
+        history: session.messages,
+        memoryType: session.settings.memoryType,
+        enabledTools: session.settings.enabledTools || []
       });
 
       addMessage(session.id, {
@@ -84,10 +86,16 @@ export function ChatInterface() {
       });
     } catch (error: any) {
       console.error("AI Error:", error);
+      let errorMsg = `Connection failed: ${error.message}.`;
+      
+      if (error.message?.toLowerCase().includes("no models loaded")) {
+        errorMsg += " Use the 'Load to Memory' button in Settings to activate your model.";
+      }
+
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Connection failed: ${error.message}. Please check your engine settings.`,
+        content: errorMsg,
         timestamp: Date.now()
       });
     } finally {
