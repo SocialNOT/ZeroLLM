@@ -20,12 +20,12 @@ export default function Home() {
   useEffect(() => {
     if (isConfigured) {
       if (sessions.length === 0) {
-        createSession(activeWorkspaceId || 'default');
+        createSession(activeWorkspaceId || 'ws-1');
       } else if (!useAppStore.getState().activeSessionId) {
         setActiveSession(sessions[0].id);
       }
     }
-  }, [isConfigured, sessions.length]);
+  }, [isConfigured, sessions.length, activeWorkspaceId]);
 
   if (!mounted) return null;
 

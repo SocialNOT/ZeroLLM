@@ -42,13 +42,13 @@
     --card-foreground: 0 0% 98%;
     --popover: 222 47% 11%;
     --popover-foreground: 0 0% 98%;
-    --primary: 24 95% 64%;
+    --primary: 24 95% 64%; /* Orange */
     --primary-foreground: 222 47% 11%;
     --secondary: 0 72% 51%;
     --secondary-foreground: 0 0% 100%;
     --muted: 217 32% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 142 70% 45%;
+    --accent: 142 70% 45%; /* Green */
     --accent-foreground: 222 47% 11%;
     --destructive: 47 95% 55%;
     --destructive-foreground: 222 47% 11%;

@@ -67,7 +67,7 @@ export function AppSidebar() {
   };
 
   const handleCreateSession = () => {
-    const id = createSession(activeWorkspaceId || '');
+    const id = createSession(activeWorkspaceId || 'ws-1');
     if (isMobile) setOpenMobile(false);
   };
 
