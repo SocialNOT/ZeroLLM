@@ -11,7 +11,8 @@ import {
   SidebarMenuItem,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent
+  SidebarGroupContent,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { 
   Zap, 
@@ -19,7 +20,8 @@ import {
   Layers, 
   Settings2, 
   MessageSquare,
-  Compass
+  Compass,
+  X
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { Button } from "@/components/ui/button";
@@ -37,19 +39,42 @@ export function AppSidebar() {
     createSession 
   } = useAppStore();
 
+  const { isMobile, setOpenMobile } = useSidebar();
+
   const workspaceSessions = sessions.filter(s => s.workspaceId === activeWorkspaceId);
+
+  const handleSessionClick = (id: string) => {
+    setActiveSession(id);
+    if (isMobile) setOpenMobile(false);
+  };
+
+  const handleWorkspaceClick = (id: string) => {
+    setActiveWorkspace(id);
+  };
+
+  const handleCreateSession = () => {
+    const id = createSession(activeWorkspaceId || '');
+    if (isMobile) setOpenMobile(false);
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-200 bg-slate-50/50">
-      <SidebarHeader className="p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 text-white">
-            <Zap size={22} fill="currentColor" />
+      <SidebarHeader className="p-4 md:p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 text-white shrink-0">
+              <Zap size={22} fill="currentColor" />
+            </div>
+            <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:hidden">
+              <span className="font-headline text-lg font-bold leading-none text-slate-900">Aetheria</span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Local Engine Hub</span>
+            </div>
           </div>
-          <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:hidden">
-            <span className="font-headline text-lg font-bold leading-none text-slate-900">Aetheria</span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Local Engine Hub</span>
-          </div>
+          {isMobile && (
+            <Button variant="ghost" size="icon" className="md:hidden text-slate-400" onClick={() => setOpenMobile(false)}>
+              <X size={20} />
+            </Button>
+          )}
         </div>
       </SidebarHeader>
 
@@ -62,7 +87,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={ws.id}>
                   <SidebarMenuButton 
                     isActive={activeWorkspaceId === ws.id}
-                    onClick={() => setActiveWorkspace(ws.id)}
+                    onClick={() => handleWorkspaceClick(ws.id)}
                     className={cn(
                       "transition-all h-10",
                       activeWorkspaceId === ws.id 
@@ -71,7 +96,7 @@ export function AppSidebar() {
                     )}
                   >
                     <Layers size={18} />
-                    <span className="ml-2 font-semibold text-sm">{ws.name}</span>
+                    <span className="ml-2 font-semibold text-sm truncate">{ws.name}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -86,7 +111,7 @@ export function AppSidebar() {
               variant="ghost" 
               size="icon" 
               className="h-6 w-6 text-primary hover:bg-white group-data-[collapsible=icon]:hidden"
-              onClick={() => createSession(activeWorkspaceId || '')}
+              onClick={handleCreateSession}
             >
               <Plus size={14} />
             </Button>
@@ -98,7 +123,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={session.id}>
                     <SidebarMenuButton 
                       isActive={activeSessionId === session.id}
-                      onClick={() => setActiveSession(session.id)}
+                      onClick={() => handleSessionClick(session.id)}
                       className={cn(
                         "group/btn relative h-9 rounded-lg transition-all",
                         activeSessionId === session.id 
@@ -121,7 +146,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-6">
+      <SidebarFooter className="p-4 md:p-6">
         <SettingsDialog>
           <Button className="w-full h-11 bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition-all gap-2 px-0 group-data-[collapsible=icon]:rounded-full">
             <Settings2 size={18} className="shrink-0" />
