@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition } from '@/types';
-import { testConnection, fetchModels } from '@/lib/llm-api';
+import { testConnection, fetchModels, loadModel } from '@/lib/llm-api';
 
 interface AppState {
   workspaces: Workspace[];
@@ -16,6 +16,7 @@ interface AppState {
   availableTools: ToolDefinition[];
   availableModels: string[];
   connectionStatus: 'online' | 'offline' | 'checking';
+  isModelLoading: boolean;
   
   // Actions
   addWorkspace: (w: Workspace) => void;
@@ -32,6 +33,7 @@ interface AppState {
   setRole: (role: UserRole) => void;
   checkConnection: () => Promise<void>;
   refreshModels: () => Promise<void>;
+  triggerModelLoad: (modelId: string) => Promise<boolean>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -58,6 +60,7 @@ export const useAppStore = create<AppState>()(
       ],
       availableModels: [],
       connectionStatus: 'offline',
+      isModelLoading: false,
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -111,6 +114,19 @@ export const useAppStore = create<AppState>()(
           set({ availableModels: models.map(m => m.id) });
         } catch (e) {
           // Fail silently
+        }
+      },
+
+      triggerModelLoad: async (modelId) => {
+        const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
+        if (!activeConn) return false;
+
+        set({ isModelLoading: true });
+        try {
+          const success = await loadModel(activeConn.baseUrl, modelId);
+          return success;
+        } finally {
+          set({ isModelLoading: false });
         }
       },
 

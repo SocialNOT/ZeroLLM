@@ -12,11 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/store/use-app-store";
-import { Settings2, Server, Shield, Database, Cpu, CheckCircle2, RefreshCw, Loader2, Wifi, WifiOff } from "lucide-react";
+import { Settings2, Server, Shield, Database, Cpu, CheckCircle2, RefreshCw, Loader2, Wifi, WifiOff, Zap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 
 export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const { 
@@ -25,13 +26,32 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     updateConnection, 
     availableModels, 
     connectionStatus, 
-    checkConnection 
+    checkConnection,
+    triggerModelLoad,
+    isModelLoading
   } = useAppStore();
   
   const conn = connections.find(c => c.id === activeConnectionId);
 
   const handleRefresh = async () => {
     await checkConnection();
+  };
+
+  const handleLoadModel = async () => {
+    if (!conn?.modelId) return;
+    const success = await triggerModelLoad(conn.modelId);
+    if (success) {
+      toast({
+        title: "Model Loaded",
+        description: `${conn.modelId} is now active in memory.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Load Failed",
+        description: "Could not load model. Check server logs.",
+      });
+    }
   };
 
   return (
@@ -99,12 +119,25 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
               <Separator className="bg-white/5" />
 
-              {/* Only show Model Selection when status is online */}
               {connectionStatus === 'online' ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center gap-2 text-accent">
-                    <Cpu size={16} />
-                    <h4 className="text-sm font-bold uppercase tracking-widest">Model Selection</h4>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-accent">
+                      <Cpu size={16} />
+                      <h4 className="text-sm font-bold uppercase tracking-widest">Model Management</h4>
+                    </div>
+                    {conn?.modelId && (
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        className="h-7 text-[10px] font-bold uppercase gap-2"
+                        onClick={handleLoadModel}
+                        disabled={isModelLoading}
+                      >
+                        {isModelLoading ? <Loader2 className="animate-spin h-3 w-3" /> : <Zap size={12} />}
+                        Load to Memory
+                      </Button>
+                    )}
                   </div>
                   <div className="grid gap-4">
                     <div className="space-y-2">
@@ -162,8 +195,8 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             
             <div className="flex justify-between items-center bg-accent/5 p-4 rounded-lg border border-accent/20">
               <div className="text-xs">
-                <p className="font-bold text-accent uppercase tracking-tighter">Backend Target</p>
-                <p className="text-muted-foreground text-[10px]">Active endpoint: <span className="font-mono text-foreground">{conn?.baseUrl}</span></p>
+                <p className="font-bold text-accent uppercase tracking-tighter">Backend Status</p>
+                <p className="text-muted-foreground text-[10px]">Endpoint: <span className="font-mono text-foreground">{conn?.baseUrl}</span></p>
               </div>
               <Button 
                 size="sm" 
