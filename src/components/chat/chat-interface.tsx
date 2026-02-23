@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -50,7 +49,7 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
-import { ai } from "@/ai/genkit";
+import { generateChatTitle } from "@/ai/actions/chat-actions";
 
 export function ChatInterface() {
   const { 
@@ -94,19 +93,13 @@ export function ChatInterface() {
     }
   }, [session?.messages, isTyping]);
 
-  const generateTitle = async (text: string) => {
+  const handleGenerateTitle = async (text: string) => {
+    if (!session) return;
     try {
-      const { text: title } = await ai.generate({
-        prompt: `Create a concise, professional 3-4 word title for an AI chat session based on this first message: "${text}". Provide ONLY the title text, no quotes or periods.`,
-        config: { maxTokens: 10 }
-      });
-      if (title && session) {
-        updateSession(session.id, { title: title.trim() });
-      }
+      const title = await generateChatTitle(text);
+      updateSession(session.id, { title });
     } catch (e) {
-      if (session) {
-        updateSession(session.id, { title: text.substring(0, 20) + "..." });
-      }
+      updateSession(session.id, { title: text.substring(0, 20) + "..." });
     }
   };
 
@@ -116,7 +109,7 @@ export function ChatInterface() {
 
     // Auto-name if it's the first message
     if (session.messages.length === 0) {
-      generateTitle(textToSend);
+      handleGenerateTitle(textToSend);
     }
 
     const userMsg = {
