@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -24,7 +23,9 @@ import {
   Database,
   Terminal,
   MousePointer2,
-  Key
+  Key,
+  Moon,
+  Sun
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -51,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 
 export function ChatInterface() {
   const { 
@@ -68,6 +70,7 @@ export function ChatInterface() {
     checkConnection
   } = useAppStore();
   
+  const { theme, setTheme } = useTheme();
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
@@ -153,15 +156,15 @@ export function ChatInterface() {
 
   if (!session) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-slate-50">
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-background">
         <div className="relative mb-10">
           <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full animate-pulse" />
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.06)]">
-            <Activity className="text-primary animate-bounce" size={50} />
+          <div className="relative flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.06)] glow-multi">
+            <Zap className="text-primary animate-bounce" size={50} />
           </div>
         </div>
-        <h2 className="mb-4 text-4xl font-headline font-bold text-slate-900 tracking-tight">Node Command Initialized</h2>
-        <p className="max-w-md text-slate-500 font-medium leading-relaxed opacity-80">
+        <h2 className="logo-shimmer mb-4 text-5xl font-headline font-bold tracking-tight">ZEROGPT</h2>
+        <p className="max-w-md text-muted-foreground font-medium leading-relaxed opacity-80">
           Select a cognitive thread from the chronicle or initialize a new sequence to begin orchestration.
         </p>
       </div>
@@ -169,38 +172,49 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-slate-50 p-4 lg:p-6 gap-6">
+    <div className="flex h-full w-full overflow-hidden bg-background p-4 lg:p-6 gap-6 transition-colors duration-500">
       <div className="flex flex-col flex-1 gap-6 min-w-0">
         {/* Main Chat Bento Module */}
-        <div className="flex flex-col flex-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.04)] overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-50 px-8 py-6 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex flex-col flex-1 bg-card rounded-[2.5rem] border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border px-8 py-6 bg-card/80 backdrop-blur-md sticky top-0 z-10">
             <div className="flex items-center gap-5">
-              <SidebarTrigger className="lg:hidden h-10 w-10 text-slate-400 hover:bg-slate-50 rounded-2xl" />
+              <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
               <div className="flex flex-col">
-                <h3 className="text-xl font-headline font-bold text-slate-900 leading-none">{session.title}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="logo-shimmer text-2xl font-headline font-bold leading-none tracking-tight">ZEROGPT</h3>
+                  <span className="text-[10px] font-bold text-muted-foreground opacity-50 uppercase tracking-widest mt-1">/ {session.title}</span>
+                </div>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="text-[8px] font-bold text-primary uppercase tracking-widest border-primary/20 bg-primary/5">
                     {framework?.name || persona.name}
                   </Badge>
-                  {framework && <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">• Protocol Active</span>}
+                  {framework && <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest">• Protocol Active</span>}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-100">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              </Button>
+              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
                 <ShieldCheck size={14} className="text-primary/70" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{currentUserRole} Access</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentUserRole} Access</span>
               </div>
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
                     <Settings2 size={20} />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full sm:min-w-[450px] border-l border-slate-100 p-0 rounded-l-[3rem] overflow-hidden">
-                  <SheetHeader className="p-10 border-b border-slate-50 bg-white">
-                    <SheetTitle className="text-2xl font-headline font-bold text-slate-900">Module Parameters</SheetTitle>
-                    <p className="text-xs text-slate-400 font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
+                <SheetContent className="w-full sm:min-w-[450px] border-l border-border p-0 rounded-l-[3rem] overflow-hidden bg-card">
+                  <SheetHeader className="p-10 border-b border-border bg-card">
+                    <SheetTitle className="text-2xl font-headline font-bold">Module Parameters</SheetTitle>
+                    <p className="text-xs text-muted-foreground font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
                   </SheetHeader>
                   <ParameterControls />
                 </SheetContent>
@@ -212,8 +226,8 @@ export function ChatInterface() {
             <div className="mx-auto flex w-full max-w-4xl flex-col py-10 px-8">
               {session.messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center opacity-40">
-                  <Terminal size={40} className="mb-6 text-slate-300" />
-                  <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400">Sequence Standby</p>
+                  <Terminal size={40} className="mb-6 text-muted-foreground" />
+                  <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-muted-foreground">Sequence Standby</p>
                 </div>
               ) : (
                 session.messages.map((msg) => (
@@ -238,9 +252,9 @@ export function ChatInterface() {
             </div>
           </ScrollArea>
 
-          <div className="p-8 bg-gradient-to-t from-white via-white to-transparent">
+          <div className="p-8 bg-gradient-to-t from-card via-card to-transparent">
             <div className="mx-auto max-w-3xl">
-              <div className="relative bg-slate-50 rounded-[2rem] p-2 transition-all focus-within:ring-4 focus-within:ring-primary/5 border border-slate-100">
+              <div className="relative bg-muted rounded-[2rem] p-2 transition-all focus-within:ring-4 focus-within:ring-primary/5 border border-border glow-multi">
                 <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center">
                   <input 
                     type="file" 
@@ -252,7 +266,7 @@ export function ChatInterface() {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-12 w-12 text-slate-400 hover:text-primary hover:bg-white rounded-2xl transition-all ml-1 shrink-0"
+                    className="h-12 w-12 text-muted-foreground hover:text-primary hover:bg-card rounded-2xl transition-all ml-1 shrink-0"
                   >
                     <Paperclip size={20} />
                   </Button>
@@ -261,12 +275,12 @@ export function ChatInterface() {
                     onChange={(e) => setInput(e.target.value)}
                     disabled={currentUserRole === 'Viewer' || isTyping}
                     placeholder={currentUserRole === 'Viewer' ? "Restricted Access" : `Direct command...`}
-                    className="h-14 w-full border-none bg-transparent px-4 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-slate-400"
+                    className="h-14 w-full border-none bg-transparent px-4 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
                   />
                   <Button 
                     type="submit" 
                     disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
-                    className="h-12 w-12 rounded-2xl bg-primary text-white shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all mr-1 shrink-0"
+                    className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all mr-1 shrink-0 glow-multi"
                   >
                     <Send size={18} />
                   </Button>
@@ -279,17 +293,17 @@ export function ChatInterface() {
 
       {/* Side Bento Diagnostic Tiles */}
       <div className="hidden xl:flex flex-col w-[300px] gap-6 shrink-0">
-        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
+        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-8">
             <Activity size={18} className="text-primary" />
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400">Node Status</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Node Status</h4>
           </div>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Protocol</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>
               <Badge variant="outline" className={cn(
                 "text-[9px] font-bold uppercase tracking-widest border-2",
-                connectionStatus === 'online' ? "border-emerald-100 text-emerald-600 bg-emerald-50" : "border-rose-100 text-rose-500 bg-rose-50"
+                connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5" : "border-rose-500/20 text-rose-500 bg-rose-500/5"
               )}>
                 {connectionStatus === 'online' ? "Online" : "Isolated"}
               </Badge>
@@ -298,46 +312,46 @@ export function ChatInterface() {
             <Popover>
               <PopoverTrigger asChild>
                 <div className="space-y-2 cursor-pointer group">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3 group-hover:text-primary transition-colors">Endpoint Node</span>
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 group-hover:border-primary/20 group-hover:bg-primary/5 transition-all">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-3 group-hover:text-primary transition-colors">Endpoint Node</span>
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted border border-border group-hover:border-primary/20 group-hover:bg-primary/5 transition-all">
                     <Globe size={14} className="text-primary/60 shrink-0" />
-                    <span className="text-[10px] font-mono font-bold text-slate-600 truncate">{connection.baseUrl.replace(/https?:\/\//, '')}</span>
+                    <span className="text-[10px] font-mono font-bold text-foreground truncate">{connection.baseUrl.replace(/https?:\/\//, '')}</span>
                   </div>
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-[300px] rounded-[2rem] p-6 shadow-2xl border-slate-100">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-4">Update Signal Target</h4>
+              <PopoverContent className="w-[300px] rounded-[2rem] p-6 shadow-2xl border-border bg-card">
+                <h4 className="text-xs font-bold uppercase tracking-widest mb-4">Update Signal Target</h4>
                 <div className="space-y-4">
                   <div className="relative">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
                     <Input 
                       value={tempUrl} 
                       onChange={(e) => setTempUrl(e.target.value)}
                       placeholder="http://..." 
-                      className="pl-12 rounded-xl text-xs h-10 border-slate-100"
+                      className="pl-12 rounded-xl text-xs h-10 border-border bg-muted"
                     />
                   </div>
-                  <Button onClick={handleUpdateUrl} className="w-full h-10 rounded-xl bg-primary text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20">Sync Node</Button>
+                  <Button onClick={handleUpdateUrl} className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20">Sync Node</Button>
                 </div>
               </PopoverContent>
             </Popover>
           </div>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
+        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-8">
             <Cpu size={18} className="text-primary" />
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400">Active Engine</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Active Engine</h4>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full h-12 rounded-2xl border-slate-100 bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-widest justify-between px-5 hover:bg-white hover:border-primary/30 transition-all">
+              <Button variant="outline" className="w-full h-12 rounded-2xl border-border bg-muted text-[10px] font-bold uppercase tracking-widest justify-between px-5 hover:bg-card hover:border-primary/30 transition-all">
                 <span className="truncate max-w-[140px]">{connection.modelId || "AUTO SELECT"}</span>
-                <ChevronDown size={14} className="text-slate-400" />
+                <ChevronDown size={14} className="text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[260px] rounded-[1.5rem] p-2 bg-white/95 backdrop-blur-2xl border-slate-100 shadow-2xl">
-              <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-50">Discovered Models</div>
+            <DropdownMenuContent align="end" className="w-[260px] rounded-[1.5rem] p-2 bg-card/95 backdrop-blur-2xl border-border shadow-2xl">
+              <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground border-b border-border">Discovered Models</div>
               {availableModels.length > 0 ? (
                 availableModels.map(m => (
                   <DropdownMenuItem key={m} onClick={() => updateConnection(connection.id, { modelId: m })} className="text-[11px] font-bold rounded-xl py-3 px-4 cursor-pointer hover:bg-primary/5 hover:text-primary">
@@ -345,27 +359,27 @@ export function ChatInterface() {
                   </DropdownMenuItem>
                 ))
               ) : (
-                <div className="py-8 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">No models found</div>
+                <div className="py-8 text-center text-[10px] text-muted-foreground font-bold uppercase tracking-widest">No models found</div>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.04)] flex-1">
+        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] flex-1">
           <div className="flex items-center gap-3 mb-8">
             <Database size={18} className="text-primary" />
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400">Cognitive Memory</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Cognitive Memory</h4>
           </div>
           <div className="space-y-6">
-            <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-100">
+            <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
               <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-2">Memory Path</span>
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">{session.settings.memoryType} Optimized</span>
+              <span className="text-xs font-bold uppercase tracking-tight">{session.settings.memoryType} Optimized</span>
             </div>
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Signal Latency</span>
+            <div className="p-5 rounded-2xl bg-muted border border-border">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">Signal Latency</span>
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-800">12ms Handshake</span>
+                <span className="text-xs font-bold">12ms Handshake</span>
               </div>
             </div>
           </div>
