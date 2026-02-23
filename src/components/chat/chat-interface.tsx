@@ -18,7 +18,8 @@ import {
   Database,
   Terminal,
   Moon,
-  Sun
+  Sun,
+  Clock
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -67,6 +68,7 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -74,6 +76,12 @@ export function ChatInterface() {
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
   const framework = frameworks.find(f => f.id === session?.frameworkId);
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
+
+  useEffect(() => {
+    setCurrentTime(new Date());
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -145,6 +153,9 @@ export function ChatInterface() {
     }
   };
 
+  const formattedTime = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "";
+  const formattedDate = currentTime ? currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : "";
+
   if (!session) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-background">
@@ -183,33 +194,45 @@ export function ChatInterface() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                {theme === "dark" ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-slate-900" />}
-              </Button>
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
-                <ShieldCheck size={14} className="text-primary/70" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentUserRole} Access</span>
+            
+            <div className="flex items-center gap-6">
+              {/* Sleek Date/Time Display */}
+              <div className="hidden md:flex flex-col items-end text-right border-r border-border pr-6">
+                <div className="flex items-center gap-2">
+                  <Clock size={12} className="text-primary/70" />
+                  <span className="text-[14px] font-code font-bold text-primary leading-tight tracking-widest">{formattedTime}</span>
+                </div>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">{formattedDate}</span>
               </div>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
-                    <Settings2 size={20} />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="w-full sm:min-w-[450px] border-l border-border p-0 rounded-l-[3rem] overflow-hidden bg-card">
-                  <SheetHeader className="p-10 border-b border-border bg-card">
-                    <SheetTitle className="text-2xl font-headline font-bold">Module Parameters</SheetTitle>
-                    <p className="text-xs text-muted-foreground font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
-                  </SheetHeader>
-                  <ParameterControls />
-                </SheetContent>
-              </Sheet>
+
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {theme === "dark" ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-slate-900" />}
+                </Button>
+                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
+                  <ShieldCheck size={14} className="text-primary/70" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentUserRole} Access</span>
+                </div>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
+                      <Settings2 size={20} />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent className="w-full sm:min-w-[450px] border-l border-border p-0 rounded-l-[3rem] overflow-hidden bg-card">
+                    <SheetHeader className="p-10 border-b border-border bg-card">
+                      <SheetTitle className="text-2xl font-headline font-bold">Module Parameters</SheetTitle>
+                      <p className="text-xs text-muted-foreground font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
+                    </SheetHeader>
+                    <ParameterControls />
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </div>
 

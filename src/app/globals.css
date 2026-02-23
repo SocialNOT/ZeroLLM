@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 0 0% 0%; /* Black */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
@@ -13,13 +13,13 @@
     --primary: 225 100% 30%; /* Royal Blue */
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 0 0% 0%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 120 100% 20%; /* Dark Green */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 25%; /* Maroon */
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 225 100% 30%;
@@ -44,14 +44,14 @@
     --popover-foreground: 0 0% 100%;
     --primary: 30 100% 50%; /* Orange */
     --primary-foreground: 0 0% 0%;
-    --secondary: 0 100% 50%; /* Red for accents */
+    --secondary: 0 100% 50%; /* Red */
     --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 120 100% 50%; /* Green */
     --accent-foreground: 0 0% 0%;
-    --destructive: 0 100% 50%; /* Red */
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 60 100% 50%; /* Yellow */
+    --destructive-foreground: 0 0% 0%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 60 100% 50%; /* Yellow ring */
