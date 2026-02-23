@@ -89,57 +89,84 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      "group flex w-full items-start gap-6 py-10 transition-all border-b border-slate-50/50",
-      isAssistant ? "bg-slate-50/30" : "bg-transparent"
+      "group flex w-full mb-10 transition-all animate-in fade-in slide-in-from-bottom-2 duration-500",
+      isAssistant ? "justify-start" : "justify-end"
     )}>
-      <div className="flex-shrink-0 pt-1">
-        <div className={cn(
-          "relative h-11 w-11 rounded-2xl flex items-center justify-center transition-all duration-500",
-          isAssistant ? "bg-white shadow-lg border border-primary/10" : "bg-slate-100 border border-slate-200"
-        )}>
-          {isAssistant ? (
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full animate-pulse" />
-              <Bot className="relative text-primary" size={22} />
-            </div>
-          ) : (
-            <User className="text-slate-500" size={22} />
-          )}
+      <div className={cn(
+        "flex max-w-[85%] lg:max-w-[75%] gap-4",
+        isAssistant ? "flex-row" : "flex-row-reverse"
+      )}>
+        <div className="flex-shrink-0 pt-1">
+          <div className={cn(
+            "relative h-10 w-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg",
+            isAssistant ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
+          )}>
+            {isAssistant ? (
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/20 blur-lg rounded-full animate-pulse" />
+                <Bot className="relative" size={20} />
+              </div>
+            ) : (
+              <User size={20} />
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-1 flex-col gap-3 overflow-hidden">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        <div className={cn(
+          "flex flex-col gap-2",
+          isAssistant ? "items-start" : "items-end"
+        )}>
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
               {isAssistant ? "AI Intelligence" : "Originator Node"}
             </span>
             {isAssistant && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[8px] font-bold text-emerald-600 uppercase">Computed</span>
+                <span className="text-[7px] font-bold text-emerald-600 uppercase tracking-tighter">Computed</span>
               </div>
             )}
           </div>
+
+          <div className={cn(
+            "px-6 py-4 rounded-[2rem] shadow-xl text-[15px] leading-relaxed transition-all",
+            isAssistant 
+              ? "bg-accent text-accent-foreground rounded-tl-none" 
+              : "bg-primary text-primary-foreground rounded-tr-none"
+          )}>
+            {message.content.split('\n').map((line, i) => (
+              <p key={i} className="mb-4 last:mb-0">{line}</p>
+            ))}
+          </div>
           
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+          {isAssistant && message.content.includes("ERROR:") && (
+            <div className="mt-2 p-3 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-bold uppercase tracking-widest flex items-center gap-3">
+              <Cpu size={12} className="animate-pulse" />
+              Node Protocol Failure: Establish connection.
+            </div>
+          )}
+
+          <div className={cn(
+            "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0",
+            !isAssistant && "flex-row-reverse"
+          )}>
             {isAssistant && (
               <>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={handleSpeech}>
-                  {isPlaying ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={14} />}
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleSpeech}>
+                  {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={12} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={onRegenerate}>
-                  <RefreshCw size={14} />
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={onRegenerate}>
+                  <RefreshCw size={12} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm">
-                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Languages size={14} />}
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full">
+                      {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={12} />}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl p-2 border-slate-100 shadow-xl">
+                  <DropdownMenuContent align="start" className="rounded-2xl p-2 border-border shadow-xl">
                     {['Spanish', 'French', 'German', 'Chinese', 'Japanese'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-xs font-bold rounded-xl cursor-pointer">
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer">
                         {l}
                       </DropdownMenuItem>
                     ))}
@@ -147,30 +174,14 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={handleShare}>
-              <Share2 size={14} />
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleShare}>
+              <Share2 size={12} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={handleCopy}>
-              {isCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleCopy}>
+              {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
             </Button>
           </div>
         </div>
-
-        <div className={cn(
-          "max-w-none text-[15px] leading-relaxed",
-          isAssistant ? "text-slate-800 font-medium" : "text-slate-600"
-        )}>
-          {message.content.split('\n').map((line, i) => (
-            <p key={i} className="mb-4 last:mb-0">{line}</p>
-          ))}
-        </div>
-        
-        {isAssistant && message.content.includes("ERROR:") && (
-          <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-bold uppercase tracking-widest flex items-center gap-3">
-            <Cpu size={14} className="animate-pulse" />
-            Node Protocol Failure: Establish engine connection or re-load model.
-          </div>
-        )}
       </div>
     </div>
   );

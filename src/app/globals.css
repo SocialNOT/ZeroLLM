@@ -36,7 +36,6 @@
   }
 
   .dark {
-    /* Sophisticated Dark Mode with desaturated Googly colors */
     --background: 222 47% 11%;
     --foreground: 0 0% 98%;
     --card: 222 47% 11%;
@@ -101,7 +100,7 @@
 }
 
 .chat-bubble-assistant {
-  @apply bg-card border border-border rounded-3xl rounded-tl-none shadow-lg text-foreground p-5;
+  @apply bg-accent text-accent-foreground rounded-3xl rounded-tl-none shadow-lg p-5;
 }
 
 .animate-pulse-subtle {
