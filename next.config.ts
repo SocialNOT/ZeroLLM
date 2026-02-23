@@ -15,9 +15,8 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['*'],
     },
   },
-  // Increase timeout for server-side generation (Vercel Pro/Enterprise or self-hosted)
-  // Note: Vercel Hobby has a strict 10s-30s limit depending on the region.
-  // We handle this by primarily doing client-side fetches to your engine.
+  // We handle timeouts by primarily doing client-side fetches or ensuring 
+  // the server action is configured for high-performance orchestration.
   images: {
     remotePatterns: [
       {
