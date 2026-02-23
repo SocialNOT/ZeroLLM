@@ -7,23 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Send, 
-  Sparkles, 
   Paperclip, 
-  Loader2, 
   Settings2, 
   Wifi, 
   ShieldCheck, 
-  Layers,
   ChevronDown,
-  X,
   Zap,
   Globe,
   Cpu,
   Activity,
   Database,
   Terminal,
-  MousePointer2,
-  Key,
   Moon,
   Sun
 } from "lucide-react";
@@ -74,7 +68,6 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -102,7 +95,6 @@ export function ChatInterface() {
 
     addMessage(session.id, userMsg);
     setInput("");
-    setAttachedFile(null);
     setIsTyping(true);
 
     try {
@@ -180,10 +172,10 @@ export function ChatInterface() {
             <div className="flex items-center gap-5">
               <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
               <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <h3 className="logo-shimmer text-2xl font-headline font-bold leading-none tracking-tight">ZEROGPT</h3>
-                  <span className="text-[10px] font-bold text-muted-foreground opacity-50 uppercase tracking-widest mt-1">/ {session.title}</span>
-                </div>
+                <h3 className="logo-shimmer text-3xl font-headline font-bold leading-none tracking-tighter">ZEROGPT</h3>
+                <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-[0.4em] block mt-1 ml-0.5">
+                  {session.title}
+                </span>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="text-[8px] font-bold text-primary uppercase tracking-widest border-primary/20 bg-primary/5">
                     {framework?.name || persona.name}
@@ -303,7 +295,7 @@ export function ChatInterface() {
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>
               <Badge variant="outline" className={cn(
                 "text-[9px] font-bold uppercase tracking-widest border-2",
-                connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5" : "border-rose-500/20 text-rose-500 bg-rose-500/5"
+                connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
               )}>
                 {connectionStatus === 'online' ? "Online" : "Isolated"}
               </Badge>
