@@ -105,6 +105,17 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes color-shift {
+  0% { color: hsl(var(--primary)); }
+  33% { color: hsl(var(--accent)); }
+  66% { color: hsl(var(--destructive)); }
+  100% { color: hsl(var(--primary)); }
+}
+
+.animate-color-shift {
+  animation: color-shift 6s linear infinite;
+}
+
 .chat-bubble-user {
   @apply bg-primary text-primary-foreground rounded-[1.5rem] rounded-tr-none shadow-lg shadow-primary/10 px-4 py-3 sm:px-6 sm:py-4;
 }

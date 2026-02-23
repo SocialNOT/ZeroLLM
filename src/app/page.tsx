@@ -39,6 +39,19 @@ export default function Home() {
             <main className="flex-1 overflow-hidden">
               <ChatInterface />
             </main>
+            <footer className="w-full py-3 bg-card/30 backdrop-blur-md border-t border-border/10 text-center z-30 shrink-0 select-none">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+                <span className="text-muted-foreground/40">Made with ❤️ by</span>
+                <a 
+                  href="https://www.eastindiaautomation.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="animate-color-shift hover:scale-105 transition-transform inline-block"
+                >
+                  Rajib Singh AKA ProfessorAI
+                </a>
+              </p>
+            </footer>
           </SidebarInset>
         </div>
       </div>
