@@ -88,6 +88,9 @@ export interface ChatSession {
     format: 'markdown' | 'json' | 'step-by-step';
     memoryType: MemoryType;
     enabledTools: string[];
+    webSearchEnabled?: boolean;
+    reasoningEnabled?: boolean;
+    voiceResponseEnabled?: boolean;
   };
 }
 

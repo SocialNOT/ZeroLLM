@@ -10,7 +10,6 @@ import {
   Send, 
   Paperclip, 
   Settings2, 
-  ShieldCheck, 
   ChevronDown,
   Zap,
   Globe,
@@ -21,14 +20,18 @@ import {
   Moon,
   Sun,
   Clock,
-  Wifi,
-  WifiOff,
   Layers,
   UserCircle,
   PanelRight,
-  PanelRightClose
+  PanelRightClose,
+  Brain,
+  Mic,
+  MicOff,
+  Sparkles,
+  Search
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
+import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Sheet, 
@@ -58,13 +61,11 @@ export function ChatInterface() {
     activeConnectionId,
     currentUserRole,
     connectionStatus,
-    availableModels,
     updateConnection,
-    checkConnection,
-    activeParameterTab,
     setActiveParameterTab,
     showInfoSidebar,
-    toggleInfoSidebar
+    toggleInfoSidebar,
+    toggleTool
   } = useAppStore();
   
   const { theme, setTheme } = useTheme();
@@ -127,15 +128,30 @@ export function ChatInterface() {
         topP: session.settings.topP,
         maxTokens: session.settings.maxTokens,
         history: session.messages,
-        enabledTools: session.settings.enabledTools
+        enabledTools: session.settings.enabledTools,
+        reasoningEnabled: session.settings.reasoningEnabled
       });
 
-      addMessage(session.id, {
+      const assistantMsg = {
         id: (Date.now() + 1).toString(),
-        role: "assistant",
+        role: "assistant" as const,
         content: responseContent,
         timestamp: Date.now()
-      });
+      };
+
+      addMessage(session.id, assistantMsg);
+
+      // Handle Auto-Voice if enabled
+      if (session.settings.voiceResponseEnabled) {
+        try {
+          const { audioUri } = await generateSpeech({ text: responseContent });
+          const audio = new Audio(audioUri);
+          audio.play();
+        } catch (vErr) {
+          console.warn("Voice auto-play failed", vErr);
+        }
+      }
+
     } catch (error: any) {
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
@@ -225,7 +241,7 @@ export function ChatInterface() {
                   )}
                 >
                   <Layers size={8} />
-                  {framework?.name || "Framework: None"}
+                  {framework?.name || "Framework: Standard"}
                 </button>
               </SheetTrigger>
 
@@ -250,7 +266,7 @@ export function ChatInterface() {
                   )}
                 >
                   <Cpu size={8} />
-                  {linguistic?.name || "Logic: Standard"}
+                  {linguistic?.name || "Logic: Default"}
                 </button>
               </SheetTrigger>
               
@@ -295,7 +311,57 @@ export function ChatInterface() {
           </ScrollArea>
 
           <div className="p-4 sm:p-8 bg-card/80 backdrop-blur-xl border-t lg:border-none z-20">
-            <div className="mx-auto max-w-3xl">
+            <div className="mx-auto max-w-3xl space-y-4">
+              
+              {/* Companion Toolbar */}
+              <div className="flex items-center justify-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar py-2">
+                <button 
+                  onClick={() => toggleTool(session.id, 'webSearch')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-2xl border text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm",
+                    session.settings.webSearchEnabled 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-background/50 text-muted-foreground border-border hover:border-primary/50"
+                  )}
+                >
+                  <Search size={12} />
+                  Grounding
+                </button>
+                
+                <button 
+                  onClick={() => toggleTool(session.id, 'reasoning')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-2xl border text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm",
+                    session.settings.reasoningEnabled 
+                      ? "bg-accent text-accent-foreground border-accent" 
+                      : "bg-background/50 text-muted-foreground border-border hover:border-accent/50"
+                  )}
+                >
+                  <Brain size={12} />
+                  Thinking
+                </button>
+
+                <button 
+                  onClick={() => toggleTool(session.id, 'voice')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-2xl border text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm",
+                    session.settings.voiceResponseEnabled 
+                      ? "bg-destructive text-destructive-foreground border-destructive" 
+                      : "bg-background/50 text-muted-foreground border-border hover:border-destructive/50"
+                  )}
+                >
+                  {session.settings.voiceResponseEnabled ? <Mic size={12} /> : <MicOff size={12} />}
+                  Voice
+                </button>
+
+                <div className="h-4 w-px bg-border mx-1" />
+
+                <button className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted/30 text-muted-foreground border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted/50 transition-all">
+                  <Sparkles size={12} />
+                  Visual
+                </button>
+              </div>
+
               <form 
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
                 className="relative flex items-center bg-muted/50 hover:bg-muted transition-colors rounded-2xl sm:rounded-[2.5rem] p-1.5 sm:p-2.5 border border-border shadow-2xl shadow-black/5"

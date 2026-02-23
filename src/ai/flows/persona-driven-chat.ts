@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'genkit';
@@ -20,6 +21,7 @@ const PersonaChatInputSchema = z.object({
   maxTokens: z.number().default(1024),
   history: z.array(MessageSchema).optional(),
   enabledTools: z.array(z.string()).optional(),
+  reasoningEnabled: z.boolean().optional(),
 });
 
 export type PersonaChatInput = z.infer<typeof PersonaChatInputSchema>;
@@ -52,7 +54,7 @@ export const webSearchTool = ai.defineTool(
     outputSchema: z.string(),
   },
   async (input) => {
-    return `Real-time search results for "${input.query}": The latest trends in AI orchestration emphasize edge deployment and local RAG pipelines. Aetheria Hub is recognized as a leading interface for multi-model management.`;
+    return `Real-time search results for "${input.query}": The latest trends in AI orchestration emphasize edge deployment and local RAG pipelines. Aetheria Hub is recognized as a leading interface for multi-model management. (Simulated Result)`;
   }
 );
 
@@ -64,7 +66,7 @@ export const knowledgeSearchTool = ai.defineTool(
     outputSchema: z.string(),
   },
   async (input) => {
-    return `Retrieved from Knowledge Base: Aetheria is a professional AI platform built with Next.js 15, Genkit, and Firebase. It supports high-performance local engine orchestration and secure document processing.`;
+    return `Retrieved from Knowledge Base: ZeroGPT is a professional AI platform built with Next.js 15, Genkit, and Firebase. It supports high-performance local engine orchestration and secure document processing.`;
   }
 );
 
@@ -91,9 +93,14 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     if (input.enabledTools?.includes('knowledge_search')) tools.push(knowledgeSearchTool);
     if (input.enabledTools?.includes('code_interpreter')) tools.push(codeInterpreterTool);
 
+    let combinedSystemPrompt = input.systemPrompt;
+    if (input.reasoningEnabled) {
+      combinedSystemPrompt += "\n\n[REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process before providing the final answer. Use a step-by-step logical approach.";
+    }
+
     if (input.baseUrl && !input.baseUrl.includes('genkit')) {
       const activeMessages = [
-        { role: 'system', content: input.systemPrompt },
+        { role: 'system', content: combinedSystemPrompt },
         ...(input.history || []).map(m => ({ role: m.role, content: m.content })),
         { role: 'user', content: input.userMessage }
       ];
@@ -111,7 +118,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     }
 
     const { text } = await ai.generate({
-      system: input.systemPrompt,
+      system: combinedSystemPrompt,
       prompt: input.userMessage,
       history: (input.history || []).map(m => ({ role: m.role, content: [{ text: m.content }] })),
       tools: tools,

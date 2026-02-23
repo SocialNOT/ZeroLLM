@@ -54,6 +54,7 @@ interface AppState {
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
+  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice') => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -67,7 +68,6 @@ export const useAppStore = create<AppState>()(
       connections: [],
       activeConnectionId: null,
       
-      // Load static libraries from lib files
       personas: PERSONAS,
       frameworks: FRAMEWORKS,
       linguisticControls: LINGUISTICS,
@@ -192,7 +192,10 @@ export const useAppStore = create<AppState>()(
             maxTokens: 1024,
             format: 'markdown',
             memoryType: 'buffer',
-            enabledTools: []
+            enabledTools: [],
+            webSearchEnabled: false,
+            reasoningEnabled: false,
+            voiceResponseEnabled: false
           }
         };
         set((state) => ({ sessions: state.sessions ? [...state.sessions, newSession] : [newSession], activeSessionId: id }));
@@ -231,7 +234,7 @@ export const useAppStore = create<AppState>()(
               frameworkId: s.frameworkId === frameworkId ? undefined : frameworkId,
               settings: { 
                 ...s.settings, 
-                enabledTools: framework?.tools || [] 
+                enabledTools: framework?.tools || s.settings.enabledTools 
               }
             } : s
           )
@@ -274,11 +277,32 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
+      toggleTool: (sessionId, tool) => {
+        set((state) => ({
+          sessions: state.sessions.map(s => {
+            if (s.id !== sessionId) return s;
+            const settings = { ...s.settings };
+            if (tool === 'webSearch') settings.webSearchEnabled = !settings.webSearchEnabled;
+            if (tool === 'reasoning') settings.reasoningEnabled = !settings.reasoningEnabled;
+            if (tool === 'voice') settings.voiceResponseEnabled = !settings.voiceResponseEnabled;
+            
+            // Sync actual tools array for Genkit
+            let enabledTools = [...settings.enabledTools];
+            if (tool === 'webSearch') {
+              if (settings.webSearchEnabled && !enabledTools.includes('web_search')) enabledTools.push('web_search');
+              if (!settings.webSearchEnabled) enabledTools = enabledTools.filter(t => t !== 'web_search');
+            }
+
+            return { ...s, settings: { ...settings, enabledTools } };
+          })
+        }));
+      },
+
       setActiveParameterTab: (tab) => set({ activeParameterTab: tab }),
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar }))
     }),
     { 
-      name: 'zerogpt-storage-v1',
+      name: 'zerogpt-storage-v2',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
