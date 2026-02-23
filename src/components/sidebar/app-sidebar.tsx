@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -28,9 +29,13 @@ import {
   Layers,
   Type,
   ChevronRight,
-  Trash2
+  Trash2,
+  ShieldAlert,
+  LogOut
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
+import { useUser, useAuth } from "@/firebase";
+import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
@@ -39,6 +44,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import Link from "next/link";
 
 export function AppSidebar() {
   const { 
@@ -54,6 +60,12 @@ export function AppSidebar() {
   } = useAppStore();
 
   const { isMobile, setOpenMobile } = useSidebar();
+  const { user } = useUser();
+  const { auth } = useAuth();
+
+  const handleLogout = () => {
+    if (auth) signOut(auth);
+  };
 
   const customPersonas = personas.filter(p => p.isCustom);
   const customFrameworks = frameworks.filter(f => f.isCustom);
@@ -102,6 +114,17 @@ export function AppSidebar() {
           <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Library</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {user?.email === 'admin@worldoftexts.com' && (
+                <SidebarMenuItem>
+                  <Link href="/admin">
+                    <SidebarMenuButton tooltip="Admin Panel" className="bg-primary/5 text-primary">
+                      <ShieldAlert size={18} />
+                      <span className="font-bold text-sm">Admin Control</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              )}
+              
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -235,13 +258,31 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-6">
+      <SidebarFooter className="p-6 space-y-2">
         <SettingsDialog>
           <Button className="w-full h-12 bg-white border border-slate-100 text-slate-700 shadow-xl shadow-slate-200/50 hover:border-primary/30 hover:text-primary rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full">
             <Settings2 size={18} className="shrink-0" />
             <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
           </Button>
         </SettingsDialog>
+        
+        {user ? (
+          <Button 
+            variant="ghost" 
+            className="w-full h-10 text-slate-400 hover:text-rose-500 rounded-xl gap-3 group-data-[collapsible=icon]:hidden"
+            onClick={handleLogout}
+          >
+            <LogOut size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Terminate Session</span>
+          </Button>
+        ) : (
+          <Link href="/login" className="w-full">
+            <Button variant="ghost" className="w-full h-10 text-primary hover:bg-primary/5 rounded-xl gap-3 group-data-[collapsible=icon]:hidden">
+              <UserCircle size={16} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Neural Auth</span>
+            </Button>
+          </Link>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
