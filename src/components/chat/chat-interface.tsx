@@ -6,7 +6,7 @@ import { useAppStore } from "@/store/use-app-store";
 import { ChatMessage } from "./chat-message";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles, Paperclip, Loader2, ArrowDown } from "lucide-react";
+import { Send, Sparkles, Paperclip, Loader2, ArrowDown, Wifi, WifiOff } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { documentAwareAIChat } from "@/ai/flows/document-aware-ai-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +18,7 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 export function ChatInterface() {
   const { 
@@ -26,6 +27,7 @@ export function ChatInterface() {
     addMessage, 
     personas, 
     connections,
+    activeConnectionId,
     workspaces,
     activeWorkspaceId 
   } = useAppStore();
@@ -37,7 +39,7 @@ export function ChatInterface() {
   const session = sessions.find(s => s.id === activeSessionId);
   const workspace = workspaces.find(w => w.id === activeWorkspaceId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
-  const connection = connections.find(c => c.id === session?.activeModelId) || connections[0];
+  const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -64,7 +66,6 @@ export function ChatInterface() {
       let responseContent = "";
       let citations = undefined;
 
-      // Check if it's a RAG-enabled workspace
       if (workspace?.knowledgeBaseId) {
         const ragResponse = await documentAwareAIChat({
           query: input,
@@ -94,7 +95,7 @@ export function ChatInterface() {
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I encountered an error connecting to the model backend. Please check your connection settings.",
+        content: "I encountered an error connecting to the model backend. Please check your connection settings in the System Control Panel.",
         timestamp: Date.now()
       });
     } finally {
@@ -104,7 +105,7 @@ export function ChatInterface() {
 
   if (!session) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-background">
         <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20">
           <Sparkles className="text-accent animate-pulse" size={40} />
         </div>
@@ -118,17 +119,37 @@ export function ChatInterface() {
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-background">
-      {/* Header Info */}
-      <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-6 py-4 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
-            <Sparkles size={16} className="text-accent" />
+      {/* Top Status Bar */}
+      <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.03] px-6 py-3 backdrop-blur-md">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "flex h-2 w-2 rounded-full",
+              connection ? "bg-accent shadow-[0_0_8px_rgba(0,255,255,0.6)]" : "bg-red-500"
+            )} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              {connection ? "Engine Active" : "Engine Offline"}
+            </span>
           </div>
+          <Separator orientation="vertical" className="h-4 bg-white/10" />
+          <div className="flex items-center gap-2 text-[10px] text-accent font-code">
+            <Wifi size={10} />
+            {connection?.baseUrl.replace(/https?:\/\//, '')}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase">
+          <span>{connection?.modelId}</span>
+          <span className="text-white/10 px-1">|</span>
+          <span className="text-white/40">Tokens: 4k Context</span>
+        </div>
+      </div>
+
+      {/* Main Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <div className="flex items-center gap-3">
           <div className="flex flex-col">
             <h3 className="text-sm font-bold leading-none">{session.title}</h3>
             <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-              <span className="text-accent">{connection.modelId}</span>
-              <span className="text-white/10">•</span>
               <span>{persona.name}</span>
             </div>
           </div>

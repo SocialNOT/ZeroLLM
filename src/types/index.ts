@@ -9,6 +9,7 @@ export interface ModelConnection {
   apiKey?: string;
   modelId: string;
   contextWindow: number;
+  status?: 'online' | 'offline' | 'checking';
 }
 
 export interface Persona {

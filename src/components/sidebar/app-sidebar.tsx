@@ -18,16 +18,13 @@ import {
   Zap, 
   Plus, 
   Book, 
-  GraduationCap, 
-  Code, 
   Settings2, 
-  MessageSquare, 
-  Box,
-  ChevronRight
+  MessageSquare 
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 
 export function AppSidebar() {
   const { 
@@ -40,7 +37,6 @@ export function AppSidebar() {
     createSession 
   } = useAppStore();
 
-  const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
   const workspaceSessions = sessions.filter(s => s.workspaceId === activeWorkspaceId);
 
   return (
@@ -78,12 +74,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton className="text-muted-foreground hover:text-foreground">
-                  <Plus size={18} />
-                  <span className="ml-2">New Workspace</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -129,10 +119,12 @@ export function AppSidebar() {
       <SidebarFooter className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="h-12 border border-white/5 bg-white/5 transition-all hover:bg-white/10">
-              <Settings2 size={18} className="text-accent" />
-              <span className="ml-2 font-headline font-medium">Settings</span>
-            </SidebarMenuButton>
+            <SettingsDialog>
+              <SidebarMenuButton className="h-12 border border-white/5 bg-white/5 transition-all hover:bg-white/10 group-data-[collapsible=icon]:p-0 justify-center">
+                <Settings2 size={18} className="text-accent" />
+                <span className="ml-2 font-headline font-medium group-data-[collapsible=icon]:hidden">Settings</span>
+              </SidebarMenuButton>
+            </SettingsDialog>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
