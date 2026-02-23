@@ -1,6 +1,6 @@
 /**
  * Professional LLM Utility for local/remote engine interactions.
- * Protocol-agnostic and resilient to mixed-content/non-JSON responses.
+ * Optimized for server-side execution to bypass browser CORS/Mixed Content.
  */
 
 export interface LLMModel {
@@ -10,6 +10,7 @@ export interface LLMModel {
 }
 
 function normalizeUrl(url: string): string {
+  if (!url) return '';
   let normalized = url.trim();
   // Ensure protocol exists
   if (!/^https?:\/\//i.test(normalized)) {
@@ -22,7 +23,6 @@ function normalizeUrl(url: string): string {
 async function safeJsonParse(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
-    // If we get HTML instead of JSON (e.g. 404 page), don't crash the parser
     return null;
   }
   try {
@@ -37,20 +37,19 @@ function joinPath(base: string, path: string): string {
   const normalizedBase = normalizeUrl(base);
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   
-  // Prevent double v1 slashes
-  if (normalizedBase.endsWith('/v1') && cleanPath.startsWith('/v1')) {
-    return `${normalizedBase.substring(0, normalizedBase.length - 3)}${cleanPath}`;
-  }
-  
-  return `${normalizedBase}${cleanPath}`;
+  // Prevent double v1 slashes or accidental double slashes
+  const fullUrl = `${normalizedBase}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
+  return fullUrl;
 }
 
 export async function testConnection(baseUrl: string): Promise<boolean> {
+  if (!baseUrl || baseUrl.length < 5) return false;
   const normalizedBase = normalizeUrl(baseUrl);
+  
   // Try common status endpoints
   const endpoints = [
     joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models'),
-    normalizedBase // Root check
+    normalizedBase
   ];
 
   for (const url of endpoints) {
@@ -58,7 +57,6 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
       const response = await fetch(url, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-        mode: 'cors',
         signal: AbortSignal.timeout(3000)
       });
       if (response.ok) return true;
@@ -68,6 +66,7 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
 }
 
 export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
+  if (!baseUrl) return [];
   const normalizedBase = normalizeUrl(baseUrl);
   const url = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models');
   
@@ -75,14 +74,12 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      mode: 'cors',
       signal: AbortSignal.timeout(5000)
     });
     
     const data = await safeJsonParse(response);
     if (!data) return [];
     
-    // Support OpenAI, Ollama, and LM Studio response formats
     if (data.data && Array.isArray(data.data)) return data.data;
     if (data.models && Array.isArray(data.models)) return data.models.map((m: any) => ({ id: m.name || m.id }));
     if (Array.isArray(data)) return data.map((m: any) => ({ id: m.id || m.name }));
@@ -91,7 +88,7 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
 }
 
 export async function loadModel(baseUrl: string, modelId: string): Promise<boolean> {
-  // LM Studio specific load endpoint or standard POST to completions with auto-load
+  if (!baseUrl || !modelId) return false;
   const base = normalizeUrl(baseUrl).replace(/\/v1$/, '');
   const loadUrl = joinPath(base, '/api/v1/models/load');
   
@@ -99,17 +96,16 @@ export async function loadModel(baseUrl: string, modelId: string): Promise<boole
     const response = await fetch(loadUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model_key: modelId }),
-      mode: 'cors'
+      body: JSON.stringify({ model_key: modelId })
     });
     return response.ok;
   } catch (e) {
-    // If specific load fails, just return true and let completion handle it (auto-load)
-    return true;
+    return true; // Fallback for servers that don't have explicit load endpoint
   }
 }
 
 export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
+  if (!baseUrl) throw new Error("No engine URL provided.");
   const normalizedBase = normalizeUrl(baseUrl);
   const chatUrl = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
   
@@ -123,8 +119,7 @@ export async function callChatCompletion(baseUrl: string, modelId: string, messa
       top_p: settings.topP,
       max_tokens: settings.maxTokens,
       stream: false
-    }),
-    mode: 'cors'
+    })
   });
 
   if (!response.ok) {

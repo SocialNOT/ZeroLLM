@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition } from '@/types';
-import { testConnection, fetchModels, loadModel } from '@/lib/llm-api';
+import { testConnectionAction, fetchModelsAction, loadModelAction } from '@/ai/actions/engine-actions';
 
 interface AppState {
   workspaces: Workspace[];
@@ -74,9 +74,6 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           connections: state.connections.map(c => c.id === id ? { ...c, ...updates } : c)
         }));
-        if (id === get().activeConnectionId) {
-          get().checkConnection();
-        }
       },
 
       setActiveConnection: (id) => {
@@ -94,7 +91,8 @@ export const useAppStore = create<AppState>()(
 
         set({ connectionStatus: 'checking' });
         try {
-          const isOnline = await testConnection(activeConn.baseUrl);
+          // Use Server Action to bypass Mixed Content/CORS
+          const isOnline = await testConnectionAction(activeConn.baseUrl);
           set({ connectionStatus: isOnline ? 'online' : 'offline' });
           
           if (isOnline) {
@@ -110,7 +108,8 @@ export const useAppStore = create<AppState>()(
         if (!activeConn) return;
 
         try {
-          const models = await fetchModels(activeConn.baseUrl);
+          // Use Server Action
+          const models = await fetchModelsAction(activeConn.baseUrl);
           set({ availableModels: models.map(m => m.id) });
         } catch (e) {
           // Fail silently
@@ -123,7 +122,8 @@ export const useAppStore = create<AppState>()(
 
         set({ isModelLoading: true });
         try {
-          const success = await loadModel(activeConn.baseUrl, modelId);
+          // Use Server Action
+          const success = await loadModelAction(activeConn.baseUrl, modelId);
           return success;
         } finally {
           set({ isModelLoading: false });
@@ -135,7 +135,8 @@ export const useAppStore = create<AppState>()(
         set({ connectionStatus: 'checking' });
         
         try {
-          const isOnline = await testConnection(baseUrl);
+          // Use Server Action
+          const isOnline = await testConnectionAction(baseUrl);
           
           const newConn: ModelConnection = {
             id,

@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const { 
@@ -32,9 +33,13 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   } = useAppStore();
   
   const conn = connections.find(c => c.id === activeConnectionId);
+  const [urlInput, setUrlInput] = useState(conn?.baseUrl || "");
 
   const handleRefresh = async () => {
-    await checkConnection();
+    if (conn) {
+      updateConnection(conn.id, { baseUrl: urlInput });
+      await checkConnection();
+    }
   };
 
   const handleLoadModel = async () => {
@@ -101,8 +106,8 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                     <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Engine Endpoint (HTTP/HTTPS)</Label>
                     <div className="flex gap-2">
                       <Input 
-                        value={conn?.baseUrl || ""} 
-                        onChange={(e) => conn && updateConnection(conn.id, { baseUrl: e.target.value })}
+                        value={urlInput} 
+                        onChange={(e) => setUrlInput(e.target.value)}
                         className="rounded-xl border-slate-200 bg-white font-mono text-xs focus:ring-primary/20"
                         placeholder="http://localhost:11434/v1"
                       />
