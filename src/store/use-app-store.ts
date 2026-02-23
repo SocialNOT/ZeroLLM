@@ -90,11 +90,15 @@ export const useAppStore = create<AppState>()(
         if (!activeConn) return;
 
         set({ connectionStatus: 'checking' });
-        const isOnline = await testConnection(activeConn.baseUrl);
-        set({ connectionStatus: isOnline ? 'online' : 'offline' });
-        
-        if (isOnline) {
-          await get().refreshModels();
+        try {
+          const isOnline = await testConnection(activeConn.baseUrl);
+          set({ connectionStatus: isOnline ? 'online' : 'offline' });
+          
+          if (isOnline) {
+            await get().refreshModels();
+          }
+        } catch (e) {
+          set({ connectionStatus: 'offline' });
         }
       },
 
@@ -102,38 +106,47 @@ export const useAppStore = create<AppState>()(
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return;
 
-        const models = await fetchModels(activeConn.baseUrl);
-        set({ availableModels: models.map(m => m.id) });
+        try {
+          const models = await fetchModels(activeConn.baseUrl);
+          set({ availableModels: models.map(m => m.id) });
+        } catch (e) {
+          // Fail silently
+        }
       },
 
       completeInitialSetup: async (baseUrl, modelId) => {
         const id = 'default-conn';
         set({ connectionStatus: 'checking' });
         
-        const isOnline = await testConnection(baseUrl);
-        
-        const newConn: ModelConnection = {
-          id,
-          name: 'Primary Engine',
-          provider: 'Custom',
-          baseUrl,
-          modelId,
-          contextWindow: 4096,
-          status: isOnline ? 'online' : 'offline'
-        };
+        try {
+          const isOnline = await testConnection(baseUrl);
+          
+          const newConn: ModelConnection = {
+            id,
+            name: 'Primary Engine',
+            provider: 'Custom',
+            baseUrl,
+            modelId,
+            contextWindow: 4096,
+            status: isOnline ? 'online' : 'offline'
+          };
 
-        set({ 
-          connections: [newConn], 
-          activeConnectionId: id,
-          isConfigured: true,
-          connectionStatus: isOnline ? 'online' : 'offline'
-        });
+          set({ 
+            connections: [newConn], 
+            activeConnectionId: id,
+            isConfigured: true,
+            connectionStatus: isOnline ? 'online' : 'offline'
+          });
 
-        if (isOnline) {
-          await get().refreshModels();
+          if (isOnline) {
+            await get().refreshModels();
+          }
+
+          return isOnline;
+        } catch (err) {
+          set({ connectionStatus: 'offline' });
+          return false;
         }
-
-        return isOnline;
       },
 
       createSession: (workspaceId) => {
