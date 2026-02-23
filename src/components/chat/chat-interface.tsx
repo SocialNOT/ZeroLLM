@@ -9,7 +9,6 @@ import {
   Send, 
   Paperclip, 
   Settings2, 
-  Wifi, 
   ShieldCheck, 
   ChevronDown,
   Zap,
@@ -173,14 +172,14 @@ export function ChatInterface() {
               <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
               <div className="flex flex-col">
                 <h3 className="logo-shimmer text-3xl font-headline font-bold leading-none tracking-tighter">ZEROGPT</h3>
-                <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-[0.4em] block mt-1 ml-0.5">
+                <div className="h-[2px] w-full bg-gradient-to-r from-primary via-accent to-transparent mt-1.5 rounded-full" />
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] block mt-1.5 ml-0.5 truncate max-w-[200px]">
                   {session.title}
                 </span>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="text-[8px] font-bold text-primary uppercase tracking-widest border-primary/20 bg-primary/5">
                     {framework?.name || persona.name}
                   </Badge>
-                  {framework && <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest">• Protocol Active</span>}
                 </div>
               </div>
             </div>
@@ -191,7 +190,7 @@ export function ChatInterface() {
                 className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
-                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                {theme === "dark" ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-slate-900" />}
               </Button>
               <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
                 <ShieldCheck size={14} className="text-primary/70" />

@@ -4,66 +4,66 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 210 40% 98%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 225 100% 30%; /* Royal Blue */
+    --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 187 88% 48%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --accent: 120 100% 20%; /* Dark Green */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 25%; /* Maroon */
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 243 75% 59%;
+    --ring: 225 100% 30%;
     --radius: 2rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary: 225 100% 30%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 243 75% 59%;
+    --sidebar-accent-foreground: 225 100% 30%;
     --sidebar-border: 240 5.9% 90%;
-    --sidebar-ring: 243 75% 59%;
+    --sidebar-ring: 225 100% 30%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --foreground: 0 0% 100%;
     --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card-foreground: 0 0% 100%;
     --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%; /* Google Blue */
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 30 100% 50%; /* Orange */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 100% 50%; /* Red for accents */
+    --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 350 78% 56%; /* Google Red */
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --accent: 120 100% 50%; /* Green */
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%; /* Red */
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 60 100% 50%; /* Yellow ring */
     
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 30 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 217.2 91.2% 59.8%;
+    --sidebar-accent-foreground: 30 100% 50%;
     --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 30 100% 50%;
   }
 }
 
@@ -113,7 +113,15 @@
 }
 
 .logo-shimmer {
-  background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4);
+  background: linear-gradient(90deg, #002366, #800000, #006400, #002366);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 5s linear infinite;
+}
+
+.dark .logo-shimmer {
+  background: linear-gradient(90deg, #FF0000, #FFFF00, #00FF00, #FFA500, #FF0000);
   background-size: 300% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -127,13 +135,19 @@
 }
 
 .glow-multi {
-  box-shadow: 0 0 15px rgba(66, 133, 244, 0.3), 
-              0 0 30px rgba(234, 67, 53, 0.2), 
-              0 0 45px rgba(251, 188, 5, 0.1);
+  box-shadow: 0 0 15px rgba(0, 35, 102, 0.2), 
+              0 0 30px rgba(128, 0, 0, 0.1);
+  animation: glow-pulse 4s infinite alternate;
+}
+
+.dark .glow-multi {
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3), 
+              0 0 30px rgba(255, 165, 0, 0.2), 
+              0 0 45px rgba(255, 255, 0, 0.1);
   animation: glow-pulse 4s infinite alternate;
 }
 
 @keyframes glow-pulse {
   0% { transform: scale(1); opacity: 0.9; }
-  100% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1.01); opacity: 1; }
 }
