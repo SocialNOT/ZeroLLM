@@ -5,11 +5,18 @@ import { useAppStore } from "@/store/use-app-store";
 import { ChatMessage } from "./chat-message";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles, Paperclip, Loader2, ArrowDown, Wifi, ShieldCheck, Wrench } from "lucide-react";
+import { 
+  Send, 
+  Sparkles, 
+  Paperclip, 
+  Loader2, 
+  Settings2, 
+  Wifi, 
+  ShieldCheck, 
+  Layers 
+} from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ParameterControls } from "./parameter-controls";
-import { Separator } from "@/components/ui/separator";
 import { 
   Sheet, 
   SheetContent, 
@@ -17,6 +24,7 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
+import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -48,8 +56,7 @@ export function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !session || isTyping) return;
-    if (currentUserRole === 'Viewer') return;
+    if (!input.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
 
     const userMsg = {
       id: Date.now().toString(),
@@ -63,8 +70,6 @@ export function ChatInterface() {
     setIsTyping(true);
 
     try {
-      if (!connection) throw new Error("No active connection configured.");
-
       const responseContent = await personaDrivenChat({
         baseUrl: connection.baseUrl,
         modelId: connection.modelId,
@@ -73,9 +78,7 @@ export function ChatInterface() {
         temperature: session.settings.temperature,
         topP: session.settings.topP,
         maxTokens: session.settings.maxTokens,
-        history: session.messages,
-        memoryType: session.settings.memoryType,
-        enabledTools: session.settings.enabledTools || []
+        history: session.messages
       });
 
       addMessage(session.id, {
@@ -85,17 +88,10 @@ export function ChatInterface() {
         timestamp: Date.now()
       });
     } catch (error: any) {
-      console.error("AI Error:", error);
-      let errorMsg = `Connection failed: ${error.message}.`;
-      
-      if (error.message?.toLowerCase().includes("no models loaded")) {
-        errorMsg += " Use the 'Load to Memory' button in Settings to activate your model.";
-      }
-
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: errorMsg,
+        content: `System Error: ${error.message || 'Unable to process request.'}`,
         timestamp: Date.now()
       });
     } finally {
@@ -105,95 +101,84 @@ export function ChatInterface() {
 
   if (!session) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-background">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20">
-          <Sparkles className="text-accent animate-pulse" size={40} />
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-slate-50/30">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/5 border border-primary/10">
+          <Sparkles className="text-primary animate-pulse" size={32} />
         </div>
-        <h2 className="mb-2 font-headline text-2xl font-bold">Select or start a conversation</h2>
-        <p className="max-w-md text-sm text-muted-foreground leading-relaxed">
-          Choose a workspace from the sidebar and start interacting with your high-performance LLM engine.
+        <h2 className="mb-2 text-2xl font-bold text-slate-900">Experience Intelligent Orchestration</h2>
+        <p className="max-w-md text-sm text-slate-500 leading-relaxed">
+          Select a workspace or start a new conversation to interface with your professional AI engines.
         </p>
       </div>
     );
   }
 
-  const enabledToolsCount = session.settings?.enabledTools?.length ?? 0;
-
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-background">
-      {/* Top Status Bar */}
-      <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.03] px-6 py-3 backdrop-blur-md">
+      {/* Dynamic Status Header */}
+      <div className="flex items-center justify-between border-b border-slate-200/60 bg-white/50 px-6 py-2.5 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className={cn(
-              "flex h-2 w-2 rounded-full",
-              connectionStatus === 'online' ? "bg-accent shadow-[0_0_8px_rgba(0,255,255,0.6)]" : 
-              connectionStatus === 'checking' ? "bg-yellow-500 animate-pulse" : "bg-red-500"
+              "h-2 w-2 rounded-full",
+              connectionStatus === 'online' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : 
+              connectionStatus === 'checking' ? "bg-amber-400 animate-pulse" : "bg-rose-500"
             )} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {connectionStatus === 'online' ? "Engine Active" : 
-               connectionStatus === 'checking' ? "Checking Engine..." : "Engine Offline"}
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {connectionStatus === 'online' ? "Engine Online" : 
+               connectionStatus === 'checking' ? "Syncing..." : "Offline"}
             </span>
           </div>
-          <Separator orientation="vertical" className="h-4 bg-white/10" />
-          <div className="flex items-center gap-2 text-[10px] text-accent font-code">
+          <div className="h-4 w-[1px] bg-slate-200" />
+          <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
             <Wifi size={10} />
             {connection?.baseUrl.replace(/https?:\/\//, '')}
           </div>
-          <Separator orientation="vertical" className="h-4 bg-white/10" />
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={12} className="text-primary" />
-            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{currentUserRole} Access</span>
-          </div>
         </div>
         <div className="flex items-center gap-3">
-          {enabledToolsCount > 0 && (
-            <div className="flex items-center gap-1">
-              <Wrench size={10} className="text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground font-semibold uppercase">{enabledToolsCount} Tools Loaded</span>
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase">
-            <span>{connection?.modelId || "AUTO"}</span>
-            <span className="text-white/10 px-1">|</span>
-            <Badge variant="outline" className="border-accent/30 text-accent py-0 h-4 text-[8px] uppercase">{session.settings.memoryType} Memory</Badge>
+          <Badge variant="outline" className="bg-slate-50 text-[10px] text-slate-600 border-slate-200 py-0 h-5">
+            {connection?.modelId || "AUTO"}
+          </Badge>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary/70 uppercase">
+            <ShieldCheck size={12} />
+            {currentUserRole}
           </div>
         </div>
       </div>
 
-      {/* Main Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-primary/5 text-primary">
+            <Layers size={18} />
+          </div>
           <div className="flex flex-col">
-            <h3 className="text-sm font-bold leading-none">{session.title}</h3>
-            <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-              <span>{persona.name}</span>
-            </div>
+            <h3 className="text-sm font-bold text-slate-900 leading-none">{session.title}</h3>
+            <span className="mt-1 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{persona.name}</span>
           </div>
         </div>
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-accent">
-              <ArrowDown size={14} className="rotate-180" />
-              Parameters
+            <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all">
+              <Settings2 size={14} />
+              Config
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[320px] sm:w-[400px] bg-background/95 backdrop-blur-lg border-l border-white/5">
+          <SheetContent className="w-[340px] border-l border-slate-200 bg-white">
             <SheetHeader className="mb-6">
-              <SheetTitle className="font-headline text-lg uppercase tracking-widest text-accent">Engine Config</SheetTitle>
+              <SheetTitle className="text-lg font-bold text-slate-900">Engine Parameters</SheetTitle>
             </SheetHeader>
             <ParameterControls />
           </SheetContent>
         </Sheet>
       </div>
 
-      <ScrollArea className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="mx-auto flex w-full max-w-4xl flex-col">
+      <ScrollArea className="flex-1 px-4 custom-scrollbar">
+        <div className="mx-auto flex w-full max-w-4xl flex-col pb-10">
           {session.messages.length === 0 ? (
-            <div className="flex flex-col items-center py-20 text-center opacity-50">
-              <div className="mb-4 h-[1px] w-20 bg-accent/20" />
-              <p className="font-headline text-xs uppercase tracking-[0.3em]">Awaiting Input Sequence</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+              <div className="mb-4 h-12 w-[1px] bg-gradient-to-b from-transparent to-slate-300" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">System Ready for Input</p>
             </div>
           ) : (
             session.messages.map((msg) => (
@@ -201,26 +186,24 @@ export function ChatInterface() {
             ))
           )}
           {isTyping && (
-            <div className="flex items-center gap-2 px-8 py-4 text-xs text-muted-foreground font-medium italic">
-              <Loader2 size={12} className="animate-spin text-accent" />
-              Generating response...
+            <div className="flex items-center gap-3 px-8 py-6 text-xs text-slate-400 font-medium animate-pulse">
+              <Loader2 size={14} className="animate-spin text-primary" />
+              Processing engine sequence...
             </div>
           )}
           <div ref={scrollRef} className="h-4" />
         </div>
       </ScrollArea>
 
-      {/* Input Area */}
-      <div className="border-t border-white/5 bg-white/[0.01] p-6">
+      <div className="p-6 border-t border-slate-100 bg-slate-50/40">
         <div className="mx-auto max-w-4xl">
           <form onSubmit={handleSubmit} className="relative group">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
               <Button 
                 type="button" 
                 variant="ghost" 
                 size="icon" 
-                disabled={currentUserRole === 'Viewer'}
-                className="h-8 w-8 text-muted-foreground hover:text-accent"
+                className="h-9 w-9 text-slate-400 hover:text-primary hover:bg-white rounded-xl transition-all"
               >
                 <Paperclip size={18} />
               </Button>
@@ -228,27 +211,23 @@ export function ChatInterface() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={currentUserRole === 'Viewer'}
-              placeholder={currentUserRole === 'Viewer' ? "Read-only access" : `Message ${persona.name}...`}
-              className="h-14 w-full rounded-2xl border-white/10 bg-white/5 pl-14 pr-24 text-sm font-medium transition-all focus:border-accent/40 focus:ring-accent/10"
+              disabled={currentUserRole === 'Viewer' || isTyping}
+              placeholder={currentUserRole === 'Viewer' ? "Read-only access restricted" : `Command ${persona.name}...`}
+              className="h-14 w-full rounded-2xl border-slate-200 bg-white pl-14 pr-16 text-sm font-medium shadow-sm transition-all focus:border-primary focus:ring-primary/5 focus:shadow-md"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
               <Button 
                 type="submit" 
                 disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
-                className="h-10 w-10 rounded-xl bg-primary text-accent shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                className="h-10 w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
               >
                 <Send size={18} />
               </Button>
             </div>
           </form>
-          <div className="mt-3 flex items-center justify-center gap-6 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-            <span>Enterprise Encrypted</span>
-            <span className="text-white/10">•</span>
-            <span>Self-Hosted LLM</span>
-            <span className="text-white/10">•</span>
-            <span>Zero Data Leakage</span>
-          </div>
+          <p className="mt-3 text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            Enterprise Encryption Active • Local Node Isolation • 0-Latency Bridging
+          </p>
         </div>
       </div>
     </div>

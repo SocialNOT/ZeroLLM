@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -17,9 +16,10 @@ import {
 import { 
   Zap, 
   Plus, 
-  Book, 
+  Layers, 
   Settings2, 
-  MessageSquare 
+  MessageSquare,
+  Compass
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { Button } from "@/components/ui/button";
@@ -40,37 +40,38 @@ export function AppSidebar() {
   const workspaceSessions = sessions.filter(s => s.workspaceId === activeWorkspaceId);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-white/5">
-      <SidebarHeader className="p-4">
+    <Sidebar collapsible="icon" className="border-r border-slate-200 bg-slate-50/50">
+      <SidebarHeader className="p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
-            <Zap className="text-accent" size={24} fill="currentColor" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 text-white">
+            <Zap size={22} fill="currentColor" />
           </div>
           <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:hidden">
-            <span className="font-headline text-lg font-bold leading-none cyan-glow">Aetheria AI</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">ZeroLLM Engine</span>
+            <span className="font-headline text-lg font-bold leading-none text-slate-900">Aetheria</span>
+            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Local Engine Hub</span>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-3">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Workspaces</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Workspaces</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="px-2">
+            <SidebarMenu>
               {workspaces.map((ws) => (
                 <SidebarMenuItem key={ws.id}>
                   <SidebarMenuButton 
                     isActive={activeWorkspaceId === ws.id}
                     onClick={() => setActiveWorkspace(ws.id)}
-                    tooltip={ws.name}
                     className={cn(
-                      "transition-all",
-                      activeWorkspaceId === ws.id ? "bg-primary/20 text-accent font-semibold" : "hover:bg-white/5"
+                      "transition-all h-10",
+                      activeWorkspaceId === ws.id 
+                        ? "bg-white border border-slate-200 text-primary shadow-sm" 
+                        : "text-slate-500 hover:bg-white/80"
                     )}
                   >
-                    {ws.icon === 'zap' ? <Zap size={18} /> : <Book size={18} />}
-                    <span className="ml-2 truncate">{ws.name}</span>
+                    <Layers size={18} />
+                    <span className="ml-2 font-semibold text-sm">{ws.name}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -78,20 +79,20 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <div className="mb-2 flex items-center justify-between px-4">
-            <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">History</SidebarGroupLabel>
+        <SidebarGroup className="mt-4">
+          <div className="mb-2 flex items-center justify-between px-3">
+            <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-widest text-slate-400">Chronicle</SidebarGroupLabel>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-6 w-6 text-accent group-data-[collapsible=icon]:hidden"
+              className="h-6 w-6 text-primary hover:bg-white group-data-[collapsible=icon]:hidden"
               onClick={() => createSession(activeWorkspaceId || '')}
             >
               <Plus size={14} />
             </Button>
           </div>
           <SidebarGroupContent>
-            <SidebarMenu className="px-2">
+            <SidebarMenu>
               {workspaceSessions.length > 0 ? (
                 workspaceSessions.map((session) => (
                   <SidebarMenuItem key={session.id}>
@@ -99,34 +100,34 @@ export function AppSidebar() {
                       isActive={activeSessionId === session.id}
                       onClick={() => setActiveSession(session.id)}
                       className={cn(
-                        "group/btn relative overflow-hidden",
-                        activeSessionId === session.id ? "bg-white/5 text-foreground" : "text-muted-foreground"
+                        "group/btn relative h-9 rounded-lg transition-all",
+                        activeSessionId === session.id 
+                          ? "bg-white border border-slate-100 text-slate-900 shadow-sm" 
+                          : "text-slate-500 hover:text-slate-900"
                       )}
                     >
                       <MessageSquare size={16} />
-                      <span className="ml-2 truncate font-body text-xs">{session.title}</span>
+                      <span className="ml-2 truncate font-medium text-xs">{session.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))
               ) : (
-                <div className="px-4 py-2 text-[10px] text-muted-foreground italic group-data-[collapsible=icon]:hidden">No history yet</div>
+                <div className="px-3 py-4 text-[10px] text-slate-400 font-medium text-center border border-dashed border-slate-200 rounded-lg group-data-[collapsible=icon]:hidden">
+                  No active threads
+                </div>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SettingsDialog>
-              <SidebarMenuButton className="h-12 border border-white/5 bg-white/5 transition-all hover:bg-white/10 group-data-[collapsible=icon]:p-0 justify-center">
-                <Settings2 size={18} className="text-accent" />
-                <span className="ml-2 font-headline font-medium group-data-[collapsible=icon]:hidden">Settings</span>
-              </SidebarMenuButton>
-            </SettingsDialog>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="p-6">
+        <SettingsDialog>
+          <Button className="w-full h-11 bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition-all gap-2 px-0 group-data-[collapsible=icon]:rounded-full">
+            <Settings2 size={18} className="shrink-0" />
+            <span className="font-bold text-xs uppercase tracking-widest group-data-[collapsible=icon]:hidden">Settings</span>
+          </Button>
+        </SettingsDialog>
       </SidebarFooter>
     </Sidebar>
   );

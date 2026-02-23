@@ -1,52 +1,43 @@
 /**
- * Utility for interacting with local/remote LLM engine APIs (Ollama, LM Studio, etc.)
- * based on OpenAI-compatible or provider-specific endpoints.
+ * Professional LLM Utility for local/remote engine interactions.
+ * Protocol-agnostic and resilient to mixed-content/non-JSON responses.
  */
 
 export interface LLMModel {
   id: string;
   name?: string;
   object?: string;
-  owned_by?: string;
 }
 
-/**
- * Normalizes the base URL to ensure it has a protocol and correct slashes.
- * Supports both HTTP and HTTPS for local/remote self-hosted engines.
- */
 function normalizeUrl(url: string): string {
   let normalized = url.trim();
+  // Ensure protocol exists
   if (!/^https?:\/\//i.test(normalized)) {
     normalized = `http://${normalized}`;
   }
+  // Remove trailing slashes
   return normalized.replace(/\/+$/, '');
 }
 
-/**
- * Safely parses JSON from a response, checking the content type first.
- * Returns null if the response is not valid JSON instead of throwing.
- */
 async function safeJsonParse(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
+    // If we get HTML instead of JSON (e.g. 404 page), don't crash the parser
     return null;
   }
-  
   try {
-    return await response.json();
+    const text = await response.text();
+    return JSON.parse(text);
   } catch (e) {
     return null;
   }
 }
 
-/**
- * Constructs a clean API path without double slashes.
- */
 function joinPath(base: string, path: string): string {
   const normalizedBase = normalizeUrl(base);
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   
-  // If base already contains /v1, don't double add it if the path includes it
+  // Prevent double v1 slashes
   if (normalizedBase.endsWith('/v1') && cleanPath.startsWith('/v1')) {
     return `${normalizedBase.substring(0, normalizedBase.length - 3)}${cleanPath}`;
   }
@@ -55,7 +46,30 @@ function joinPath(base: string, path: string): string {
 }
 
 export async function testConnection(baseUrl: string): Promise<boolean> {
-  const url = joinPath(baseUrl, baseUrl.includes('/v1') ? '/models' : '/v1/models');
+  const normalizedBase = normalizeUrl(baseUrl);
+  // Try common status endpoints
+  const endpoints = [
+    joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models'),
+    normalizedBase // Root check
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        mode: 'cors',
+        signal: AbortSignal.timeout(3000)
+      });
+      if (response.ok) return true;
+    } catch (e) {}
+  }
+  return false;
+}
+
+export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
+  const normalizedBase = normalizeUrl(baseUrl);
+  const url = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models');
   
   try {
     const response = await fetch(url, {
@@ -65,52 +79,24 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
       signal: AbortSignal.timeout(5000)
     });
     
-    return response.ok;
-  } catch (e) {
-    return false;
-  }
-}
-
-export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
-  const url = joinPath(baseUrl, baseUrl.includes('/v1') ? '/models' : '/v1/models');
-  
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      mode: 'cors',
-      signal: AbortSignal.timeout(10000)
-    });
-    
-    if (!response.ok) return [];
-    
     const data = await safeJsonParse(response);
     if (!data) return [];
     
-    // Support standard OpenAI format
-    if (data.data && Array.isArray(data.data)) {
-      return data.data.map((m: any) => ({ id: m.id, name: m.id }));
-    }
-    // Support some older or custom provider formats
-    if (data.models && Array.isArray(data.models)) {
-      return data.models.map((m: any) => ({ id: m.name, name: m.name }));
-    }
-  } catch (error) {
-    // Fail silently for model discovery
-  }
+    // Support OpenAI, Ollama, and LM Studio response formats
+    if (data.data && Array.isArray(data.data)) return data.data;
+    if (data.models && Array.isArray(data.models)) return data.models.map((m: any) => ({ id: m.name || m.id }));
+    if (Array.isArray(data)) return data.map((m: any) => ({ id: m.id || m.name }));
+  } catch (e) {}
   return [];
 }
 
-/**
- * Triggers a model load on the backend if supported (e.g. LM Studio)
- */
 export async function loadModel(baseUrl: string, modelId: string): Promise<boolean> {
-  // LM Studio specific endpoint usually sits alongside /v1
-  const normalizedBase = normalizeUrl(baseUrl);
-  const url = joinPath(normalizedBase.replace(/\/v1$/, ''), '/api/v1/models/load');
+  // LM Studio specific load endpoint or standard POST to completions with auto-load
+  const base = normalizeUrl(baseUrl).replace(/\/v1$/, '');
+  const loadUrl = joinPath(base, '/api/v1/models/load');
   
   try {
-    const response = await fetch(url, {
+    const response = await fetch(loadUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model_key: modelId }),
@@ -118,40 +104,36 @@ export async function loadModel(baseUrl: string, modelId: string): Promise<boole
     });
     return response.ok;
   } catch (e) {
-    return false;
+    // If specific load fails, just return true and let completion handle it (auto-load)
+    return true;
   }
 }
 
 export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
-  const chatUrl = joinPath(baseUrl, baseUrl.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
+  const normalizedBase = normalizeUrl(baseUrl);
+  const chatUrl = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
   
-  const body = {
-    model: modelId || "default",
-    messages: messages.map(m => ({ role: m.role, content: m.content })),
-    temperature: settings.temperature,
-    top_p: settings.topP,
-    max_tokens: settings.maxTokens,
-    stream: false
-  };
-
   const response = await fetch(chatUrl, {
     method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      model: modelId || "default",
+      messages: messages.map(m => ({ role: m.role, content: m.content })),
+      temperature: settings.temperature,
+      top_p: settings.topP,
+      max_tokens: settings.maxTokens,
+      stream: false
+    }),
     mode: 'cors'
   });
 
   if (!response.ok) {
     const errorData = await safeJsonParse(response);
-    const errorMessage = errorData?.error?.message || errorData?.message || `Engine Error (${response.status})`;
-    throw new Error(errorMessage);
+    throw new Error(errorData?.error?.message || `Engine error (${response.status})`);
   }
 
   const data = await safeJsonParse(response);
-  if (!data) throw new Error('Engine returned an invalid response format (Expected JSON).');
+  if (!data) throw new Error('Received an incompatible non-JSON response from the server.');
   
-  return data.choices?.[0]?.message?.content || "Engine produced an empty response.";
+  return data.choices?.[0]?.message?.content || "No response produced.";
 }

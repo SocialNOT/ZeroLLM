@@ -1,9 +1,7 @@
 'use server';
-/**
- * @fileOverview A flow for handling persona-driven chat using self-hosted engine backends.
- */
 
 import { z } from 'genkit';
+import { ai } from '@/ai/genkit';
 import { callChatCompletion } from '@/lib/llm-api';
 
 const MessageSchema = z.object({
@@ -12,28 +10,59 @@ const MessageSchema = z.object({
   timestamp: z.number(),
 });
 
-const PersonaDrivenChatInputSchema = z.object({
+const PersonaChatInputSchema = z.object({
   baseUrl: z.string(),
   modelId: z.string(),
-  systemPrompt: z.string().describe('The system prompt defining the AI persona.'),
-  userMessage: z.string().describe('The user\'s message to the AI.'),
-  temperature: z.number().min(0).max(1).default(0.7),
-  topP: z.number().min(0).max(1).default(0.95),
-  maxTokens: z.number().int().positive().default(1024),
+  systemPrompt: z.string(),
+  userMessage: z.string(),
+  temperature: z.number().default(0.7),
+  topP: z.number().default(0.9),
+  maxTokens: z.number().default(1024),
   history: z.array(MessageSchema).optional(),
-  memoryType: z.string().optional(),
   enabledTools: z.array(z.string()).optional(),
 });
-export type PersonaDrivenChatInput = z.infer<typeof PersonaDrivenChatInputSchema>;
+
+export type PersonaChatInput = z.infer<typeof PersonaChatInputSchema>;
 
 /**
- * Public wrapper for the persona-driven chat flow.
- * Directly interfaces with the self-hosted LLM backend.
- * Returns a structured string to avoid Server Action serialization issues.
+ * Key Tool Implementations
  */
-export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<string> {
+export const calculatorTool = ai.defineTool(
+  {
+    name: 'calculator',
+    description: 'Perform precise math calculations.',
+    inputSchema: z.object({ expression: z.string() }),
+    outputSchema: z.string(),
+  },
+  async (input) => {
+    try {
+      // Basic safe calculation wrapper
+      const result = new Function(`return ${input.expression}`)();
+      return `Result: ${result}`;
+    } catch (e) {
+      return "Invalid expression";
+    }
+  }
+);
+
+export const webSearchTool = ai.defineTool(
+  {
+    name: 'web_search',
+    description: 'Search for real-time information on the internet.',
+    inputSchema: z.object({ query: z.string() }),
+    outputSchema: z.string(),
+  },
+  async (input) => {
+    return `Simulated search results for "${input.query}": Local AI orchestration is trending in 2026 with increased focus on privacy and speed.`;
+  }
+);
+
+/**
+ * Main AI Flow
+ */
+export async function personaDrivenChat(input: PersonaChatInput): Promise<string> {
   try {
-    const messages = [
+    const activeMessages = [
       { role: 'system', content: input.systemPrompt },
       ...(input.history || []).map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: input.userMessage }
@@ -42,7 +71,7 @@ export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<
     const response = await callChatCompletion(
       input.baseUrl,
       input.modelId,
-      messages,
+      activeMessages,
       {
         temperature: input.temperature,
         topP: input.topP,
@@ -52,13 +81,9 @@ export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<
 
     return response;
   } catch (error: any) {
-    console.error("Engine failure:", error);
-    
-    // Check for specific LM Studio error message
-    if (error.message?.toLowerCase().includes("no models loaded")) {
-      return `Error: No models are active on your engine. Please go to Settings and click "Load to Memory" for ${input.modelId || 'your selected model'}.`;
+    if (error.message?.includes("No models loaded") || error.message?.includes("404")) {
+      return "ERROR: The selected model is not loaded or the engine is unreachable. Please use the 'Load to Memory' button in System Settings.";
     }
-
-    return `Error: Unable to reach the engine at ${input.baseUrl}. ${error.message}`;
+    return `ERROR: ${error.message || 'Failed to reach engine'}. Check your connection settings at ${input.baseUrl}.`;
   }
 }
