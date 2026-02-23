@@ -12,11 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/store/use-app-store";
-import { Settings2, Server, Shield, Database, Cpu, CheckCircle2, RefreshCw, Loader2 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings2, Server, Shield, Database, Cpu, CheckCircle2, RefreshCw, Loader2, Wifi, WifiOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const { 
@@ -24,7 +24,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     activeConnectionId, 
     updateConnection, 
     availableModels, 
-    refreshModels, 
     connectionStatus, 
     checkConnection 
   } = useAppStore();
@@ -53,9 +52,9 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
         
         <Tabs defaultValue="engine" className="mt-4">
           <TabsList className="grid w-full grid-cols-3 bg-white/5">
-            <TabsTrigger value="engine" className="data-[state=active]:bg-primary data-[state=active]:text-accent">Engine</TabsTrigger>
-            <TabsTrigger value="security" className="data-[state=active]:bg-primary data-[state=active]:text-accent">Security</TabsTrigger>
-            <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-accent">Knowledge</TabsTrigger>
+            <TabsTrigger value="engine" className="data-[state=active]:bg-primary data-[state=active]:text-accent font-bold uppercase tracking-tighter text-[10px]">Engine</TabsTrigger>
+            <TabsTrigger value="security" className="data-[state=active]:bg-primary data-[state=active]:text-accent font-bold uppercase tracking-tighter text-[10px]">Security</TabsTrigger>
+            <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-accent font-bold uppercase tracking-tighter text-[10px]">Knowledge</TabsTrigger>
           </TabsList>
           
           <TabsContent value="engine" className="space-y-6 py-6 h-[400px] overflow-y-auto custom-scrollbar px-1">
@@ -67,9 +66,10 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                     <h4 className="text-sm font-bold uppercase tracking-widest">Connection Config</h4>
                   </div>
                   <Badge variant="outline" className={cn(
-                    "text-[8px] uppercase font-bold",
+                    "text-[8px] uppercase font-bold gap-1.5",
                     connectionStatus === 'online' ? "border-accent text-accent bg-accent/10" : "border-red-500/50 text-red-400 bg-red-500/10"
                   )}>
+                    {connectionStatus === 'online' ? <Wifi size={10} /> : <WifiOff size={10} />}
                     {connectionStatus}
                   </Badge>
                 </div>
@@ -99,51 +99,63 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
               <Separator className="bg-white/5" />
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-accent">
-                  <Cpu size={16} />
-                  <h4 className="text-sm font-bold uppercase tracking-widest">Model Selection</h4>
-                </div>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground">ACTIVE MODEL ID</Label>
-                    <Input 
-                      value={conn?.modelId || ""} 
-                      onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
-                      className="border-white/10 bg-white/5 font-mono text-xs"
-                      placeholder="Enter model ID manually or select below"
-                    />
+              {/* Only show Model Selection when status is online */}
+              {connectionStatus === 'online' ? (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center gap-2 text-accent">
+                    <Cpu size={16} />
+                    <h4 className="text-sm font-bold uppercase tracking-widest">Model Selection</h4>
                   </div>
-                  
-                  {availableModels.length > 0 ? (
+                  <div className="grid gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold text-muted-foreground uppercase">Discovered Models</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {availableModels.map(model => (
-                          <Badge 
-                            key={model}
-                            variant="outline"
-                            className={cn(
-                              "cursor-pointer transition-all text-[10px] py-1",
-                              conn?.modelId === model 
-                                ? 'border-accent bg-accent/20 text-accent shadow-[0_0_10px_rgba(0,255,255,0.2)]' 
-                                : 'border-white/10 text-muted-foreground hover:bg-white/5'
-                            )}
-                            onClick={() => conn && updateConnection(conn.id, { modelId: model })}
-                          >
-                            {conn?.modelId === model && <CheckCircle2 size={10} className="mr-1" />}
-                            {model}
-                          </Badge>
-                        ))}
+                      <Label className="text-xs font-semibold text-muted-foreground">ACTIVE MODEL ID</Label>
+                      <Input 
+                        value={conn?.modelId || ""} 
+                        onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
+                        className="border-white/10 bg-white/5 font-mono text-xs"
+                        placeholder="Enter model ID manually or select below"
+                      />
+                    </div>
+                    
+                    {availableModels.length > 0 ? (
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-muted-foreground uppercase">Installed Models</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {availableModels.map(model => (
+                            <Badge 
+                              key={model}
+                              variant="outline"
+                              className={cn(
+                                "cursor-pointer transition-all text-[10px] py-1",
+                                conn?.modelId === model 
+                                  ? 'border-accent bg-accent/20 text-accent shadow-[0_0_10px_rgba(0,255,255,0.2)]' 
+                                  : 'border-white/10 text-muted-foreground hover:bg-white/5'
+                              )}
+                              onClick={() => conn && updateConnection(conn.id, { modelId: model })}
+                            >
+                              {conn?.modelId === model && <CheckCircle2 size={10} className="mr-1" />}
+                              {model}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-lg border border-dashed border-white/10 text-center">
-                      <p className="text-[10px] text-muted-foreground italic">Connect to a backend to discover available models.</p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="p-4 rounded-lg border border-dashed border-white/10 text-center">
+                        <p className="text-[10px] text-muted-foreground italic">No models returned from server. Try refreshing or enter manually above.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-8 rounded-xl border border-dashed border-white/5 bg-white/[0.02] text-center flex flex-col items-center gap-3">
+                  <div className="p-3 rounded-full bg-white/5 text-muted-foreground">
+                    <Cpu size={24} className="opacity-20" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium max-w-[200px]">
+                    Model selector will become active once a connection is established.
+                  </p>
+                </div>
+              )}
             </div>
 
             <Separator className="bg-white/5" />
