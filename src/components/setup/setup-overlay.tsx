@@ -12,14 +12,14 @@ import { Zap, Server, Cpu, Loader2 } from "lucide-react";
 export function SetupOverlay() {
   const { completeInitialSetup } = useAppStore();
   const [baseUrl, setBaseUrl] = useState("http://localhost:11434/v1");
-  const [modelId, setModelId] = useState("llama3:8b");
+  const [modelId, setModelId] = useState("");
   const [isTesting, setIsTesting] = useState(false);
 
   const handleStart = () => {
     setIsTesting(true);
     // Simulate a connection check
     setTimeout(() => {
-      completeInitialSetup(baseUrl, modelId);
+      completeInitialSetup(baseUrl, modelId || "unspecified");
       setIsTesting(false);
     }, 1500);
   };
@@ -48,22 +48,23 @@ export function SetupOverlay() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Default Model ID</Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Default Model ID (Optional)</Label>
             <div className="relative">
               <Cpu className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input 
                 value={modelId} 
                 onChange={(e) => setModelId(e.target.value)}
-                placeholder="llama3:8b"
+                placeholder="e.g. llama3:8b (optional at setup)"
                 className="pl-10 border-white/10 bg-white/5"
               />
             </div>
+            <p className="text-[10px] text-muted-foreground px-1 italic">You can select or change your model later in the settings panel once connected.</p>
           </div>
         </CardContent>
         <CardFooter>
           <Button 
             onClick={handleStart} 
-            disabled={!baseUrl || !modelId || isTesting}
+            disabled={!baseUrl || isTesting}
             className="w-full h-12 rounded-xl bg-primary text-accent hover:scale-[1.02] transition-transform"
           >
             {isTesting ? (
