@@ -19,6 +19,27 @@ export interface Persona {
   name: string;
   systemPrompt: string;
   icon: string;
+  isCustom?: boolean;
+}
+
+export interface Framework {
+  id: string;
+  name: string;
+  description: string;
+  systemPrompt: string;
+  tools: string[];
+  isCustom?: boolean;
+}
+
+export interface LinguisticControl {
+  id: string;
+  name: string;
+  temperature: number;
+  topP: number;
+  maxTokens: number;
+  format: 'markdown' | 'json' | 'step-by-step';
+  description: string;
+  isCustom?: boolean;
 }
 
 export interface Message {
@@ -44,6 +65,7 @@ export interface ChatSession {
   messages: Message[];
   activeModelId: string;
   personaId: string;
+  frameworkId?: string;
   settings: {
     temperature: number;
     topP: number;

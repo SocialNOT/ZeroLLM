@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -21,7 +22,9 @@ import {
   Cpu,
   Activity,
   Database,
-  Terminal
+  Terminal,
+  MousePointer2,
+  Key
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -55,6 +58,7 @@ export function ChatInterface() {
     sessions, 
     addMessage, 
     personas, 
+    frameworks,
     connections,
     activeConnectionId,
     currentUserRole,
@@ -73,6 +77,7 @@ export function ChatInterface() {
   
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
+  const framework = frameworks.find(f => f.id === session?.frameworkId);
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
   useEffect(() => {
@@ -98,10 +103,12 @@ export function ChatInterface() {
     setIsTyping(true);
 
     try {
+      const activeSystemPrompt = framework ? framework.systemPrompt : persona.systemPrompt;
+      
       const responseContent = await personaDrivenChat({
         baseUrl: connection.baseUrl,
         modelId: connection.modelId,
-        systemPrompt: persona.systemPrompt,
+        systemPrompt: activeSystemPrompt,
         userMessage: textToSend,
         temperature: session.settings.temperature,
         topP: session.settings.topP,
@@ -166,12 +173,17 @@ export function ChatInterface() {
       <div className="flex flex-col flex-1 gap-6 min-w-0">
         {/* Main Chat Bento Module */}
         <div className="flex flex-col flex-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.04)] overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-50 px-8 py-6">
+          <div className="flex items-center justify-between border-b border-slate-50 px-8 py-6 bg-white/80 backdrop-blur-md sticky top-0 z-10">
             <div className="flex items-center gap-5">
               <SidebarTrigger className="lg:hidden h-10 w-10 text-slate-400 hover:bg-slate-50 rounded-2xl" />
               <div className="flex flex-col">
                 <h3 className="text-xl font-headline font-bold text-slate-900 leading-none">{session.title}</h3>
-                <span className="mt-2 text-[10px] font-bold text-primary uppercase tracking-[0.25em] opacity-70">{persona.name}</span>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-[8px] font-bold text-primary uppercase tracking-widest border-primary/20 bg-primary/5">
+                    {framework?.name || persona.name}
+                  </Badge>
+                  {framework && <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">• Protocol Active</span>}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -185,13 +197,12 @@ export function ChatInterface() {
                     <Settings2 size={20} />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full sm:w-[400px] border-l border-slate-100 p-0 rounded-l-[3rem]">
-                  <SheetHeader className="p-10 border-b border-slate-50">
+                <SheetContent className="w-full sm:min-w-[450px] border-l border-slate-100 p-0 rounded-l-[3rem] overflow-hidden">
+                  <SheetHeader className="p-10 border-b border-slate-50 bg-white">
                     <SheetTitle className="text-2xl font-headline font-bold text-slate-900">Module Parameters</SheetTitle>
+                    <p className="text-xs text-slate-400 font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
                   </SheetHeader>
-                  <ScrollArea className="h-[calc(100vh-120px)]">
-                    <ParameterControls />
-                  </ScrollArea>
+                  <ParameterControls />
                 </SheetContent>
               </Sheet>
             </div>
@@ -283,13 +294,33 @@ export function ChatInterface() {
                 {connectionStatus === 'online' ? "Online" : "Isolated"}
               </Badge>
             </div>
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3">Endpoint Node</span>
-              <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 group cursor-pointer" onClick={() => setTempUrl(connection.baseUrl)}>
-                <Globe size={14} className="text-primary/60 shrink-0" />
-                <span className="text-[10px] font-mono font-bold text-slate-600 truncate">{connection.baseUrl.replace(/https?:\/\//, '')}</span>
-              </div>
-            </div>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="space-y-2 cursor-pointer group">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3 group-hover:text-primary transition-colors">Endpoint Node</span>
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 group-hover:border-primary/20 group-hover:bg-primary/5 transition-all">
+                    <Globe size={14} className="text-primary/60 shrink-0" />
+                    <span className="text-[10px] font-mono font-bold text-slate-600 truncate">{connection.baseUrl.replace(/https?:\/\//, '')}</span>
+                  </div>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] rounded-[2rem] p-6 shadow-2xl border-slate-100">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-4">Update Signal Target</h4>
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                    <Input 
+                      value={tempUrl} 
+                      onChange={(e) => setTempUrl(e.target.value)}
+                      placeholder="http://..." 
+                      className="pl-12 rounded-xl text-xs h-10 border-slate-100"
+                    />
+                  </div>
+                  <Button onClick={handleUpdateUrl} className="w-full h-10 rounded-xl bg-primary text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20">Sync Node</Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -300,18 +331,22 @@ export function ChatInterface() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full h-12 rounded-2xl border-slate-100 bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-widest justify-between px-5">
+              <Button variant="outline" className="w-full h-12 rounded-2xl border-slate-100 bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-widest justify-between px-5 hover:bg-white hover:border-primary/30 transition-all">
                 <span className="truncate max-w-[140px]">{connection.modelId || "AUTO SELECT"}</span>
                 <ChevronDown size={14} className="text-slate-400" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[260px] rounded-[1.5rem] p-2 bg-white/95 backdrop-blur-2xl border-slate-100 shadow-2xl">
               <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-50">Discovered Models</div>
-              {availableModels.map(m => (
-                <DropdownMenuItem key={m} onClick={() => updateConnection(connection.id, { modelId: m })} className="text-[11px] font-bold rounded-xl py-3 px-4 cursor-pointer">
-                  {m}
-                </DropdownMenuItem>
-              ))}
+              {availableModels.length > 0 ? (
+                availableModels.map(m => (
+                  <DropdownMenuItem key={m} onClick={() => updateConnection(connection.id, { modelId: m })} className="text-[11px] font-bold rounded-xl py-3 px-4 cursor-pointer hover:bg-primary/5 hover:text-primary">
+                    {m}
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <div className="py-8 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">No models found</div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -327,8 +362,11 @@ export function ChatInterface() {
               <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">{session.settings.memoryType} Optimized</span>
             </div>
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Latency</span>
-              <span className="text-xs font-bold text-slate-800">12ms Response</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Signal Latency</span>
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-slate-800">12ms Handshake</span>
+              </div>
             </div>
           </div>
         </div>

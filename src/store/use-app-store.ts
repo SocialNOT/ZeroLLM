@@ -1,6 +1,7 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition } from '@/types';
+import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
 import { testConnectionAction, fetchModelsAction, loadModelAction } from '@/ai/actions/engine-actions';
 
 interface AppState {
@@ -9,6 +10,8 @@ interface AppState {
   connections: ModelConnection[];
   activeConnectionId: string | null;
   personas: Persona[];
+  frameworks: Framework[];
+  linguisticControls: LinguisticControl[];
   sessions: ChatSession[];
   activeSessionId: string | null;
   isConfigured: boolean;
@@ -24,11 +27,24 @@ interface AppState {
   addConnection: (c: ModelConnection) => void;
   updateConnection: (id: string, c: Partial<ModelConnection>) => void;
   setActiveConnection: (id: string | null) => void;
+  
+  // Persona Actions
   addPersona: (p: Persona) => void;
+  
+  // Framework Actions
+  addFramework: (f: Framework) => void;
+  
+  // Linguistic Actions
+  addLinguisticControl: (l: LinguisticControl) => void;
+
   createSession: (workspaceId: string) => string;
   setActiveSession: (id: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
   updateSessionSettings: (sessionId: string, settings: Partial<ChatSession['settings']>) => void;
+  applyFramework: (sessionId: string, frameworkId: string) => void;
+  applyPersona: (sessionId: string, personaId: string) => void;
+  applyLinguisticControl: (sessionId: string, linguisticId: string) => void;
+
   completeInitialSetup: (baseUrl: string, modelId: string, apiKey?: string) => Promise<boolean>;
   setRole: (role: UserRole) => void;
   checkConnection: () => Promise<void>;
@@ -46,10 +62,25 @@ export const useAppStore = create<AppState>()(
       activeWorkspaceId: 'ws-1',
       connections: [],
       activeConnectionId: null,
+      
       personas: [
         { id: 'p-1', name: 'Socratic Professor', icon: 'graduation-cap', systemPrompt: 'You are a wise Socratic professor. Answer questions with guided questions.' },
-        { id: 'p-2', name: 'Expert Coder', icon: 'code', systemPrompt: 'You are a world-class senior software engineer. Provide clean, documented code.' }
+        { id: 'p-2', name: 'Expert Coder', icon: 'code', systemPrompt: 'You are a world-class senior software engineer. Provide clean, documented code.' },
+        { id: 'p-3', name: 'UX Strategist', icon: 'layout', systemPrompt: 'You are a senior UX strategist. Focus on user empathy, accessibility, and clean design patterns.' }
       ],
+
+      frameworks: [
+        { id: 'f-1', name: 'Deep Research', description: 'Optimized for cross-referencing and factual verification.', systemPrompt: 'Act as a research scientist. Cite sources, use logical deduction, and verify all claims.', tools: ['web_search'] },
+        { id: 'f-2', name: 'Code Auditor', description: 'Focused on security, performance, and best practices.', systemPrompt: 'Audit the provided code for vulnerabilities, leaks, and inefficiencies.', tools: [] },
+        { id: 'f-3', name: 'Mathematical Engine', description: 'High precision calculations and symbolic math.', systemPrompt: 'Solve complex mathematical problems with step-by-step proofs.', tools: ['calculator'] }
+      ],
+
+      linguisticControls: [
+        { id: 'l-1', name: 'Academic Formal', temperature: 0.3, topP: 0.8, maxTokens: 2048, format: 'markdown', description: 'Structured, precise, and objective language.' },
+        { id: 'l-2', name: 'Casual Direct', temperature: 0.8, topP: 0.9, maxTokens: 512, format: 'markdown', description: 'Concise, friendly, and easy to understand.' },
+        { id: 'l-3', name: 'Creative Explosive', temperature: 1.0, topP: 1.0, maxTokens: 1024, format: 'markdown', description: 'High variability, poetic, and imaginative.' }
+      ],
+
       sessions: [],
       activeSessionId: null,
       isConfigured: false,
@@ -82,6 +113,9 @@ export const useAppStore = create<AppState>()(
       },
 
       addPersona: (p) => set((state) => ({ personas: [...state.personas, p] })),
+      addFramework: (f) => set((state) => ({ frameworks: [...state.frameworks, f] })),
+      addLinguisticControl: (l) => set((state) => ({ linguisticControls: [...state.linguisticControls, l] })),
+
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
       
@@ -180,7 +214,48 @@ export const useAppStore = create<AppState>()(
         sessions: state.sessions.map(s => 
           s.id === sessionId ? { ...s, settings: { ...s.settings, ...settings } } : s
         )
-      }))
+      })),
+
+      applyFramework: (sessionId, frameworkId) => {
+        const framework = get().frameworks.find(f => f.id === frameworkId);
+        if (!framework) return;
+        set((state) => ({
+          sessions: state.sessions.map(s => 
+            s.id === sessionId ? { 
+              ...s, 
+              frameworkId,
+              settings: { ...s.settings, enabledTools: framework.tools }
+            } : s
+          )
+        }));
+      },
+
+      applyPersona: (sessionId, personaId) => {
+        set((state) => ({
+          sessions: state.sessions.map(s => 
+            s.id === sessionId ? { ...s, personaId } : s
+          )
+        }));
+      },
+
+      applyLinguisticControl: (sessionId, linguisticId) => {
+        const control = get().linguisticControls.find(l => l.id === linguisticId);
+        if (!control) return;
+        set((state) => ({
+          sessions: state.sessions.map(s => 
+            s.id === sessionId ? { 
+              ...s, 
+              settings: { 
+                ...s.settings, 
+                temperature: control.temperature, 
+                topP: control.topP, 
+                maxTokens: control.maxTokens,
+                format: control.format as any
+              }
+            } : s
+          )
+        }));
+      }
     }),
     { name: 'aetheria-storage' }
   )
