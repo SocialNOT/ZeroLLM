@@ -19,7 +19,9 @@ import {
   Terminal,
   Moon,
   Sun,
-  Clock
+  Clock,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -175,64 +177,66 @@ export function ChatInterface() {
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-background p-4 lg:p-6 gap-6 transition-colors duration-500">
-      <div className="flex flex-col flex-1 gap-6 min-w-0">
+      <div className="flex flex-col flex-1 gap-6 min-w-0 h-full overflow-hidden">
         {/* Main Chat Bento Module */}
         <div className="flex flex-col flex-1 bg-card rounded-[2.5rem] border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] overflow-hidden">
-          <div className="flex items-center justify-between border-b border-border px-8 py-6 bg-card/80 backdrop-blur-md sticky top-0 z-10">
-            <div className="flex items-center gap-5">
-              <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
-              <div className="flex flex-col">
-                <h3 className="logo-shimmer text-3xl font-headline font-bold leading-none tracking-tighter">ZEROGPT</h3>
-                <div className="h-[2px] w-full bg-gradient-to-r from-primary via-accent to-transparent mt-1.5 rounded-full" />
-                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] block mt-1.5 ml-0.5 truncate max-w-[200px]">
-                  {session.title}
-                </span>
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="outline" className="text-[8px] font-bold text-primary uppercase tracking-widest border-primary/20 bg-primary/5">
-                    {framework?.name || persona.name}
-                  </Badge>
+          <div className="flex flex-col border-b border-border px-8 py-5 bg-card/80 backdrop-blur-md sticky top-0 z-10 gap-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-5">
+                <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
+                <div className="flex flex-col">
+                  <h3 className="logo-shimmer text-3xl font-headline font-bold leading-none tracking-tighter">ZEROGPT</h3>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {/* Sleek Date/Time Display */}
+                <div className="hidden md:flex flex-col items-end text-right border-r border-border pr-6">
+                  <div className="flex items-center gap-2">
+                    <Clock size={12} className="text-primary/70" />
+                    <span className="text-[14px] font-code font-bold text-primary leading-tight tracking-widest">{formattedTime}</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">{formattedDate}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  >
+                    {theme === "dark" ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-slate-900" />}
+                  </Button>
+                  <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
+                    <ShieldCheck size={14} className="text-primary/70" />
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentUserRole}</span>
+                  </div>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
+                        <Settings2 size={20} />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent className="w-full sm:min-w-[450px] border-l border-border p-0 rounded-l-[3rem] overflow-hidden bg-card">
+                      <SheetHeader className="p-10 border-b border-border bg-card">
+                        <SheetTitle className="text-2xl font-headline font-bold">Module Parameters</SheetTitle>
+                        <p className="text-xs text-muted-foreground font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
+                      </SheetHeader>
+                      <ParameterControls />
+                    </SheetContent>
+                  </Sheet>
                 </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-6">
-              {/* Sleek Date/Time Display */}
-              <div className="hidden md:flex flex-col items-end text-right border-r border-border pr-6">
-                <div className="flex items-center gap-2">
-                  <Clock size={12} className="text-primary/70" />
-                  <span className="text-[14px] font-code font-bold text-primary leading-tight tracking-widest">{formattedTime}</span>
-                </div>
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">{formattedDate}</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                >
-                  {theme === "dark" ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-slate-900" />}
-                </Button>
-                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
-                  <ShieldCheck size={14} className="text-primary/70" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentUserRole} Access</span>
-                </div>
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
-                      <Settings2 size={20} />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent className="w-full sm:min-w-[450px] border-l border-border p-0 rounded-l-[3rem] overflow-hidden bg-card">
-                    <SheetHeader className="p-10 border-b border-border bg-card">
-                      <SheetTitle className="text-2xl font-headline font-bold">Module Parameters</SheetTitle>
-                      <p className="text-xs text-muted-foreground font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
-                    </SheetHeader>
-                    <ParameterControls />
-                  </SheetContent>
-                </Sheet>
-              </div>
+            {/* Sleek Sub-header line */}
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.25em] truncate">
+                / {session.title}
+              </span>
+              <Badge variant="outline" className="text-[8px] font-bold text-primary uppercase tracking-widest border-primary/20 bg-primary/5 py-0">
+                {framework?.name || persona.name}
+              </Badge>
             </div>
           </div>
 
@@ -306,7 +310,7 @@ export function ChatInterface() {
       </div>
 
       {/* Side Bento Diagnostic Tiles */}
-      <div className="hidden xl:flex flex-col w-[300px] gap-6 shrink-0">
+      <div className="hidden xl:flex flex-col w-[300px] gap-6 shrink-0 h-full overflow-y-auto custom-scrollbar">
         <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-8">
             <Activity size={18} className="text-primary" />
@@ -317,9 +321,10 @@ export function ChatInterface() {
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>
               <Badge variant="outline" className={cn(
                 "text-[9px] font-bold uppercase tracking-widest border-2",
-                connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
+                connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-50/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
               )}>
-                {connectionStatus === 'online' ? "Online" : "Isolated"}
+                {connectionStatus === 'online' ? <Wifi size={10} className="mr-1.5" /> : <WifiOff size={10} className="mr-1.5" />}
+                {connectionStatus === 'online' ? "Online" : "Offline"}
               </Badge>
             </div>
             
@@ -379,21 +384,21 @@ export function ChatInterface() {
           </DropdownMenu>
         </div>
 
-        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] flex-1">
+        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] flex-1 min-h-[300px]">
           <div className="flex items-center gap-3 mb-8">
             <Database size={18} className="text-primary" />
             <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Cognitive Memory</h4>
           </div>
           <div className="space-y-6">
-            <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-2">Memory Path</span>
+            <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-2">Memory Path</span>
               <span className="text-xs font-bold uppercase tracking-tight">{session.settings.memoryType} Optimized</span>
             </div>
             <div className="p-5 rounded-2xl bg-muted border border-border">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">Signal Latency</span>
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold">12ms Handshake</span>
+                <span className="text-xs font-bold uppercase tracking-tighter">12ms Handshake</span>
               </div>
             </div>
           </div>
