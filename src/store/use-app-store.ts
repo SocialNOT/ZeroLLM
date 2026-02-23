@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
@@ -28,13 +27,8 @@ interface AppState {
   updateConnection: (id: string, c: Partial<ModelConnection>) => void;
   setActiveConnection: (id: string | null) => void;
   
-  // Persona Actions
   addPersona: (p: Persona) => void;
-  
-  // Framework Actions
   addFramework: (f: Framework) => void;
-  
-  // Linguistic Actions
   addLinguisticControl: (l: LinguisticControl) => void;
 
   createSession: (workspaceId: string) => string;
@@ -56,8 +50,8 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       workspaces: [
-        { id: 'ws-1', name: 'General Assistant', icon: 'zap', description: 'Default multipurpose workspace' },
-        { id: 'ws-2', name: 'Academic Research', icon: 'book', description: 'Papers and thesis management' }
+        { id: 'ws-1', name: 'General Intelligence', icon: 'zap', description: 'Universal node for daily tasks' },
+        { id: 'ws-2', name: 'Knowledge Vault', icon: 'database', description: 'Document-aware research workspace' }
       ],
       activeWorkspaceId: 'ws-1',
       connections: [],
@@ -70,9 +64,9 @@ export const useAppStore = create<AppState>()(
       ],
 
       frameworks: [
-        { id: 'f-1', name: 'Deep Research', description: 'Optimized for cross-referencing and factual verification.', systemPrompt: 'Act as a research scientist. Cite sources, use logical deduction, and verify all claims.', tools: ['web_search'] },
-        { id: 'f-2', name: 'Code Auditor', description: 'Focused on security, performance, and best practices.', systemPrompt: 'Audit the provided code for vulnerabilities, leaks, and inefficiencies.', tools: [] },
-        { id: 'f-3', name: 'Mathematical Engine', description: 'High precision calculations and symbolic math.', systemPrompt: 'Solve complex mathematical problems with step-by-step proofs.', tools: ['calculator'] }
+        { id: 'f-1', name: 'Deep Research', description: 'Optimized for cross-referencing and factual verification.', systemPrompt: 'Act as a research scientist. Use knowledge_search and web_search tools to verify all claims.', tools: ['web_search', 'knowledge_search'] },
+        { id: 'f-2', name: 'Logic Auditor', description: 'Focused on security, performance, and best practices.', systemPrompt: 'Analyze the provided code or logic. Use code_interpreter for complex tasks.', tools: ['code_interpreter'] },
+        { id: 'f-3', name: 'Mathematical Engine', description: 'High precision calculations and symbolic math.', systemPrompt: 'Solve complex mathematical problems with step-by-step proofs using the calculator tool.', tools: ['calculator'] }
       ],
 
       linguisticControls: [
@@ -87,7 +81,9 @@ export const useAppStore = create<AppState>()(
       currentUserRole: 'Admin',
       availableTools: [
         { id: 'calculator', name: 'Calculator', description: 'Perform mathematical operations', icon: 'calculator' },
-        { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'search' }
+        { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'globe' },
+        { id: 'knowledge_search', name: 'RAG Agent', description: 'Query your local knowledge base', icon: 'database' },
+        { id: 'code_interpreter', name: 'Code Logic', description: 'Execute complex logic sandboxes', icon: 'terminal' }
       ],
       availableModels: [],
       connectionStatus: 'offline',
@@ -200,7 +196,7 @@ export const useAppStore = create<AppState>()(
             enabledTools: []
           }
         };
-        set((state) => ({ sessions: [...state.sessions, newSession], activeSessionId: id }));
+        set((state) => ({ sessions: state.sessions ? [...state.sessions, newSession] : [newSession], activeSessionId: id }));
         return id;
       },
 

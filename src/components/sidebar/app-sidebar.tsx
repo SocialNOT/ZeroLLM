@@ -20,12 +20,19 @@ import {
   Layers, 
   Settings2, 
   MessageSquare,
-  X
+  X,
+  Cpu,
+  Globe,
+  Database,
+  Calculator,
+  Terminal,
+  Activity
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
+import { Badge } from "@/components/ui/badge";
 
 export function AppSidebar() {
   const { 
@@ -35,10 +42,14 @@ export function AppSidebar() {
     sessions, 
     activeSessionId, 
     setActiveSession,
-    createSession 
+    createSession,
+    availableTools,
+    activeConnectionId,
+    connections
   } = useAppStore();
 
   const { isMobile, setOpenMobile } = useSidebar();
+  const activeConn = connections.find(c => c.id === activeConnectionId);
 
   const workspaceSessions = sessions.filter(s => s.workspaceId === activeWorkspaceId);
 
@@ -56,6 +67,16 @@ export function AppSidebar() {
     if (isMobile) setOpenMobile(false);
   };
 
+  const getToolIcon = (id: string) => {
+    switch (id) {
+      case 'calculator': return <Calculator size={14} />;
+      case 'web_search': return <Globe size={14} />;
+      case 'knowledge_search': return <Database size={14} />;
+      case 'code_interpreter': return <Terminal size={14} />;
+      default: return <Zap size={14} />;
+    }
+  };
+
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white/50 backdrop-blur-xl">
       <SidebarHeader className="p-6">
@@ -65,8 +86,8 @@ export function AppSidebar() {
               <Zap size={24} fill="currentColor" className="animate-pulse" />
             </div>
             <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:hidden">
-              <span className="font-headline text-xl font-bold tracking-tight text-slate-900">Aetheria</span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-60">Engine Hub</span>
+              <span className="font-headline text-xl font-bold tracking-tight text-slate-900">Aetheria Hub</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-60">Engine Node</span>
             </div>
           </div>
           {isMobile && (
@@ -97,6 +118,27 @@ export function AppSidebar() {
                     <Layers size={18} className={activeWorkspaceId === ws.id ? "text-primary" : "text-slate-400"} />
                     <span className="ml-3 font-bold text-sm truncate">{ws.name}</span>
                   </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Intelligence Nodes</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {availableTools.map((tool) => (
+                <SidebarMenuItem key={tool.id}>
+                  <div className="flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 group-data-[collapsible=icon]:justify-center">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        {getToolIcon(tool.id)}
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest group-data-[collapsible=icon]:hidden">{tool.name}</span>
+                    </div>
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse group-data-[collapsible=icon]:hidden" />
+                  </div>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -137,7 +179,7 @@ export function AppSidebar() {
                 ))
               ) : (
                 <div className="mx-2 px-4 py-8 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center border-2 border-dashed border-slate-100 rounded-[1.5rem] group-data-[collapsible=icon]:hidden">
-                  No threads
+                  No active threads
                 </div>
               )}
             </SidebarMenu>
