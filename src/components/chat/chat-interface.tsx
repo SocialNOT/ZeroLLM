@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -23,7 +24,9 @@ import {
   Wifi,
   WifiOff,
   Layers,
-  UserCircle
+  UserCircle,
+  PanelRight,
+  PanelRightClose
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,17 +37,6 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/popover";
 import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -70,13 +62,14 @@ export function ChatInterface() {
     updateConnection,
     checkConnection,
     activeParameterTab,
-    setActiveParameterTab
+    setActiveParameterTab,
+    showInfoSidebar,
+    toggleInfoSidebar
   } = useAppStore();
   
   const { theme, setTheme } = useTheme();
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [tempUrl, setTempUrl] = useState("");
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -163,15 +156,8 @@ export function ChatInterface() {
     }
   };
 
-  const handleUpdateUrl = async () => {
-    if (connection && tempUrl) {
-      updateConnection(connection.id, { baseUrl: tempUrl });
-      await checkConnection();
-      toast({ title: "Node Updated", description: `Target synchronized: ${tempUrl}` });
-    }
-  };
-
   const formattedTime = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+  const formattedDate = currentTime ? currentTime.toLocaleDateString([], { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : "";
 
   if (!session) {
     return (
@@ -185,8 +171,8 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden bg-card/50 backdrop-blur-sm transition-colors duration-500 lg:p-4 gap-4">
-      <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden bg-card border-b lg:border border-border lg:rounded-[2rem] shadow-sm">
+    <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden bg-card/50 backdrop-blur-sm transition-all duration-500 lg:p-4 gap-4">
+      <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden bg-card border-b lg:border border-border lg:rounded-[2rem] shadow-sm relative">
         
         <Sheet>
           <div className="flex flex-col border-b border-border px-4 py-3 sm:px-8 sm:py-5 bg-card/80 backdrop-blur-md sticky top-0 z-10">
@@ -194,10 +180,11 @@ export function ChatInterface() {
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-xl" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-primary tracking-widest uppercase truncate max-w-[120px]">
-                    {session.title}
-                  </span>
-                  <span className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-tight">{formattedTime} • {currentUserRole}</span>
+                  <div className="flex items-center gap-2">
+                    <Clock size={10} className="text-primary" />
+                    <span className="text-[10px] font-bold text-slate-900 tracking-wider tabular-nums">{formattedTime}</span>
+                  </div>
+                  <span className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-tight">{formattedDate} • {currentUserRole}</span>
                 </div>
               </div>
               
@@ -210,6 +197,14 @@ export function ChatInterface() {
                 >
                   {theme === "dark" ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} />}
                 </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={cn("hidden xl:flex h-9 w-9 rounded-xl text-muted-foreground", !showInfoSidebar && "text-primary bg-primary/5")}
+                  onClick={toggleInfoSidebar}
+                >
+                  {showInfoSidebar ? <PanelRight size={18} /> : <PanelRightClose size={18} />}
+                </Button>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground">
                     <Settings2 size={18} />
@@ -218,29 +213,29 @@ export function ChatInterface() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar py-1 pr-4">
               <SheetTrigger asChild>
                 <button 
                   onClick={() => setActiveParameterTab('frameworks')}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
                     session.frameworkId 
-                      ? "bg-primary text-primary-foreground border-primary" 
+                      ? "bg-primary text-primary-foreground border-primary shadow-md" 
                       : "bg-muted/50 text-muted-foreground border-border"
                   )}
                 >
                   <Layers size={8} />
-                  {framework?.name || "No Framework"}
+                  {framework?.name || "Framework: None"}
                 </button>
               </SheetTrigger>
 
               <SheetTrigger asChild>
                 <button 
                   onClick={() => setActiveParameterTab('personas')}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent text-accent-foreground border border-accent text-[8px] font-bold uppercase tracking-widest shrink-0"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent text-accent-foreground border border-accent shadow-md text-[8px] font-bold uppercase tracking-widest shrink-0"
                 >
                   <UserCircle size={8} />
-                  {persona.name}
+                  Persona: {persona.name}
                 </button>
               </SheetTrigger>
 
@@ -248,9 +243,9 @@ export function ChatInterface() {
                 <button 
                   onClick={() => setActiveParameterTab('linguistic')}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
                     session.linguisticId 
-                      ? "bg-destructive text-destructive-foreground border-destructive" 
+                      ? "bg-destructive text-destructive-foreground border-destructive shadow-md" 
                       : "bg-muted/50 text-muted-foreground border-border"
                   )}
                 >
@@ -258,15 +253,23 @@ export function ChatInterface() {
                   {linguistic?.name || "Logic: Standard"}
                 </button>
               </SheetTrigger>
+              
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/30 text-muted-foreground border border-border text-[8px] font-bold uppercase tracking-widest shrink-0">
+                <Terminal size={8} />
+                {connection.modelId || "Auto"}
+              </div>
             </div>
           </div>
 
           <ScrollArea className="flex-1 custom-scrollbar">
-            <div className="mx-auto flex w-full max-w-3xl flex-col py-6 sm:py-10 px-4 sm:px-8">
+            <div className="mx-auto flex w-full max-w-4xl flex-col py-6 sm:py-10 px-4 sm:px-8">
               {session.messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 opacity-30">
-                  <Terminal size={32} className="mb-4 text-muted-foreground" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em]">Node Idle</p>
+                <div className="flex flex-col items-center justify-center py-24 opacity-20">
+                  <div className="p-8 rounded-[3rem] bg-muted mb-6">
+                    <Zap size={48} className="text-primary" />
+                  </div>
+                  <p className="text-[12px] font-bold uppercase tracking-[0.5em] text-slate-900">Neural Node Idle</p>
+                  <p className="text-[9px] font-medium uppercase tracking-[0.2em] mt-2 text-slate-400">Awaiting cognitive input</p>
                 </div>
               ) : (
                 session.messages.map((msg) => (
@@ -278,56 +281,56 @@ export function ChatInterface() {
                 ))
               )}
               {isTyping && (
-                <div className="flex items-center gap-3 px-4 py-6 text-[10px] text-primary font-bold uppercase tracking-[0.2em]">
-                  <div className="flex gap-1">
-                    <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-                    <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-                    <div className="h-1 w-1 rounded-full bg-primary animate-bounce" />
+                <div className="flex items-center gap-3 px-4 py-8 text-[10px] text-primary font-bold uppercase tracking-[0.3em]">
+                  <div className="flex gap-1.5">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" />
                   </div>
-                  Computing
+                  Computing Response
                 </div>
               )}
               <div ref={scrollRef} className="h-4" />
             </div>
           </ScrollArea>
 
-          <div className="p-4 sm:p-8 bg-card border-t lg:border-none">
-            <div className="mx-auto max-w-2xl">
+          <div className="p-4 sm:p-8 bg-card/80 backdrop-blur-xl border-t lg:border-none z-20">
+            <div className="mx-auto max-w-3xl">
               <form 
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
-                className="relative flex items-center bg-muted rounded-2xl sm:rounded-[2rem] p-1.5 sm:p-2 border border-border"
+                className="relative flex items-center bg-muted/50 hover:bg-muted transition-colors rounded-2xl sm:rounded-[2.5rem] p-1.5 sm:p-2.5 border border-border shadow-2xl shadow-black/5"
               >
                 <Button 
                   type="button" 
                   variant="ghost" 
                   size="icon" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground hover:bg-card rounded-xl sm:rounded-2xl shrink-0"
+                  className="h-10 w-10 sm:h-14 sm:w-14 text-muted-foreground hover:bg-card rounded-xl sm:rounded-3xl shrink-0"
                 >
-                  <Paperclip size={18} />
+                  <Paperclip size={20} />
                 </Button>
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={currentUserRole === 'Viewer' || isTyping}
                   placeholder="Direct command..."
-                  className="h-10 sm:h-14 w-full border-none bg-transparent px-2 sm:px-4 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
+                  className="h-10 sm:h-14 w-full border-none bg-transparent px-2 sm:px-6 text-[15px] font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
                 />
                 <Button 
                   type="submit" 
                   disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
-                  className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-primary text-primary-foreground shrink-0"
+                  className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-3xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all shrink-0"
                 >
-                  <Send size={16} />
+                  <Send size={20} />
                 </Button>
               </form>
             </div>
           </div>
 
-          <SheetContent side="right" className="w-full sm:min-w-[450px] border-l border-border p-0 overflow-hidden bg-card">
-            <SheetHeader className="p-6 sm:p-10 border-b border-border bg-card">
-              <SheetTitle className="text-xl sm:text-2xl font-headline font-bold">Module Parameters</SheetTitle>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Cognitive Fine-Tuning</p>
+          <SheetContent side="right" className="w-full sm:min-w-[500px] border-l border-border p-0 overflow-hidden bg-card shadow-2xl">
+            <SheetHeader className="p-8 sm:p-12 border-b border-border bg-card/50 backdrop-blur-xl">
+              <SheetTitle className="text-2xl sm:text-3xl font-headline font-bold text-slate-900">Module Parameters</SheetTitle>
+              <p className="text-[10px] text-primary font-bold uppercase tracking-[0.3em] mt-1">Cognitive Fine-Tuning Node</p>
             </SheetHeader>
             <ParameterControls />
           </SheetContent>
@@ -335,43 +338,57 @@ export function ChatInterface() {
       </div>
 
       {/* Desktop Info Sidebar */}
-      <div className="hidden xl:flex flex-col w-[280px] gap-4 shrink-0 h-full">
-        <div className="bg-card rounded-[2rem] p-6 border border-border shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <Activity size={16} className="text-primary" />
-            <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Status</h4>
+      {showInfoSidebar && (
+        <div className="hidden xl:flex flex-col w-[320px] gap-4 shrink-0 h-full animate-in slide-in-from-right duration-500 ease-out">
+          <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-sm">
+            <div className="flex items-center gap-3 mb-8">
+              <Activity size={18} className="text-primary" />
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Node Status</h4>
+            </div>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>
+                <Badge variant="outline" className={cn(
+                  "text-[9px] font-bold uppercase tracking-widest py-1.5 px-4 rounded-full",
+                  connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-50/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
+                )}>
+                  <span className={cn("h-1.5 w-1.5 rounded-full mr-2", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse" : "bg-rose-500")} />
+                  {connectionStatus}
+                </Badge>
+              </div>
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Endpoint Node</span>
+                <div className="p-4 rounded-2xl bg-muted/50 border border-border text-[10px] font-code break-all flex items-center gap-3">
+                  <Globe size={12} className="text-primary shrink-0" />
+                  {connection.baseUrl.replace(/https?:\/\//, '')}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[9px] font-bold text-muted-foreground uppercase">Node</span>
-            <Badge variant="outline" className={cn(
-              "text-[8px] font-bold uppercase tracking-widest py-0.5 px-2",
-              connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-50/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
-            )}>
-              {connectionStatus}
-            </Badge>
-          </div>
-          <div className="p-3 rounded-xl bg-muted border border-border text-[9px] font-mono truncate">
-            {connection.baseUrl.replace(/https?:\/\//, '')}
-          </div>
-        </div>
 
-        <div className="bg-card rounded-[2rem] p-6 border border-border shadow-sm flex-1">
-          <div className="flex items-center gap-3 mb-6">
-            <Database size={16} className="text-primary" />
-            <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Telemetry</h4>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <span className="text-[8px] font-bold text-muted-foreground uppercase block">Active Engine</span>
-              <span className="text-[10px] font-bold block truncate">{connection.modelId || "Auto"}</span>
+          <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-sm flex-1">
+            <div className="flex items-center gap-3 mb-8">
+              <Cpu size={18} className="text-primary" />
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Active Engine</h4>
             </div>
-            <div className="space-y-1">
-              <span className="text-[8px] font-bold text-muted-foreground uppercase block">Memory Path</span>
-              <span className="text-[10px] font-bold block">{session.settings.memoryType}</span>
+            <div className="space-y-8">
+              <div className="space-y-2">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] block">Inference Module</span>
+                <span className="text-[13px] font-bold text-slate-900 block bg-muted/50 p-4 rounded-2xl border border-border truncate">
+                  {connection.modelId || "Automatic Detection"}
+                </span>
+              </div>
+              <div className="space-y-2">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] block">Cognitive Memory</span>
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/50 border border-border">
+                  <Database size={14} className="text-primary" />
+                  <span className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">{session.settings.memoryType} Path</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

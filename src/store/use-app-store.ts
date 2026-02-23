@@ -24,6 +24,7 @@ interface AppState {
   connectionStatus: 'online' | 'offline' | 'checking';
   isModelLoading: boolean;
   activeParameterTab: string;
+  showInfoSidebar: boolean;
   
   // Actions
   addWorkspace: (w: Workspace) => void;
@@ -52,6 +53,7 @@ interface AppState {
   refreshModels: () => Promise<void>;
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
+  toggleInfoSidebar: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -84,6 +86,7 @@ export const useAppStore = create<AppState>()(
       connectionStatus: 'offline',
       isModelLoading: false,
       activeParameterTab: 'frameworks',
+      showInfoSidebar: true,
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -225,7 +228,6 @@ export const useAppStore = create<AppState>()(
           sessions: state.sessions.map(s => 
             s.id === sessionId ? { 
               ...s, 
-              // If clicking the same one, clear it. Otherwise set it.
               frameworkId: s.frameworkId === frameworkId ? undefined : frameworkId,
               settings: { 
                 ...s.settings, 
@@ -259,7 +261,6 @@ export const useAppStore = create<AppState>()(
           sessions: state.sessions.map(s => 
             s.id === sessionId ? { 
               ...s, 
-              // If clicking the same one, clear it. Otherwise set it.
               linguisticId: s.linguisticId === linguisticId ? undefined : linguisticId,
               settings: { 
                 ...s.settings, 
@@ -273,12 +274,12 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
-      setActiveParameterTab: (tab) => set({ activeParameterTab: tab })
+      setActiveParameterTab: (tab) => set({ activeParameterTab: tab }),
+      toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar }))
     }),
     { 
-      name: 'aetheria-storage-v2',
+      name: 'zerogpt-storage-v1',
       storage: createJSONStorage(() => localStorage),
-      // Merge static libraries on rehydration to ensure they are always complete
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.personas = PERSONAS;
