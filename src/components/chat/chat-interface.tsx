@@ -9,25 +9,24 @@ import {
   Send, 
   Paperclip, 
   Settings2, 
-  ChevronDown,
-  Zap,
-  Globe,
-  Cpu,
-  Activity,
-  Database,
-  Terminal,
-  Moon,
-  Sun,
-  Clock,
-  Layers,
-  UserCircle,
-  PanelRight,
-  PanelRightClose,
-  Brain,
-  Mic,
-  MicOff,
-  Sparkles,
-  Search
+  Zap, 
+  Globe, 
+  Cpu, 
+  Activity, 
+  Database, 
+  Terminal, 
+  Moon, 
+  Sun, 
+  Clock, 
+  Layers, 
+  UserCircle, 
+  PanelRight, 
+  PanelRightClose, 
+  Brain, 
+  Mic, 
+  MicOff, 
+  Sparkles, 
+  Search 
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
@@ -43,7 +42,6 @@ import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { toast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
 
@@ -60,7 +58,6 @@ export function ChatInterface() {
     activeConnectionId,
     currentUserRole,
     connectionStatus,
-    updateConnection,
     setActiveParameterTab,
     showInfoSidebar,
     toggleInfoSidebar,
@@ -71,7 +68,7 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
@@ -86,11 +83,18 @@ export function ChatInterface() {
     return () => clearInterval(timer);
   }, []);
 
+  // Smooth scroll to bottom on new messages
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: "smooth"
+        });
+      }
     }
-  }, [session?.messages, isTyping]);
+  }, [session?.messages?.length, isTyping]);
 
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
@@ -140,7 +144,6 @@ export function ChatInterface() {
 
       addMessage(session.id, assistantMsg);
 
-      // Handle Auto-Voice if enabled
       if (session.settings.voiceResponseEnabled) {
         try {
           const { audioUri } = await generateSpeech({ text: responseContent });
@@ -185,21 +188,30 @@ export function ChatInterface() {
     );
   }
 
+  const openParamTab = (tab: string) => {
+    setActiveParameterTab(tab);
+  };
+
   return (
     <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden bg-card/50 backdrop-blur-sm transition-all duration-500 lg:p-4 gap-4">
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden bg-card border-b lg:border border-border lg:rounded-[2rem] shadow-sm relative">
         
         <Sheet>
-          <div className="flex flex-col border-b border-border px-4 py-3 sm:px-8 sm:py-5 bg-card/80 backdrop-blur-md sticky top-0 z-10">
+          {/* Header Module - Stabilized */}
+          <div className="flex-shrink-0 flex flex-col border-b border-border px-4 py-3 sm:px-8 sm:py-5 bg-card/80 backdrop-blur-md z-10">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-xl" />
-                <div className="flex flex-col">
+                <div className="flex flex-col items-start text-left">
                   <div className="flex items-center gap-2">
                     <Clock size={10} className="text-primary" />
                     <span className="text-[10px] font-bold text-slate-900 tracking-wider tabular-nums">{formattedTime}</span>
                   </div>
                   <span className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-tight">{formattedDate} • {currentUserRole}</span>
+                </div>
+                <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-bold text-slate-900 truncate max-w-[120px] sm:max-w-none">/ {session.title}</span>
+                  <span className="text-[8px] font-bold text-primary uppercase tracking-widest opacity-60">Active Neural Thread</span>
                 </div>
               </div>
               
@@ -225,18 +237,20 @@ export function ChatInterface() {
                     <Settings2 size={18} />
                   </Button>
                 </SheetTrigger>
+                <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-xl" />
               </div>
             </div>
 
+            {/* Parameter Quick Tabs */}
             <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar py-1 pr-4">
               <SheetTrigger asChild>
                 <button 
-                  onClick={() => setActiveParameterTab('frameworks')}
+                  onClick={() => openParamTab('frameworks')}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
                     session.frameworkId 
                       ? "bg-primary text-primary-foreground border-primary shadow-md" 
-                      : "bg-muted/50 text-muted-foreground border-border"
+                      : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <Layers size={8} />
@@ -246,8 +260,11 @@ export function ChatInterface() {
 
               <SheetTrigger asChild>
                 <button 
-                  onClick={() => setActiveParameterTab('personas')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent text-accent-foreground border border-accent shadow-md text-[8px] font-bold uppercase tracking-widest shrink-0"
+                  onClick={() => openParamTab('personas')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
+                    "bg-accent text-accent-foreground border-accent shadow-md hover:scale-105 active:scale-95"
+                  )}
                 >
                   <UserCircle size={8} />
                   Persona: {persona.name}
@@ -256,12 +273,12 @@ export function ChatInterface() {
 
               <SheetTrigger asChild>
                 <button 
-                  onClick={() => setActiveParameterTab('linguistic')}
+                  onClick={() => openParamTab('linguistic')}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
                     session.linguisticId 
                       ? "bg-destructive text-destructive-foreground border-destructive shadow-md" 
-                      : "bg-muted/50 text-muted-foreground border-border"
+                      : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <Cpu size={8} />
@@ -271,12 +288,13 @@ export function ChatInterface() {
               
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/30 text-muted-foreground border border-border text-[8px] font-bold uppercase tracking-widest shrink-0">
                 <Terminal size={8} />
-                {connection.modelId || "Auto"}
+                {connection.modelId || "unspecified"}
               </div>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 custom-scrollbar">
+          {/* Chat Chronicle Area */}
+          <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar overflow-hidden">
             <div className="mx-auto flex w-full max-w-4xl flex-col py-6 sm:py-10 px-4 sm:px-8">
               {session.messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 opacity-20">
@@ -305,14 +323,14 @@ export function ChatInterface() {
                   Computing Response
                 </div>
               )}
-              <div ref={scrollRef} className="h-4" />
             </div>
           </ScrollArea>
 
-          <div className="p-4 sm:p-8 bg-card/80 backdrop-blur-xl border-t lg:border-none z-20">
+          {/* Input & Capability Toolbar Module */}
+          <div className="flex-shrink-0 p-4 sm:p-8 bg-card/80 backdrop-blur-xl border-t lg:border-none z-20">
             <div className="mx-auto max-w-3xl space-y-4">
               
-              {/* Companion Toolbar */}
+              {/* Capability Toolbar */}
               <div className="flex items-center justify-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar py-2">
                 <button 
                   onClick={() => toggleTool(session.id, 'webSearch')}
@@ -355,7 +373,7 @@ export function ChatInterface() {
 
                 <div className="h-4 w-px bg-border mx-1" />
 
-                <button className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted/30 text-muted-foreground border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted/50 transition-all">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted/30 text-muted-foreground border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted/50 transition-all opacity-50 cursor-not-allowed">
                   <Sparkles size={12} />
                   Visual
                 </button>
@@ -392,6 +410,7 @@ export function ChatInterface() {
             </div>
           </div>
 
+          {/* Module Parameter Panel */}
           <SheetContent side="right" className="w-full sm:min-w-[500px] border-l border-border p-0 overflow-hidden bg-card shadow-2xl">
             <SheetHeader className="p-8 sm:p-12 border-b border-border bg-card/50 backdrop-blur-xl">
               <SheetTitle className="text-2xl sm:text-3xl font-headline font-bold text-slate-900">Module Parameters</SheetTitle>
@@ -402,7 +421,7 @@ export function ChatInterface() {
         </Sheet>
       </div>
 
-      {/* Desktop Info Sidebar */}
+      {/* Persistence Info Sidebar */}
       {showInfoSidebar && (
         <div className="hidden xl:flex flex-col w-[320px] gap-4 shrink-0 h-full animate-in slide-in-from-right duration-500 ease-out">
           <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-sm">
@@ -440,7 +459,7 @@ export function ChatInterface() {
               <div className="space-y-2">
                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] block">Inference Module</span>
                 <span className="text-[13px] font-bold text-slate-900 block bg-muted/50 p-4 rounded-2xl border border-border truncate">
-                  {connection.modelId || "Automatic Detection"}
+                  {connection.modelId || "unspecified"}
                 </span>
               </div>
               <div className="space-y-2">
