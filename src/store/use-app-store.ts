@@ -1,7 +1,7 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition } from '@/types';
+import { testConnection, fetchModels } from '@/lib/llm-api';
 
 interface AppState {
   workspaces: Workspace[];
@@ -14,6 +14,8 @@ interface AppState {
   isConfigured: boolean;
   currentUserRole: UserRole;
   availableTools: ToolDefinition[];
+  availableModels: string[];
+  connectionStatus: 'online' | 'offline' | 'checking';
   
   // Actions
   addWorkspace: (w: Workspace) => void;
@@ -26,8 +28,10 @@ interface AppState {
   setActiveSession: (id: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
   updateSessionSettings: (sessionId: string, settings: Partial<ChatSession['settings']>) => void;
-  completeInitialSetup: (baseUrl: string, modelId: string) => void;
+  completeInitialSetup: (baseUrl: string, modelId: string) => Promise<boolean>;
   setRole: (role: UserRole) => void;
+  checkConnection: () => Promise<void>;
+  refreshModels: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -47,11 +51,13 @@ export const useAppStore = create<AppState>()(
       sessions: [],
       activeSessionId: null,
       isConfigured: false,
-      currentUserRole: 'Admin', // Default for prototype
+      currentUserRole: 'Admin',
       availableTools: [
         { id: 'calculator', name: 'Calculator', description: 'Perform mathematical operations', icon: 'calculator' },
         { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'search' }
       ],
+      availableModels: [],
+      connectionStatus: 'offline',
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -61,34 +67,73 @@ export const useAppStore = create<AppState>()(
         activeConnectionId: state.activeConnectionId || c.id 
       })),
 
-      updateConnection: (id, updates) => set((state) => ({
-        connections: state.connections.map(c => c.id === id ? { ...c, ...updates } : c)
-      })),
+      updateConnection: (id, updates) => {
+        set((state) => ({
+          connections: state.connections.map(c => c.id === id ? { ...c, ...updates } : c)
+        }));
+        if (id === get().activeConnectionId) {
+          get().checkConnection();
+        }
+      },
 
-      setActiveConnection: (id) => set({ activeConnectionId: id }),
+      setActiveConnection: (id) => {
+        set({ activeConnectionId: id });
+        get().checkConnection();
+      },
 
       addPersona: (p) => set((state) => ({ personas: [...state.personas, p] })),
-      
       setActiveSession: (id) => set({ activeSessionId: id }),
-
       setRole: (role) => set({ currentUserRole: role }),
       
-      completeInitialSetup: (baseUrl, modelId) => {
+      checkConnection: async () => {
+        const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
+        if (!activeConn) return;
+
+        set({ connectionStatus: 'checking' });
+        const isOnline = await testConnection(activeConn.baseUrl);
+        set({ connectionStatus: isOnline ? 'online' : 'offline' });
+        
+        if (isOnline) {
+          await get().refreshModels();
+        }
+      },
+
+      refreshModels: async () => {
+        const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
+        if (!activeConn) return;
+
+        const models = await fetchModels(activeConn.baseUrl);
+        set({ availableModels: models.map(m => m.id) });
+      },
+
+      completeInitialSetup: async (baseUrl, modelId) => {
         const id = 'default-conn';
+        set({ connectionStatus: 'checking' });
+        
+        const isOnline = await testConnection(baseUrl);
+        
         const newConn: ModelConnection = {
           id,
           name: 'Primary Engine',
-          provider: 'Ollama',
+          provider: 'Custom',
           baseUrl,
           modelId,
           contextWindow: 4096,
-          status: 'checking'
+          status: isOnline ? 'online' : 'offline'
         };
+
         set({ 
           connections: [newConn], 
           activeConnectionId: id,
-          isConfigured: true 
+          isConfigured: true,
+          connectionStatus: isOnline ? 'online' : 'offline'
         });
+
+        if (isOnline) {
+          await get().refreshModels();
+        }
+
+        return isOnline;
       },
 
       createSession: (workspaceId) => {

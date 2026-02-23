@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -7,21 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Zap, Server, Cpu, Loader2 } from "lucide-react";
+import { Zap, Server, Cpu, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function SetupOverlay() {
   const { completeInitialSetup } = useAppStore();
   const [baseUrl, setBaseUrl] = useState("http://localhost:11434/v1");
   const [modelId, setModelId] = useState("");
   const [isTesting, setIsTesting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    setError(null);
     setIsTesting(true);
-    // Simulate a connection check
-    setTimeout(() => {
-      completeInitialSetup(baseUrl, modelId || "unspecified");
+    
+    try {
+      const isOnline = await completeInitialSetup(baseUrl, modelId || "unspecified");
+      if (!isOnline) {
+        setError("Could not reach the backend. Ensure the server is running and CORS is allowed.");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred during setup.");
+    } finally {
       setIsTesting(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -35,6 +43,13 @@ export function SetupOverlay() {
           <CardDescription>Connect to your local or remote LLM engine to begin.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive text-xs">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Connection Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">API Base URL</Label>
             <div className="relative">
@@ -54,11 +69,11 @@ export function SetupOverlay() {
               <Input 
                 value={modelId} 
                 onChange={(e) => setModelId(e.target.value)}
-                placeholder="e.g. llama3:8b (optional at setup)"
+                placeholder="e.g. llama3:8b"
                 className="pl-10 border-white/10 bg-white/5"
               />
             </div>
-            <p className="text-[10px] text-muted-foreground px-1 italic">You can select or change your model later in the settings panel once connected.</p>
+            <p className="text-[10px] text-muted-foreground px-1 italic">Discoverable models will be listed in settings once connected.</p>
           </div>
         </CardContent>
         <CardFooter>

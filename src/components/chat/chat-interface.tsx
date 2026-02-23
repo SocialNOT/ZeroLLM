@@ -31,7 +31,8 @@ export function ChatInterface() {
     activeConnectionId,
     workspaces,
     activeWorkspaceId,
-    currentUserRole 
+    currentUserRole,
+    connectionStatus 
   } = useAppStore();
   
   const [input, setInput] = useState("");
@@ -101,7 +102,7 @@ export function ChatInterface() {
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I encountered an error connecting to the model backend. Please check your connection settings.",
+        content: "I encountered an error connecting to the model backend. Please check your connection settings in the control panel.",
         timestamp: Date.now()
       });
     } finally {
@@ -133,10 +134,12 @@ export function ChatInterface() {
           <div className="flex items-center gap-2">
             <div className={cn(
               "flex h-2 w-2 rounded-full",
-              connection ? "bg-accent shadow-[0_0_8px_rgba(0,255,255,0.6)]" : "bg-red-500"
+              connectionStatus === 'online' ? "bg-accent shadow-[0_0_8px_rgba(0,255,255,0.6)]" : 
+              connectionStatus === 'checking' ? "bg-yellow-500 animate-pulse" : "bg-red-500"
             )} />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {connection ? "Engine Active" : "Engine Offline"}
+              {connectionStatus === 'online' ? "Engine Active" : 
+               connectionStatus === 'checking' ? "Checking Engine..." : "Engine Offline"}
             </span>
           </div>
           <Separator orientation="vertical" className="h-4 bg-white/10" />
@@ -158,7 +161,7 @@ export function ChatInterface() {
             </div>
           )}
           <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase">
-            <span>{connection?.modelId}</span>
+            <span>{connection?.modelId || "AUTO"}</span>
             <span className="text-white/10 px-1">|</span>
             <Badge variant="outline" className="border-accent/30 text-accent py-0 h-4 text-[8px] uppercase">{session.settings.memoryType} Memory</Badge>
           </div>

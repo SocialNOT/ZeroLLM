@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -13,24 +12,35 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/store/use-app-store";
-import { Settings2, Server, Shield, Database, Cpu, CheckCircle2 } from "lucide-react";
+import { Settings2, Server, Shield, Database, Cpu, CheckCircle2, RefreshCw, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function SettingsDialog({ children }: { children: React.ReactNode }) {
-  const { connections, activeConnectionId, updateConnection } = useAppStore();
+  const { 
+    connections, 
+    activeConnectionId, 
+    updateConnection, 
+    availableModels, 
+    refreshModels, 
+    connectionStatus, 
+    checkConnection 
+  } = useAppStore();
+  
   const conn = connections.find(c => c.id === activeConnectionId);
 
-  // Example list of commonly used models for selection
-  const commonModels = ["llama3:8b", "mistral", "gemma:7b", "phi3"];
+  const handleRefresh = async () => {
+    await checkConnection();
+  };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl border-white/10 bg-background/95 backdrop-blur-xl">
+      <DialogContent className="max-w-2xl border-white/10 bg-background/95 backdrop-blur-xl overflow-hidden">
         <DialogHeader>
           <DialogTitle className="font-headline text-xl font-bold flex items-center gap-2">
             <Settings2 className="text-accent" size={20} />
@@ -48,22 +58,41 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-accent">Knowledge</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="engine" className="space-y-6 py-6">
+          <TabsContent value="engine" className="space-y-6 py-6 h-[400px] overflow-y-auto custom-scrollbar px-1">
             <div className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-accent">
-                  <Server size={16} />
-                  <h4 className="text-sm font-bold uppercase tracking-widest">Connection Config</h4>
+                <div className="flex items-center justify-between text-accent">
+                  <div className="flex items-center gap-2">
+                    <Server size={16} />
+                    <h4 className="text-sm font-bold uppercase tracking-widest">Connection Config</h4>
+                  </div>
+                  <Badge variant="outline" className={cn(
+                    "text-[8px] uppercase font-bold",
+                    connectionStatus === 'online' ? "border-accent text-accent bg-accent/10" : "border-red-500/50 text-red-400 bg-red-500/10"
+                  )}>
+                    {connectionStatus}
+                  </Badge>
                 </div>
                 <div className="grid gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-semibold text-muted-foreground">API BASE ENDPOINT</Label>
-                    <Input 
-                      value={conn?.baseUrl || ""} 
-                      onChange={(e) => conn && updateConnection(conn.id, { baseUrl: e.target.value })}
-                      className="border-white/10 bg-white/5 font-mono text-xs"
-                      placeholder="http://localhost:11434/v1"
-                    />
+                    <div className="flex gap-2">
+                      <Input 
+                        value={conn?.baseUrl || ""} 
+                        onChange={(e) => conn && updateConnection(conn.id, { baseUrl: e.target.value })}
+                        className="border-white/10 bg-white/5 font-mono text-xs"
+                        placeholder="http://localhost:11434/v1"
+                      />
+                      <Button 
+                        size="icon" 
+                        variant="outline" 
+                        className="h-10 w-10 shrink-0 border-white/10"
+                        onClick={handleRefresh}
+                        disabled={connectionStatus === 'checking'}
+                      >
+                        {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -82,24 +111,37 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                       value={conn?.modelId || ""} 
                       onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
                       className="border-white/10 bg-white/5 font-mono text-xs"
-                      placeholder="Enter model ID (e.g. llama3:8b)"
+                      placeholder="Enter model ID manually or select below"
                     />
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {commonModels.map(model => (
-                      <Badge 
-                        key={model}
-                        variant="outline"
-                        className={`cursor-pointer transition-colors hover:bg-white/10 ${conn?.modelId === model ? 'border-accent bg-accent/10 text-accent' : 'border-white/10 text-muted-foreground'}`}
-                        onClick={() => conn && updateConnection(conn.id, { modelId: model })}
-                      >
-                        {conn?.modelId === model && <CheckCircle2 size={10} className="mr-1" />}
-                        {model}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground italic">If your model is not listed above, type the ID manually in the field.</p>
+                  {availableModels.length > 0 ? (
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold text-muted-foreground uppercase">Discovered Models</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableModels.map(model => (
+                          <Badge 
+                            key={model}
+                            variant="outline"
+                            className={cn(
+                              "cursor-pointer transition-all text-[10px] py-1",
+                              conn?.modelId === model 
+                                ? 'border-accent bg-accent/20 text-accent shadow-[0_0_10px_rgba(0,255,255,0.2)]' 
+                                : 'border-white/10 text-muted-foreground hover:bg-white/5'
+                            )}
+                            onClick={() => conn && updateConnection(conn.id, { modelId: model })}
+                          >
+                            {conn?.modelId === model && <CheckCircle2 size={10} className="mr-1" />}
+                            {model}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg border border-dashed border-white/10 text-center">
+                      <p className="text-[10px] text-muted-foreground italic">Connect to a backend to discover available models.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -108,21 +150,32 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             
             <div className="flex justify-between items-center bg-accent/5 p-4 rounded-lg border border-accent/20">
               <div className="text-xs">
-                <p className="font-bold text-accent">Backend Response Status</p>
-                <p className="text-muted-foreground">The application will attempt to route requests to: <span className="font-mono text-foreground">{conn?.modelId || 'unspecified'}</span></p>
+                <p className="font-bold text-accent uppercase tracking-tighter">Backend Target</p>
+                <p className="text-muted-foreground text-[10px]">Active endpoint: <span className="font-mono text-foreground">{conn?.baseUrl}</span></p>
               </div>
-              <Button size="sm" variant="outline" className="text-[10px] h-7">TEST ENGINE PING</Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-[10px] h-7 font-bold uppercase"
+                onClick={handleRefresh}
+                disabled={connectionStatus === 'checking'}
+              >
+                Ping Engine
+              </Button>
             </div>
           </TabsContent>
           
-          <TabsContent value="security" className="py-6 space-y-4 text-center">
+          <TabsContent value="security" className="py-12 space-y-4 text-center">
             <Shield className="mx-auto text-primary" size={40} />
-            <p className="text-sm text-muted-foreground">Aetheria runs in 100% local isolation. No telemetry data is sent to external servers.</p>
+            <h4 className="font-headline font-bold uppercase tracking-widest text-sm">Enterprise Security</h4>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">Aetheria runs in 100% local isolation. No telemetry data or prompts are sent to external cloud providers.</p>
           </TabsContent>
 
-          <TabsContent value="data" className="py-6 space-y-4 text-center">
+          <TabsContent value="data" className="py-12 space-y-4 text-center">
             <Database className="mx-auto text-primary" size={40} />
-            <p className="text-sm text-muted-foreground">Vector database index: Active (342 chunks indexed)</p>
+            <h4 className="font-headline font-bold uppercase tracking-widest text-sm">Knowledge Graph</h4>
+            <p className="text-sm text-muted-foreground">Vector database status: <span className="text-accent font-bold">READY</span></p>
+            <p className="text-[10px] text-muted-foreground italic">342 chunks indexed for RAG retrieval.</p>
           </TabsContent>
         </Tabs>
       </DialogContent>
