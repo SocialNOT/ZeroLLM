@@ -12,44 +12,50 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   useSidebar
 } from "@/components/ui/sidebar";
 import { 
   Zap, 
   Plus, 
-  Layers, 
   Settings2, 
   MessageSquare,
   X,
-  Cpu,
-  Globe,
-  Database,
-  Calculator,
-  Terminal,
-  Activity
+  UserCircle,
+  Layers,
+  Type,
+  ChevronRight
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
-import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export function AppSidebar() {
   const { 
-    workspaces, 
     activeWorkspaceId, 
-    setActiveWorkspace, 
     sessions, 
     activeSessionId, 
     setActiveSession,
     createSession,
-    availableTools,
-    activeConnectionId,
-    connections
+    personas,
+    frameworks,
+    linguisticControls
   } = useAppStore();
 
   const { isMobile, setOpenMobile } = useSidebar();
-  const activeConn = connections.find(c => c.id === activeConnectionId);
+
+  // Filter for custom configurations
+  const customPersonas = personas.filter(p => p.isCustom);
+  const customFrameworks = frameworks.filter(f => f.isCustom);
+  const customControls = linguisticControls.filter(l => l.isCustom);
 
   const workspaceSessions = sessions.filter(s => s.workspaceId === activeWorkspaceId);
 
@@ -58,23 +64,9 @@ export function AppSidebar() {
     if (isMobile) setOpenMobile(false);
   };
 
-  const handleWorkspaceClick = (id: string) => {
-    setActiveWorkspace(id);
-  };
-
   const handleCreateSession = () => {
     const id = createSession(activeWorkspaceId || '');
     if (isMobile) setOpenMobile(false);
-  };
-
-  const getToolIcon = (id: string) => {
-    switch (id) {
-      case 'calculator': return <Calculator size={14} />;
-      case 'web_search': return <Globe size={14} />;
-      case 'knowledge_search': return <Database size={14} />;
-      case 'code_interpreter': return <Terminal size={14} />;
-      default: return <Zap size={14} />;
-    }
   };
 
   return (
@@ -99,52 +91,99 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-4">
+        {/* Library Group for Custom Configurations */}
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Workspaces</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Library</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {workspaces.map((ws) => (
-                <SidebarMenuItem key={ws.id}>
-                  <SidebarMenuButton 
-                    isActive={activeWorkspaceId === ws.id}
-                    onClick={() => handleWorkspaceClick(ws.id)}
-                    className={cn(
-                      "transition-all h-11 rounded-2xl px-3",
-                      activeWorkspaceId === ws.id 
-                        ? "bg-white border border-slate-100 text-primary shadow-lg" 
-                        : "text-slate-500 hover:bg-white/80"
-                    )}
-                  >
-                    <Layers size={18} className={activeWorkspaceId === ws.id ? "text-primary" : "text-slate-400"} />
-                    <span className="ml-3 font-bold text-sm truncate">{ws.name}</span>
-                  </SidebarMenuButton>
+              {/* Custom Personas */}
+              <Collapsible asChild className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip="My Personas">
+                      <UserCircle size={18} className="text-slate-400" />
+                      <span className="font-bold text-sm">Personas</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {customPersonas.length > 0 ? (
+                        customPersonas.map(p => (
+                          <SidebarMenuSubItem key={p.id}>
+                            <SidebarMenuSubButton className="text-[11px] font-medium uppercase tracking-wider">{p.name}</SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))
+                      ) : (
+                        <SidebarMenuSubItem>
+                          <span className="text-[10px] text-slate-400 px-2 italic">No custom personas</span>
+                        </SidebarMenuSubItem>
+                      )}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
                 </SidebarMenuItem>
-              ))}
+              </Collapsible>
+
+              {/* Custom Frameworks */}
+              <Collapsible asChild className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip="My Frameworks">
+                      <Layers size={18} className="text-slate-400" />
+                      <span className="font-bold text-sm">Frameworks</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {customFrameworks.length > 0 ? (
+                        customFrameworks.map(f => (
+                          <SidebarMenuSubItem key={f.id}>
+                            <SidebarMenuSubButton className="text-[11px] font-medium uppercase tracking-wider">{f.name}</SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))
+                      ) : (
+                        <SidebarMenuSubItem>
+                          <span className="text-[10px] text-slate-400 px-2 italic">No custom frameworks</span>
+                        </SidebarMenuSubItem>
+                      )}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              {/* Custom Controls */}
+              <Collapsible asChild className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip="My Controls">
+                      <Type size={18} className="text-slate-400" />
+                      <span className="font-bold text-sm">Controls</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {customControls.length > 0 ? (
+                        customControls.map(c => (
+                          <SidebarMenuSubItem key={c.id}>
+                            <SidebarMenuSubButton className="text-[11px] font-medium uppercase tracking-wider">{c.name}</SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))
+                      ) : (
+                        <SidebarMenuSubItem>
+                          <span className="text-[10px] text-slate-400 px-2 italic">No custom controls</span>
+                        </SidebarMenuSubItem>
+                      )}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Intelligence Nodes</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {availableTools.map((tool) => (
-                <SidebarMenuItem key={tool.id}>
-                  <div className="flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 group-data-[collapsible=icon]:justify-center">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                        {getToolIcon(tool.id)}
-                      </div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest group-data-[collapsible=icon]:hidden">{tool.name}</span>
-                    </div>
-                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse group-data-[collapsible=icon]:hidden" />
-                  </div>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
+        {/* Chronicle (History) Group */}
         <SidebarGroup className="mt-8">
           <div className="mb-4 flex items-center justify-between px-3">
             <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Chronicle</SidebarGroupLabel>
