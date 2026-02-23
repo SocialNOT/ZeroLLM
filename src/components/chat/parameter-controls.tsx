@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useAppStore } from "@/store/use-app-store";
@@ -15,11 +14,12 @@ export function ParameterControls() {
 
   if (!session) return null;
 
+  const enabledTools = session.settings?.enabledTools || [];
+
   const toggleTool = (toolId: string) => {
-    const currentTools = session.settings.enabledTools;
-    const newTools = currentTools.includes(toolId)
-      ? currentTools.filter(id => id !== toolId)
-      : [...currentTools, toolId];
+    const newTools = enabledTools.includes(toolId)
+      ? enabledTools.filter(id => id !== toolId)
+      : [...enabledTools, toolId];
     updateSessionSettings(session.id, { enabledTools: newTools });
   };
 
@@ -78,7 +78,7 @@ export function ParameterControls() {
                 <span className="text-[9px] text-muted-foreground">{tool.description}</span>
               </div>
               <Switch 
-                checked={session.settings.enabledTools.includes(tool.id)}
+                checked={enabledTools.includes(tool.id)}
                 onCheckedChange={() => toggleTool(tool.id)}
               />
             </div>

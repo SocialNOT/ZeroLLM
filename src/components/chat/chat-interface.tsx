@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -70,7 +69,6 @@ export function ChatInterface() {
       let responseContent = "";
       let citations = undefined;
 
-      // Check if we use RAG or standard chat
       if (workspace?.knowledgeBaseId) {
         const ragResponse = await documentAwareAIChat({
           query: input,
@@ -86,7 +84,7 @@ export function ChatInterface() {
           topP: session.settings.topP,
           maxTokens: session.settings.maxTokens,
           memoryType: session.settings.memoryType,
-          enabledTools: session.settings.enabledTools,
+          enabledTools: session.settings.enabledTools || [],
           history: session.messages
         });
       }
@@ -125,6 +123,8 @@ export function ChatInterface() {
     );
   }
 
+  const enabledToolsCount = session.settings?.enabledTools?.length ?? 0;
+
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-background">
       {/* Top Status Bar */}
@@ -151,10 +151,10 @@ export function ChatInterface() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {session.settings.enabledTools.length > 0 && (
+          {enabledToolsCount > 0 && (
             <div className="flex items-center gap-1">
               <Wrench size={10} className="text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground font-semibold uppercase">{session.settings.enabledTools.length} Tools Loaded</span>
+              <span className="text-[10px] text-muted-foreground font-semibold uppercase">{enabledToolsCount} Tools Loaded</span>
             </div>
           )}
           <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase">
