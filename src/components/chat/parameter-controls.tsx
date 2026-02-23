@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -102,7 +101,7 @@ export function ParameterControls() {
                       </div>
                       <p className={cn("text-[10px] leading-relaxed line-clamp-2", session.frameworkId === f.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{f.description}</p>
                       <div className="flex flex-wrap gap-1 mt-3">
-                        {f.tags.slice(0, 3).map(t => (
+                        {f.tags?.slice(0, 3).map(t => (
                           <span key={t} className={cn(
                             "px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase tracking-tighter",
                             session.frameworkId === f.id ? "bg-white/10 border-white/10 text-white" : "bg-background border-border text-muted-foreground"
