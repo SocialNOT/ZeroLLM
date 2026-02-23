@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -16,6 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarMenuAction,
   useSidebar
 } from "@/components/ui/sidebar";
 import { 
@@ -215,15 +215,14 @@ export function AppSidebar() {
                     >
                       <MessageSquare size={16} className={activeSessionId === session.id ? "text-primary" : "text-slate-400"} />
                       <span className="ml-3 truncate font-bold text-[11px] uppercase tracking-wider pr-6">{session.title}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => handleDeleteSession(e, session.id)}
-                        className="absolute right-2 opacity-0 group-hover/item:opacity-100 h-6 w-6 rounded-lg text-rose-500 hover:bg-rose-50 transition-opacity"
-                      >
-                        <Trash2 size={12} />
-                      </Button>
                     </SidebarMenuButton>
+                    <SidebarMenuAction
+                      onClick={(e) => handleDeleteSession(e, session.id)}
+                      showOnHover
+                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg"
+                    >
+                      <Trash2 size={12} />
+                    </SidebarMenuAction>
                   </SidebarMenuItem>
                 ))
               ) : (
