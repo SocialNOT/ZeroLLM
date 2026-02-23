@@ -109,7 +109,6 @@ export function ChatInterface() {
     const textToSend = customInput || input;
     if (!textToSend.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
 
-    // Auto-name if it's the first message
     if (session.messages.length === 0) {
       handleGenerateTitle(textToSend);
     }
@@ -203,17 +202,17 @@ export function ChatInterface() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
                   <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="hidden md:flex flex-col items-end text-right border-r border-border pr-6">
+                  
+                  <div className="hidden md:flex flex-col items-start text-left border-l border-border pl-6">
                     <div className="flex items-center gap-2">
                       <Clock size={12} className="text-primary/70" />
                       <span className="text-[14px] font-code font-bold text-primary leading-tight tracking-widest">{formattedTime}</span>
                     </div>
                     <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">{formattedDate}</span>
                   </div>
-
+                </div>
+                
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Button 
                       variant="ghost" 
