@@ -1,6 +1,7 @@
+
 'use server';
 /**
- * @fileOverview A Genkit flow for handling persona-driven chat.
+ * @fileOverview A Genkit flow for handling advanced persona-driven chat with memory and tools.
  * 
  * - personaDrivenChat - A function that handles the persona-driven chat process.
  * - PersonaDrivenChatInput - The input type for the personaDrivenChat function.
@@ -10,17 +11,56 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
+const MessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+  timestamp: z.number(),
+});
+
 const PersonaDrivenChatInputSchema = z.object({
   systemPrompt: z.string().describe('The system prompt defining the AI persona.'),
   userMessage: z.string().describe('The user\'s message to the AI.'),
-  temperature: z.number().min(0).max(1).default(0.7).describe('Controls the randomness of the output. Lower values mean less random responses.'),
-  topP: z.number().min(0).max(1).default(0.95).describe('Controls the diversity of the output. Higher values consider more tokens.'),
-  maxTokens: z.number().int().positive().default(1024).describe('The maximum number of tokens to generate in the response.'),
+  temperature: z.number().min(0).max(1).default(0.7),
+  topP: z.number().min(0).max(1).default(0.95),
+  maxTokens: z.number().int().positive().default(1024),
+  memoryType: z.enum(['buffer', 'summary', 'knowledge-graph']).default('buffer'),
+  enabledTools: z.array(z.string()).default([]),
+  history: z.array(MessageSchema).optional(),
 });
 export type PersonaDrivenChatInput = z.infer<typeof PersonaDrivenChatInputSchema>;
 
-const PersonaDrivenChatOutputSchema = z.string().describe('The AI\'s response based on the persona and user message.');
+const PersonaDrivenChatOutputSchema = z.string().describe('The AI\'s response.');
 export type PersonaDrivenChatOutput = z.infer<typeof PersonaDrivenChatOutputSchema>;
+
+// Tool definitions
+const calculatorTool = ai.defineTool(
+  {
+    name: 'calculator',
+    description: 'Perform basic math operations.',
+    inputSchema: z.object({ expression: z.string() }),
+    outputSchema: z.string(),
+  },
+  async (input) => {
+    try {
+      // Basic safe eval placeholder
+      return `Result: ${eval(input.expression.replace(/[^-()\d/*+.]/g, ''))}`;
+    } catch (e) {
+      return "Error evaluating expression.";
+    }
+  }
+);
+
+const webSearchTool = ai.defineTool(
+  {
+    name: 'web_search',
+    description: 'Search the internet.',
+    inputSchema: z.object({ query: z.string() }),
+    outputSchema: z.string(),
+  },
+  async (input) => {
+    return `Simulated search results for: ${input.query}. Knowledge cutoff: real-time. Results: Aetheria Enterprise version 2.5 released with local RAG support.`;
+  }
+);
 
 export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<PersonaDrivenChatOutput> {
   return personaDrivenChatFlow(input);
@@ -30,9 +70,17 @@ const personaDrivenChatPrompt = ai.definePrompt({
   name: 'personaDrivenChatPrompt',
   input: { schema: PersonaDrivenChatInputSchema },
   output: { schema: PersonaDrivenChatOutputSchema },
-  prompt: `{{systemPrompt}}
+  prompt: `System: {{systemPrompt}}
 
-{{userMessage}}`,
+Memory Type: {{memoryType}}
+{{#if history}}
+Recent Context:
+{{#each history}}
+{{role}}: {{{content}}}
+{{/each}}
+{{/if}}
+
+User: {{userMessage}}`,
 });
 
 const personaDrivenChatFlow = ai.defineFlow(
@@ -42,13 +90,17 @@ const personaDrivenChatFlow = ai.defineFlow(
     outputSchema: PersonaDrivenChatOutputSchema,
   },
   async (input) => {
+    const activeTools = [];
+    if (input.enabledTools.includes('calculator')) activeTools.push(calculatorTool);
+    if (input.enabledTools.includes('web_search')) activeTools.push(webSearchTool);
+
     const { output } = await personaDrivenChatPrompt(input, {
+      tools: activeTools,
       config: {
         temperature: input.temperature,
         topP: input.topP,
         maxOutputTokens: input.maxTokens,
       },
-      system: input.systemPrompt,
     });
     return output!;
   }

@@ -1,5 +1,7 @@
 
 export type ModelProvider = 'Ollama' | 'LM Studio' | 'Custom';
+export type UserRole = 'Admin' | 'User' | 'Viewer';
+export type MemoryType = 'buffer' | 'summary' | 'knowledge-graph';
 
 export interface ModelConnection {
   id: string;
@@ -47,5 +49,14 @@ export interface ChatSession {
     topP: number;
     maxTokens: number;
     format: 'markdown' | 'json' | 'step-by-step';
+    memoryType: MemoryType;
+    enabledTools: string[];
   };
+}
+
+export interface ToolDefinition {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
 }

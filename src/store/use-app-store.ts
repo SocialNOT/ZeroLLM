@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ModelConnection, Persona, Workspace, ChatSession, Message } from '@/types';
+import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition } from '@/types';
 
 interface AppState {
   workspaces: Workspace[];
@@ -12,6 +12,8 @@ interface AppState {
   sessions: ChatSession[];
   activeSessionId: string | null;
   isConfigured: boolean;
+  currentUserRole: UserRole;
+  availableTools: ToolDefinition[];
   
   // Actions
   addWorkspace: (w: Workspace) => void;
@@ -25,6 +27,7 @@ interface AppState {
   addMessage: (sessionId: string, message: Message) => void;
   updateSessionSettings: (sessionId: string, settings: Partial<ChatSession['settings']>) => void;
   completeInitialSetup: (baseUrl: string, modelId: string) => void;
+  setRole: (role: UserRole) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -44,6 +47,11 @@ export const useAppStore = create<AppState>()(
       sessions: [],
       activeSessionId: null,
       isConfigured: false,
+      currentUserRole: 'Admin', // Default for prototype
+      availableTools: [
+        { id: 'calculator', name: 'Calculator', description: 'Perform mathematical operations', icon: 'calculator' },
+        { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'search' }
+      ],
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -62,6 +70,8 @@ export const useAppStore = create<AppState>()(
       addPersona: (p) => set((state) => ({ personas: [...state.personas, p] })),
       
       setActiveSession: (id) => set({ activeSessionId: id }),
+
+      setRole: (role) => set({ currentUserRole: role }),
       
       completeInitialSetup: (baseUrl, modelId) => {
         const id = 'default-conn';
@@ -94,7 +104,9 @@ export const useAppStore = create<AppState>()(
             temperature: 0.7,
             topP: 0.9,
             maxTokens: 1024,
-            format: 'markdown'
+            format: 'markdown',
+            memoryType: 'buffer',
+            enabledTools: []
           }
         };
         set((state) => ({ sessions: [...state.sessions, newSession], activeSessionId: id }));

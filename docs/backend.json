@@ -1,0 +1,41 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Extended information for application users including roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { 
+          "type": "string",
+          "enum": ["Admin", "User", "Viewer"],
+          "description": "The RBAC role of the user."
+        },
+        "displayName": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ChatSession": {
+      "title": "Chat Session",
+      "description": "Stored chat sessions with settings.",
+      "type": "object",
+      "properties": {
+        "workspaceId": { "type": "string" },
+        "title": { "type": "string" },
+        "memoryType": { "type": "string", "enum": ["buffer", "summary", "knowledge-graph"] },
+        "enabledTools": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "#/backend/entities/UserProfile",
+      "description": "User profiles and permissions."
+    }
+  }
+}

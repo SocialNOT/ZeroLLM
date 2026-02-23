@@ -6,11 +6,12 @@ import { useAppStore } from "@/store/use-app-store";
 import { ChatMessage } from "./chat-message";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles, Paperclip, Loader2, ArrowDown, Wifi, WifiOff } from "lucide-react";
+import { Send, Sparkles, Paperclip, Loader2, ArrowDown, Wifi, ShieldCheck, Wrench } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { documentAwareAIChat } from "@/ai/flows/document-aware-ai-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ParameterControls } from "./parameter-controls";
+import { Separator } from "@/components/ui/separator";
 import { 
   Sheet, 
   SheetContent, 
@@ -19,6 +20,7 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export function ChatInterface() {
   const { 
@@ -29,7 +31,8 @@ export function ChatInterface() {
     connections,
     activeConnectionId,
     workspaces,
-    activeWorkspaceId 
+    activeWorkspaceId,
+    currentUserRole 
   } = useAppStore();
   
   const [input, setInput] = useState("");
@@ -50,6 +53,7 @@ export function ChatInterface() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !session || isTyping) return;
+    if (currentUserRole === 'Viewer') return;
 
     const userMsg = {
       id: Date.now().toString(),
@@ -66,6 +70,7 @@ export function ChatInterface() {
       let responseContent = "";
       let citations = undefined;
 
+      // Check if we use RAG or standard chat
       if (workspace?.knowledgeBaseId) {
         const ragResponse = await documentAwareAIChat({
           query: input,
@@ -79,7 +84,10 @@ export function ChatInterface() {
           userMessage: input,
           temperature: session.settings.temperature,
           topP: session.settings.topP,
-          maxTokens: session.settings.maxTokens
+          maxTokens: session.settings.maxTokens,
+          memoryType: session.settings.memoryType,
+          enabledTools: session.settings.enabledTools,
+          history: session.messages
         });
       }
 
@@ -95,7 +103,7 @@ export function ChatInterface() {
       addMessage(session.id, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I encountered an error connecting to the model backend. Please check your connection settings in the System Control Panel.",
+        content: "I encountered an error connecting to the model backend. Please check your connection settings.",
         timestamp: Date.now()
       });
     } finally {
@@ -136,11 +144,24 @@ export function ChatInterface() {
             <Wifi size={10} />
             {connection?.baseUrl.replace(/https?:\/\//, '')}
           </div>
+          <Separator orientation="vertical" className="h-4 bg-white/10" />
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={12} className="text-primary" />
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{currentUserRole} Access</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase">
-          <span>{connection?.modelId}</span>
-          <span className="text-white/10 px-1">|</span>
-          <span className="text-white/40">Tokens: 4k Context</span>
+        <div className="flex items-center gap-3">
+          {session.settings.enabledTools.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Wrench size={10} className="text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground font-semibold uppercase">{session.settings.enabledTools.length} Tools Loaded</span>
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase">
+            <span>{connection?.modelId}</span>
+            <span className="text-white/10 px-1">|</span>
+            <Badge variant="outline" className="border-accent/30 text-accent py-0 h-4 text-[8px] uppercase">{session.settings.memoryType} Memory</Badge>
+          </div>
         </div>
       </div>
 
@@ -175,7 +196,7 @@ export function ChatInterface() {
         <div className="mx-auto flex w-full max-w-4xl flex-col">
           {session.messages.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center opacity-50">
-              <div className="mb-4 h-1px w-20 bg-accent/20" />
+              <div className="mb-4 h-[1px] w-20 bg-accent/20" />
               <p className="font-headline text-xs uppercase tracking-[0.3em]">Awaiting Input Sequence</p>
             </div>
           ) : (
@@ -198,20 +219,27 @@ export function ChatInterface() {
         <div className="mx-auto max-w-4xl">
           <form onSubmit={handleSubmit} className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-accent">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="icon" 
+                disabled={currentUserRole === 'Viewer'}
+                className="h-8 w-8 text-muted-foreground hover:text-accent"
+              >
                 <Paperclip size={18} />
               </Button>
             </div>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={`Message ${persona.name}...`}
+              disabled={currentUserRole === 'Viewer'}
+              placeholder={currentUserRole === 'Viewer' ? "Read-only access" : `Message ${persona.name}...`}
               className="h-14 w-full rounded-2xl border-white/10 bg-white/5 pl-14 pr-24 text-sm font-medium transition-all focus:border-accent/40 focus:ring-accent/10"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
               <Button 
                 type="submit" 
-                disabled={!input.trim() || isTyping}
+                disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
                 className="h-10 w-10 rounded-xl bg-primary text-accent shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
               >
                 <Send size={18} />
