@@ -1,0 +1,17 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "ai-avatar",
+      "description": "Abstract AI visual representation",
+      "imageUrl": "https://picsum.photos/seed/ai1/400/400",
+      "imageHint": "artificial intelligence"
+    },
+    {
+      "id": "user-avatar",
+      "description": "Professional user profile placeholder",
+      "imageUrl": "https://picsum.photos/seed/user1/400/400",
+      "imageHint": "professional person"
+    }
+  ]
+}
