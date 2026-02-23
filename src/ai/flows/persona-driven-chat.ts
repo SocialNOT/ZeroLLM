@@ -29,7 +29,9 @@ const PersonaDrivenChatInputSchema = z.object({
 });
 export type PersonaDrivenChatInput = z.infer<typeof PersonaDrivenChatInputSchema>;
 
-const PersonaDrivenChatOutputSchema = z.string().describe('The AI\'s response.');
+const PersonaDrivenChatOutputSchema = z.object({
+  response: z.string().describe('The AI\'s generated response text.')
+});
 export type PersonaDrivenChatOutput = z.infer<typeof PersonaDrivenChatOutputSchema>;
 
 // Tool definitions
@@ -62,17 +64,21 @@ const webSearchTool = ai.defineTool(
   }
 );
 
-export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<PersonaDrivenChatOutput> {
-  return personaDrivenChatFlow(input);
+/**
+ * Public wrapper for the persona-driven chat flow.
+ * Returns only the response text for easier UI integration.
+ */
+export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<string> {
+  const result = await personaDrivenChatFlow(input);
+  return result.response;
 }
 
 const personaDrivenChatPrompt = ai.definePrompt({
   name: 'personaDrivenChatPrompt',
   input: { schema: PersonaDrivenChatInputSchema },
   output: { schema: PersonaDrivenChatOutputSchema },
-  prompt: `System: {{systemPrompt}}
-
-Memory Type: {{memoryType}}
+  system: '{{systemPrompt}}',
+  prompt: `Memory Type: {{memoryType}}
 {{#if history}}
 Recent Context:
 {{#each history}}
@@ -102,6 +108,11 @@ const personaDrivenChatFlow = ai.defineFlow(
         maxOutputTokens: input.maxTokens,
       },
     });
-    return output!;
+
+    if (!output) {
+      return { response: "I'm sorry, I encountered an issue while generating a response. The engine might be temporarily busy or restricted by safety filters." };
+    }
+
+    return output;
   }
 );

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for document-aware AI chat, implementing Retrieval-Augmented Generation (RAG).
@@ -41,7 +42,6 @@ export type DocumentAwareAIChatOutput = z.infer<
 >;
 
 // Defines a tool to simulate retrieving relevant document chunks from a knowledge base.
-// In a full implementation, this would interact with a vector database (e.g., pgvector, ChromaDB).
 const retrieveDocuments = ai.defineTool(
   {
     name: 'retrieveDocuments',
@@ -67,9 +67,6 @@ const retrieveDocuments = ai.defineTool(
     ),
   },
   async (input) => {
-    // This is a placeholder implementation. In a real application,
-    // this would perform a similarity search against a vector database
-    // (e.g., pgvector, ChromaDB) for the given knowledgeBaseId and query.
     console.log(
       `Retrieving documents for query: "${input.query}" from knowledge base: "${input.knowledgeBaseId}"`
     );
@@ -113,14 +110,8 @@ const documentAwareAIChatPrompt = ai.definePrompt({
   output: {
     schema: DocumentAwareAIChatOutputSchema,
   },
-  prompt: `You are an expert assistant for answering questions based on provided documents.
-Carefully read the user's question and the context provided by the documents below.
-Synthesize an answer using ONLY the information found in the documents.
-When providing an answer, ALWAYS include citations to the source documents. For each piece of information, identify the document it came from and cite it using the following JSON format in your response's citations array: {"source": "Document Name", "page": X}. If no page number is available, omit the page field.
-
-If the question cannot be answered from the provided documents, state that the information is not available in the provided documents.
-
-Documents:
+  system: 'You are an expert assistant for answering questions based on provided documents. Carefully read the user\'s question and the context provided by the documents below. Synthesize an answer using ONLY the information found in the documents. When providing an answer, ALWAYS include citations to the source documents using the specified JSON format.',
+  prompt: `Documents:
 {{#each retrievedDocuments}}
 Source: {{{source}}} {{#if page}}(Page: {{page}}){{/if}}
 Content: {{{content}}}
@@ -142,7 +133,15 @@ const documentAwareAIChatFlow = ai.defineFlow(
       query: input.query,
       retrievedDocuments,
     });
-    return output!;
+    
+    if (!output) {
+      return {
+        answer: "I was unable to generate an answer based on the provided documents. The information requested might be missing or the engine encountered an issue.",
+        citations: []
+      };
+    }
+    
+    return output;
   }
 );
 
