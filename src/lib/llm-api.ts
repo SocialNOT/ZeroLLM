@@ -10,10 +10,31 @@ export interface LLMModel {
   owned_by?: string;
 }
 
+/**
+ * Normalizes the base URL to ensure it has a protocol and correct slashes.
+ */
+function normalizeUrl(url: string): string {
+  let normalized = url.trim();
+  if (!/^https?:\/\//i.test(normalized)) {
+    normalized = `http://${normalized}`;
+  }
+  // Ensure no trailing slashes that cause double slashes in concatenation
+  return normalized.replace(/\/+$/, '');
+}
+
 export async function testConnection(baseUrl: string): Promise<boolean> {
+  const normalizedBase = normalizeUrl(baseUrl);
+  
   try {
     // Try multiple common endpoints if the base one fails
-    const endpoints = [`${baseUrl}/models`, `${baseUrl}/v1/models`, `${baseUrl}/api/v1/models`].map(url => url.replace(/([^:])\/\//g, '$1/'));
+    // We try to be very permissive with protocols
+    const endpoints = [
+      `${normalizedBase}/models`, 
+      `${normalizedBase}/v1/models`, 
+      `${normalizedBase}/api/v1/models`,
+      `${normalizedBase}/api/models`,
+      normalizedBase // Just the base URL as a fallback
+    ];
     
     for (const url of endpoints) {
       try {
@@ -23,7 +44,11 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
           mode: 'cors',
           signal: AbortSignal.timeout(5000)
         });
-        if (response.ok) return true;
+        
+        // Even a 404/401 from some APIs means the server is UP and reachable
+        if (response.ok || response.status === 401 || response.status === 405) {
+          return true;
+        }
       } catch (e) {
         continue;
       }
@@ -36,7 +61,13 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
 }
 
 export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
-  const endpoints = [`${baseUrl}/models`, `${baseUrl}/v1/models`, `${baseUrl}/api/v1/models`].map(url => url.replace(/([^:])\/\//g, '$1/'));
+  const normalizedBase = normalizeUrl(baseUrl);
+  const endpoints = [
+    `${normalizedBase}/models`, 
+    `${normalizedBase}/v1/models`, 
+    `${normalizedBase}/api/v1/models`,
+    `${normalizedBase}/api/models`
+  ];
   
   for (const url of endpoints) {
     try {
@@ -62,7 +93,10 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
       }
       // 3. Raw array
       if (Array.isArray(data)) {
-        return data.map((m: any) => ({ id: typeof m === 'string' ? m : (m.id || m.name), name: typeof m === 'string' ? m : (m.name || m.id) }));
+        return data.map((m: any) => ({ 
+          id: typeof m === 'string' ? m : (m.id || m.name), 
+          name: typeof m === 'string' ? m : (m.name || m.id) 
+        }));
       }
     } catch (error) {
       console.error(`Failed to fetch models from ${url}:`, error);
@@ -72,12 +106,14 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
 }
 
 export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
-  // Normalize the endpoint
-  let chatUrl = `${baseUrl}/chat/completions`;
-  if (baseUrl.includes('/v1')) {
-    chatUrl = `${baseUrl}/chat/completions`.replace(/([^:])\/\//g, '$1/');
-  } else if (!baseUrl.endsWith('/v1') && !baseUrl.includes('/api/')) {
-    chatUrl = `${baseUrl}/v1/chat/completions`.replace(/([^:])\/\//g, '$1/');
+  const normalizedBase = normalizeUrl(baseUrl);
+  
+  // Normalize the endpoint path
+  let chatUrl = `${normalizedBase}/chat/completions`;
+  if (normalizedBase.includes('/v1')) {
+    chatUrl = `${normalizedBase}/chat/completions`;
+  } else if (!normalizedBase.includes('/api/')) {
+    chatUrl = `${normalizedBase}/v1/chat/completions`;
   }
 
   try {

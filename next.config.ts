@@ -28,6 +28,19 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Support for local LLM provided images (HTTP)
+      {
+        protocol: 'http',
+        hostname: '*',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };
