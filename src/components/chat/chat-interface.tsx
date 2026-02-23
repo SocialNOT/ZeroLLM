@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -49,12 +50,14 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
+import { ai } from "@/ai/genkit";
 
 export function ChatInterface() {
   const { 
     activeSessionId, 
     sessions, 
     addMessage, 
+    updateSession,
     personas, 
     frameworks,
     connections,
@@ -91,9 +94,30 @@ export function ChatInterface() {
     }
   }, [session?.messages, isTyping]);
 
+  const generateTitle = async (text: string) => {
+    try {
+      const { text: title } = await ai.generate({
+        prompt: `Create a concise, professional 3-4 word title for an AI chat session based on this first message: "${text}". Provide ONLY the title text, no quotes or periods.`,
+        config: { maxTokens: 10 }
+      });
+      if (title && session) {
+        updateSession(session.id, { title: title.trim() });
+      }
+    } catch (e) {
+      if (session) {
+        updateSession(session.id, { title: text.substring(0, 20) + "..." });
+      }
+    }
+  };
+
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
     if (!textToSend.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
+
+    // Auto-name if it's the first message
+    if (session.messages.length === 0) {
+      generateTitle(textToSend);
+    }
 
     const userMsg = {
       id: Date.now().toString(),
@@ -178,19 +202,14 @@ export function ChatInterface() {
   return (
     <div className="flex h-full w-full overflow-hidden bg-background p-4 lg:p-6 gap-6 transition-colors duration-500">
       <div className="flex flex-col flex-1 gap-6 min-w-0 h-full overflow-hidden">
-        {/* Main Chat Bento Module */}
         <div className="flex flex-col flex-1 bg-card rounded-[2.5rem] border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] overflow-hidden">
           <div className="flex flex-col border-b border-border px-8 py-5 bg-card/80 backdrop-blur-md sticky top-0 z-10 gap-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-5">
                 <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
-                <div className="flex flex-col">
-                  {/* Logo moved to Sidebar */}
-                </div>
               </div>
               
               <div className="flex items-center gap-4">
-                {/* Sleek Date/Time Display */}
                 <div className="hidden md:flex flex-col items-end text-right border-r border-border pr-6">
                   <div className="flex items-center gap-2">
                     <Clock size={12} className="text-primary/70" />
@@ -229,7 +248,6 @@ export function ChatInterface() {
                 </div>
               </div>
             </div>
-            {/* Sleek Sub-header line */}
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.25em] truncate">
                 / {session.title}
@@ -309,7 +327,6 @@ export function ChatInterface() {
         </div>
       </div>
 
-      {/* Side Bento Diagnostic Tiles */}
       <div className="hidden xl:flex flex-col w-[300px] gap-6 shrink-0 h-full overflow-y-auto custom-scrollbar">
         <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-8">

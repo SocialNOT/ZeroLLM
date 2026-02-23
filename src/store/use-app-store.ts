@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
@@ -32,8 +33,10 @@ interface AppState {
   addLinguisticControl: (l: LinguisticControl) => void;
 
   createSession: (workspaceId: string) => string;
+  deleteSession: (id: string) => void;
   setActiveSession: (id: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
+  updateSession: (sessionId: string, updates: Partial<ChatSession>) => void;
   updateSessionSettings: (sessionId: string, settings: Partial<ChatSession['settings']>) => void;
   applyFramework: (sessionId: string, frameworkId: string) => void;
   applyPersona: (sessionId: string, personaId: string) => void;
@@ -200,9 +203,20 @@ export const useAppStore = create<AppState>()(
         return id;
       },
 
+      deleteSession: (id) => set((state) => ({
+        sessions: state.sessions.filter(s => s.id !== id),
+        activeSessionId: state.activeSessionId === id ? null : state.activeSessionId
+      })),
+
       addMessage: (sessionId, message) => set((state) => ({
         sessions: state.sessions.map(s => 
           s.id === sessionId ? { ...s, messages: [...s.messages, message] } : s
+        )
+      })),
+
+      updateSession: (sessionId, updates) => set((state) => ({
+        sessions: state.sessions.map(s => 
+          s.id === sessionId ? { ...s, ...updates } : s
         )
       })),
 

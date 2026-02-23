@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -26,7 +27,8 @@ import {
   UserCircle,
   Layers,
   Type,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,7 @@ export function AppSidebar() {
     activeSessionId, 
     setActiveSession,
     createSession,
+    deleteSession,
     personas,
     frameworks,
     linguisticControls
@@ -52,7 +55,6 @@ export function AppSidebar() {
 
   const { isMobile, setOpenMobile } = useSidebar();
 
-  // Filter for custom configurations
   const customPersonas = personas.filter(p => p.isCustom);
   const customFrameworks = frameworks.filter(f => f.isCustom);
   const customControls = linguisticControls.filter(l => l.isCustom);
@@ -67,6 +69,11 @@ export function AppSidebar() {
   const handleCreateSession = () => {
     const id = createSession(activeWorkspaceId || '');
     if (isMobile) setOpenMobile(false);
+  };
+
+  const handleDeleteSession = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteSession(id);
   };
 
   return (
@@ -91,12 +98,10 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-4">
-        {/* Library Group for Custom Configurations */}
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Library</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Custom Personas */}
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -124,7 +129,6 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
-              {/* Custom Frameworks */}
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -152,7 +156,6 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
-              {/* Custom Controls */}
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -183,7 +186,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Chronicle (History) Group */}
         <SidebarGroup className="mt-8">
           <div className="mb-4 flex items-center justify-between px-3">
             <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Chronicle</SidebarGroupLabel>
@@ -200,7 +202,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {workspaceSessions.length > 0 ? (
                 workspaceSessions.map((session) => (
-                  <SidebarMenuItem key={session.id}>
+                  <SidebarMenuItem key={session.id} className="group/item">
                     <SidebarMenuButton 
                       isActive={activeSessionId === session.id}
                       onClick={() => handleSessionClick(session.id)}
@@ -212,7 +214,15 @@ export function AppSidebar() {
                       )}
                     >
                       <MessageSquare size={16} className={activeSessionId === session.id ? "text-primary" : "text-slate-400"} />
-                      <span className="ml-3 truncate font-bold text-[11px] uppercase tracking-wider">{session.title}</span>
+                      <span className="ml-3 truncate font-bold text-[11px] uppercase tracking-wider pr-6">{session.title}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleDeleteSession(e, session.id)}
+                        className="absolute right-2 opacity-0 group-hover/item:opacity-100 h-6 w-6 rounded-lg text-rose-500 hover:bg-rose-50 transition-opacity"
+                      >
+                        <Trash2 size={12} />
+                      </Button>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))
