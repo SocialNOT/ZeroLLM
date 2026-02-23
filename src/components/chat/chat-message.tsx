@@ -132,7 +132,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-xl">
-                    {['Spanish', 'French', 'Japanese'].map(l => (
+                    {['Spanish', 'French', 'Japanese', 'Hindi', 'Bengali'].map(l => (
                       <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[9px] font-bold uppercase tracking-widest rounded-lg">
                         {l}
                       </DropdownMenuItem>

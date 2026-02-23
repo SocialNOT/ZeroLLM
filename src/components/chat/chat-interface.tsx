@@ -44,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
+import { toast } from "@/hooks/use-toast";
 
 export function ChatInterface() {
   const { 
@@ -67,9 +68,11 @@ export function ChatInterface() {
   const { theme, setTheme } = useTheme();
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
@@ -81,6 +84,47 @@ export function ChatInterface() {
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+
+      recognitionRef.current.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        if (finalTranscript) {
+          setInput(prev => prev + (prev.endsWith(' ') || prev === '' ? '' : ' ') + finalTranscript);
+        }
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech Recognition Error:', event.error);
+        setIsListening(false);
+        toast({
+          variant: "destructive",
+          title: "Speech Recognition Error",
+          description: "Could not access microphone or recognition failed."
+        });
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
   }, []);
 
   // Smooth scroll to bottom on new messages
@@ -96,9 +140,37 @@ export function ChatInterface() {
     }
   }, [session?.messages?.length, isTyping]);
 
+  const handleMicToggle = () => {
+    if (!recognitionRef.current) {
+      toast({
+        variant: "destructive",
+        title: "Speech Recognition Unavailable",
+        description: "Your browser does not support voice-to-text."
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+      toast({
+        title: "Listening...",
+        description: "Start speaking to input text."
+      });
+    }
+  };
+
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
     if (!textToSend.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
 
     if (session.messages.length === 0) {
       generateChatTitle(textToSend).then(title => updateSession(session.id, { title }));
@@ -383,20 +455,34 @@ export function ChatInterface() {
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
                 className="relative flex items-center bg-muted/50 hover:bg-muted transition-colors rounded-2xl sm:rounded-[2.5rem] p-1.5 sm:p-2.5 border border-border shadow-2xl shadow-black/5"
               >
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-10 w-10 sm:h-14 sm:w-14 text-muted-foreground hover:bg-card rounded-xl sm:rounded-3xl shrink-0"
-                >
-                  <Paperclip size={20} />
-                </Button>
+                <div className="flex shrink-0">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-10 w-10 sm:h-14 sm:w-14 text-muted-foreground hover:bg-card rounded-xl sm:rounded-3xl"
+                  >
+                    <Paperclip size={20} />
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={handleMicToggle}
+                    className={cn(
+                      "h-10 w-10 sm:h-14 sm:w-14 transition-all rounded-xl sm:rounded-3xl",
+                      isListening ? "text-rose-500 bg-rose-500/10 animate-pulse" : "text-muted-foreground hover:bg-card"
+                    )}
+                  >
+                    {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                  </Button>
+                </div>
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={currentUserRole === 'Viewer' || isTyping}
-                  placeholder="Direct command..."
+                  placeholder={isListening ? "Listening..." : "Direct command..."}
                   className="h-10 sm:h-14 w-full border-none bg-transparent px-2 sm:px-6 text-[15px] font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
                 />
                 <Button 
