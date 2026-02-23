@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -9,13 +8,13 @@ import {
   Copy, 
   User, 
   Bot, 
-  Play, 
   RefreshCw, 
   Languages, 
   Share2, 
   Volume2,
   Check,
-  Loader2
+  Loader2,
+  Cpu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -90,79 +89,86 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      "group flex w-full items-start gap-4 px-4 py-8 transition-all border-b border-slate-50/50",
-      isAssistant ? "bg-slate-50/40" : "bg-white"
+      "group flex w-full items-start gap-6 py-10 transition-all border-b border-slate-50/50",
+      isAssistant ? "bg-slate-50/30" : "bg-transparent"
     )}>
-      <div className="flex-shrink-0">
-        <Avatar className={cn(
-          "h-10 w-10 border transition-all duration-500",
-          isAssistant ? "border-primary/20 bg-white" : "border-slate-200 bg-white"
+      <div className="flex-shrink-0 pt-1">
+        <div className={cn(
+          "relative h-11 w-11 rounded-2xl flex items-center justify-center transition-all duration-500",
+          isAssistant ? "bg-white shadow-lg border border-primary/10" : "bg-slate-100 border border-slate-200"
         )}>
           {isAssistant ? (
-            <AvatarFallback className="bg-primary/5 text-primary"><Bot size={20} /></AvatarFallback>
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full animate-pulse" />
+              <Bot className="relative text-primary" size={22} />
+            </div>
           ) : (
-            <AvatarFallback className="bg-slate-100 text-slate-600"><User size={20} /></AvatarFallback>
+            <User className="text-slate-500" size={22} />
           )}
-        </Avatar>
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 overflow-hidden">
+      <div className="flex flex-1 flex-col gap-3 overflow-hidden">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              {isAssistant ? "Engine Response" : "Originator"}
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              {isAssistant ? "AI Intelligence" : "Originator Node"}
             </span>
             {isAssistant && (
-              <div className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100">
+                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[8px] font-bold text-emerald-600 uppercase">Computed</span>
+              </div>
             )}
           </div>
           
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
             {isAssistant && (
               <>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={handleSpeech}>
-                  {isPlaying ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={12} />}
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={handleSpeech}>
+                  {isPlaying ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={14} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={onRegenerate}>
-                  <RefreshCw size={12} />
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={onRegenerate}>
+                  <RefreshCw size={14} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary">
-                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Languages size={12} />}
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm">
+                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Languages size={14} />}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl">
-                    <DropdownMenuItem onClick={() => handleTranslate('Spanish')}>Spanish</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTranslate('French')}>French</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTranslate('German')}>German</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTranslate('Chinese')}>Chinese</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTranslate('Japanese')}>Japanese</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="rounded-2xl p-2 border-slate-100 shadow-xl">
+                    {['Spanish', 'French', 'German', 'Chinese', 'Japanese'].map(l => (
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-xs font-bold rounded-xl cursor-pointer">
+                        {l}
+                      </DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={handleShare}>
-              <Share2 size={12} />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={handleShare}>
+              <Share2 size={14} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={handleCopy}>
-              {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-white shadow-sm" onClick={handleCopy}>
+              {isCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
             </Button>
           </div>
         </div>
 
         <div className={cn(
-          "max-w-none text-sm leading-relaxed",
+          "max-w-none text-[15px] leading-relaxed",
           isAssistant ? "text-slate-800 font-medium" : "text-slate-600"
         )}>
           {message.content.split('\n').map((line, i) => (
-            <p key={i} className="mb-2 last:mb-0">{line}</p>
+            <p key={i} className="mb-4 last:mb-0">{line}</p>
           ))}
         </div>
         
         {isAssistant && message.content.includes("ERROR:") && (
-          <div className="mt-2 p-3 rounded-lg bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-bold uppercase tracking-tighter">
-            Action Required: Check connection or load model to memory.
+          <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-bold uppercase tracking-widest flex items-center gap-3">
+            <Cpu size={14} className="animate-pulse" />
+            Node Protocol Failure: Establish engine connection or re-load model.
           </div>
         )}
       </div>

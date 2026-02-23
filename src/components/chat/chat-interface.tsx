@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -16,7 +15,10 @@ import {
   ShieldCheck, 
   Layers,
   ChevronDown,
-  X
+  X,
+  Zap,
+  Globe,
+  Cpu
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -125,8 +127,6 @@ export function ChatInterface() {
 
   const handleRegenerate = async () => {
     if (!session || session.messages.length === 0 || isTyping) return;
-    
-    // Find the last user message
     const lastUserMsg = [...session.messages].reverse().find(m => m.role === 'user');
     if (lastUserMsg) {
       await handleSend(lastUserMsg.content);
@@ -151,16 +151,19 @@ export function ChatInterface() {
 
   if (!session) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-slate-50/30">
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-background">
         <div className="md:hidden absolute top-4 left-4">
           <SidebarTrigger />
         </div>
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/5 border border-primary/10">
-          <Sparkles className="text-primary animate-pulse" size={32} />
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-[2rem] bg-white border border-slate-100 shadow-2xl">
+            <Zap className="text-primary animate-pulse" size={40} fill="currentColor" />
+          </div>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-slate-900 px-4">Experience Intelligent Orchestration</h2>
-        <p className="max-w-md text-sm text-slate-500 leading-relaxed px-4">
-          Select a workspace or start a new conversation to interface with your professional AI engines.
+        <h2 className="mb-3 text-3xl font-headline font-bold text-slate-900 px-4">Ready for Orchestration</h2>
+        <p className="max-w-md text-sm text-slate-500 font-medium leading-relaxed px-4 opacity-70">
+          Initialize a secure bridge to your local AI engine or select an active session from your chronicle.
         </p>
       </div>
     );
@@ -168,76 +171,75 @@ export function ChatInterface() {
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-background">
-      {/* Dynamic Status Header */}
-      <div className="flex items-center justify-between border-b border-slate-200/60 bg-white/50 px-4 md:px-6 py-2.5 backdrop-blur-sm">
-        <div className="flex items-center gap-2 md:gap-4">
-          <SidebarTrigger className="h-8 w-8 text-slate-500 md:hidden" />
-          <div className="flex items-center gap-2">
+      {/* Refined Prism Header */}
+      <div className="flex items-center justify-between border-b border-slate-100/50 bg-white/60 px-4 md:px-6 py-3 backdrop-blur-2xl z-20">
+        <div className="flex items-center gap-3">
+          <SidebarTrigger className="h-9 w-9 text-slate-500 md:hidden hover:bg-slate-100 rounded-xl" />
+          
+          <div className="flex items-center gap-2 group cursor-help">
             <div className={cn(
-              "h-2 w-2 rounded-full",
-              connectionStatus === 'online' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : 
+              "h-2 w-2 rounded-full transition-all duration-500",
+              connectionStatus === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : 
               connectionStatus === 'checking' ? "bg-amber-400 animate-pulse" : "bg-rose-500"
             )} />
-            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-500 hidden sm:inline">
-              {connectionStatus === 'online' ? "Engine Online" : 
-               connectionStatus === 'checking' ? "Syncing..." : "Offline"}
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 group-hover:text-slate-600 transition-colors hidden sm:inline">
+              {connectionStatus === 'online' ? "Node Isolated" : 
+               connectionStatus === 'checking' ? "Synchronizing" : "Node Offline"}
             </span>
           </div>
-          <div className="hidden sm:block h-4 w-[1px] bg-slate-200" />
+
+          <div className="hidden sm:block h-5 w-[1px] bg-slate-200/50 mx-2" />
           
           <Popover>
             <PopoverTrigger asChild>
               <div 
-                className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium text-slate-400 cursor-pointer hover:text-primary transition-colors"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-all cursor-pointer"
                 onClick={() => setTempUrl(connection?.baseUrl || "")}
               >
-                <Wifi size={10} />
-                <span className="truncate max-w-[120px] md:max-w-none">
-                  {connection?.baseUrl.replace(/https?:\/\//, '').split('/')[0]}
+                <Globe size={12} className="text-primary/60" />
+                <span className="text-[10px] font-mono font-bold text-slate-500 truncate max-w-[140px]">
+                  {connection?.baseUrl.replace(/https?:\/\//, '')}
                 </span>
               </div>
             </PopoverTrigger>
-            <PopoverContent className="w-[320px] p-4 rounded-2xl shadow-2xl border-white/20 bg-white/95 backdrop-blur-xl">
+            <PopoverContent className="w-[340px] p-5 rounded-[2rem] shadow-2xl border-white/40 bg-white/90 backdrop-blur-2xl">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Node</div>
-                  <Badge variant="outline" className="text-[8px] h-4">HTTP / HTTPS</Badge>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-primary">Protocol Endpoint</div>
+                  <Badge variant="secondary" className="text-[8px] h-4 font-bold">V1 API</Badge>
                 </div>
                 <div className="flex gap-2">
                   <Input 
                     value={tempUrl} 
                     onChange={(e) => setTempUrl(e.target.value)}
                     placeholder="http://localhost:11434/v1"
-                    className="h-9 rounded-xl border-slate-200 bg-white font-mono text-xs focus:ring-primary/20"
+                    className="h-10 rounded-xl border-slate-200 bg-white font-mono text-xs focus:ring-primary/20"
                   />
                   <Button 
                     size="sm" 
-                    className="h-9 rounded-xl bg-primary px-3 text-[10px] font-bold uppercase" 
+                    className="h-10 rounded-xl bg-primary px-4 text-[10px] font-bold uppercase tracking-widest" 
                     onClick={handleUpdateUrl}
                   >
-                    Sync
+                    Link
                   </Button>
                 </div>
-                <p className="text-[9px] text-slate-400 italic">Changing this will re-validate the engine connection.</p>
               </div>
             </PopoverContent>
           </Popover>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer bg-slate-50 hover:bg-white text-[9px] md:text-[10px] text-slate-600 border-slate-200 py-0 h-6 max-w-[100px] md:max-w-none truncate transition-all flex items-center gap-1.5 pr-2"
-              >
-                <div className="max-w-[80px] truncate">{connection?.modelId || "AUTO"}</div>
+              <Button variant="outline" className="h-8 px-3 rounded-full border-slate-200 bg-white/50 hover:bg-white text-[10px] font-bold text-slate-600 gap-2 transition-all">
+                <Cpu size={12} className="text-primary/70" />
+                <span className="max-w-[100px] truncate">{connection?.modelId || "AUTO"}</span>
                 <ChevronDown size={10} className="text-slate-400" />
-              </Badge>
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[220px] rounded-2xl p-2 bg-white/95 backdrop-blur-xl border-slate-100 shadow-xl">
-              <div className="px-2 py-1.5 mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-50">
-                Active Engine Node
+            <DropdownMenuContent align="end" className="w-[240px] rounded-[1.5rem] p-2 bg-white/95 backdrop-blur-2xl border-slate-100 shadow-2xl">
+              <div className="px-3 py-2 mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-50">
+                Discovered Engines
               </div>
               {availableModels.length > 0 ? (
                 availableModels.map((model) => (
@@ -245,69 +247,69 @@ export function ChatInterface() {
                     key={model} 
                     onClick={() => updateConnection(connection.id, { modelId: model })}
                     className={cn(
-                      "text-xs font-semibold rounded-xl cursor-pointer py-2 transition-colors",
+                      "text-xs font-bold rounded-xl cursor-pointer py-2.5 px-3 transition-colors",
                       model === connection.modelId ? "bg-primary/5 text-primary" : "text-slate-600 hover:bg-slate-50"
                     )}
                   >
-                    <div className="flex items-center gap-2 flex-1">
-                      {model === connection.modelId && <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(75,0,130,0.4)]" />}
+                    <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                      {model === connection.modelId && <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-lg" />}
                       <span className="truncate">{model}</span>
                     </div>
                   </DropdownMenuItem>
                 ))
               ) : (
-                <div className="p-4 text-center">
-                  <p className="text-[10px] text-slate-400 font-medium italic">No discovered models</p>
-                  <Button variant="ghost" size="sm" className="mt-2 h-7 text-[9px] font-bold uppercase" onClick={() => checkConnection()}>
-                    Refresh Node
+                <div className="p-6 text-center">
+                  <p className="text-[10px] text-slate-400 font-bold italic mb-3">No models indexed</p>
+                  <Button variant="ghost" size="sm" className="h-8 text-[9px] font-bold uppercase tracking-widest text-primary" onClick={() => checkConnection()}>
+                    Sync Node
                   </Button>
                 </div>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-bold text-primary/70 uppercase">
-            <ShieldCheck size={12} className="hidden xs:inline" />
-            {currentUserRole}
+          <div className="hidden xs:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/50 border border-slate-200/50">
+            <ShieldCheck size={12} className="text-primary/70" />
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{currentUserRole}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-slate-100 bg-white">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="p-2 rounded-xl bg-primary/5 text-primary shrink-0">
-            <Layers size={18} />
+      <div className="flex items-center justify-between px-6 py-5 bg-white z-10">
+        <div className="flex items-center gap-4 overflow-hidden">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary border border-primary/10 shrink-0">
+            <Layers size={22} />
           </div>
           <div className="flex flex-col overflow-hidden">
-            <h3 className="text-sm font-bold text-slate-900 leading-none truncate">{session.title}</h3>
-            <span className="mt-1 text-[10px] font-semibold text-slate-400 uppercase tracking-widest truncate">{persona.name}</span>
+            <h3 className="text-lg font-headline font-bold text-slate-900 leading-none truncate">{session.title}</h3>
+            <span className="mt-1.5 text-[10px] font-bold text-primary uppercase tracking-[0.2em] opacity-60 truncate">{persona.name}</span>
           </div>
         </div>
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all shrink-0">
-              <Settings2 size={14} />
-              <span className="hidden xs:inline">Config</span>
+            <Button variant="ghost" size="sm" className="h-10 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all">
+              <Settings2 size={16} />
+              <span className="hidden sm:inline">Engine Config</span>
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:w-[340px] border-l border-slate-200 bg-white p-0">
-            <SheetHeader className="p-6 border-b border-slate-100">
-              <SheetTitle className="text-lg font-bold text-slate-900">Engine Parameters</SheetTitle>
+          <SheetContent className="w-full sm:w-[380px] border-l border-slate-100 bg-white p-0">
+            <SheetHeader className="p-8 border-b border-slate-50">
+              <SheetTitle className="text-xl font-headline font-bold text-slate-900">Engine Parameters</SheetTitle>
             </SheetHeader>
-            <ScrollArea className="h-[calc(100vh-80px)]">
+            <ScrollArea className="h-[calc(100vh-100px)]">
               <ParameterControls />
             </ScrollArea>
           </SheetContent>
         </Sheet>
       </div>
 
-      <ScrollArea className="flex-1 px-2 md:px-4 custom-scrollbar">
-        <div className="mx-auto flex w-full max-w-4xl flex-col pb-10">
+      <ScrollArea className="flex-1 px-4 md:px-6 custom-scrollbar">
+        <div className="mx-auto flex w-full max-w-4xl flex-col py-10">
           {session.messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-              <div className="mb-4 h-12 w-[1px] bg-gradient-to-b from-transparent to-slate-300" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">System Ready for Input</p>
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="mb-6 h-16 w-[1px] bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 animate-pulse">Neural Pathway Open</p>
             </div>
           ) : (
             session.messages.map((msg) => (
@@ -319,63 +321,73 @@ export function ChatInterface() {
             ))
           )}
           {isTyping && (
-            <div className="flex items-center gap-3 px-6 md:px-8 py-6 text-xs text-slate-400 font-medium animate-pulse">
-              <Loader2 size={14} className="animate-spin text-primary" />
-              Processing engine sequence...
+            <div className="flex items-center gap-4 px-8 py-8 text-[11px] text-primary font-bold uppercase tracking-widest animate-pulse">
+              <Loader2 size={16} className="animate-spin" />
+              Processing Sequence...
             </div>
           )}
-          <div ref={scrollRef} className="h-4" />
+          <div ref={scrollRef} className="h-8" />
         </div>
       </ScrollArea>
 
-      <div className="p-4 md:p-6 border-t border-slate-100 bg-slate-50/40">
+      {/* Floating Input Area */}
+      <div className="p-6 md:p-10 bg-gradient-to-t from-background via-background/80 to-transparent z-10">
         <div className="mx-auto max-w-4xl">
-          <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative group">
-            {attachedFile && (
-              <div className="absolute -top-10 left-0 flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                <span className="text-[10px] font-bold text-primary truncate max-w-[150px]">{attachedFile.name}</span>
-                <button type="button" onClick={() => setAttachedFile(null)} className="text-slate-400 hover:text-rose-500">
-                  <X size={12} />
-                </button>
+          <div className="relative glass-panel rounded-[2.5rem] p-1.5 transition-all focus-within:ring-4 focus-within:ring-primary/10">
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative">
+              {attachedFile && (
+                <div className="absolute -top-14 left-4 flex items-center gap-3 px-4 py-2 bg-white border border-primary/20 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-4">
+                  <div className="p-1 rounded bg-primary/10 text-primary">
+                    <Paperclip size={12} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-700 truncate max-w-[180px]">{attachedFile.name}</span>
+                  <button type="button" onClick={() => setAttachedFile(null)} className="ml-1 text-slate-300 hover:text-rose-500 transition-colors">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-11 w-11 text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all"
+                >
+                  <Paperclip size={20} />
+                </Button>
               </div>
-            )}
-            <div className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2">
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                className="hidden" 
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={currentUserRole === 'Viewer' || isTyping}
+                placeholder={currentUserRole === 'Viewer' ? "Restricted Access" : `Direct command to ${persona.name}...`}
+                className="h-14 w-full rounded-[2rem] border-none bg-transparent pl-14 pr-16 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-slate-400"
               />
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => fileInputRef.current?.click()}
-                className="h-8 w-8 md:h-9 md:w-9 text-slate-400 hover:text-primary hover:bg-white rounded-xl transition-all"
-              >
-                <Paperclip size={18} />
-              </Button>
-            </div>
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={currentUserRole === 'Viewer' || isTyping}
-              placeholder={currentUserRole === 'Viewer' ? "Read-only access" : `Command ${persona.name}...`}
-              className="h-12 md:h-14 w-full rounded-2xl border-slate-200 bg-white pl-12 md:pl-14 pr-12 md:pr-16 text-sm font-medium shadow-sm transition-all focus:border-primary focus:ring-primary/5 focus:shadow-md"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-              <Button 
-                type="submit" 
-                disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
-                className="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-              >
-                <Send size={18} />
-              </Button>
-            </div>
-          </form>
-          <p className="mt-3 text-center text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
-            Enterprise Encryption Active • Local Node Isolation • 0-Latency Bridging
-          </p>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                <Button 
+                  type="submit" 
+                  disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
+                  className="h-11 w-11 rounded-full bg-primary text-white shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
+                >
+                  <Send size={20} />
+                </Button>
+              </div>
+            </form>
+          </div>
+          <div className="mt-5 flex items-center justify-center gap-6 opacity-30 select-none">
+            <span className="text-[8px] font-bold uppercase tracking-[0.4em]">Node ISO-27001</span>
+            <div className="h-1 w-1 rounded-full bg-slate-400" />
+            <span className="text-[8px] font-bold uppercase tracking-[0.4em]">Zero-Latency</span>
+            <div className="h-1 w-1 rounded-full bg-slate-400" />
+            <span className="text-[8px] font-bold uppercase tracking-[0.4em]">E2E Encrypted</span>
+          </div>
         </div>
       </div>
     </div>
