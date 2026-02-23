@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
 import { testConnectionAction, fetchModelsAction, loadModelAction } from '@/ai/actions/engine-actions';
 import { PERSONAS } from '@/lib/personas';
@@ -65,6 +65,7 @@ export const useAppStore = create<AppState>()(
       connections: [],
       activeConnectionId: null,
       
+      // Load static libraries from lib files
       personas: PERSONAS,
       frameworks: FRAMEWORKS,
       linguisticControls: LINGUISTICS,
@@ -220,15 +221,15 @@ export const useAppStore = create<AppState>()(
 
       applyFramework: (sessionId, frameworkId) => {
         const framework = get().frameworks.find(f => f.id === frameworkId);
-        if (!framework) return;
         set((state) => ({
           sessions: state.sessions.map(s => 
             s.id === sessionId ? { 
               ...s, 
-              frameworkId,
+              // If clicking the same one, clear it. Otherwise set it.
+              frameworkId: s.frameworkId === frameworkId ? undefined : frameworkId,
               settings: { 
                 ...s.settings, 
-                enabledTools: framework.tools || [] 
+                enabledTools: framework?.tools || [] 
               }
             } : s
           )
@@ -254,18 +255,18 @@ export const useAppStore = create<AppState>()(
 
       applyLinguisticControl: (sessionId, linguisticId) => {
         const control = get().linguisticControls.find(l => l.id === linguisticId);
-        if (!control) return;
         set((state) => ({
           sessions: state.sessions.map(s => 
             s.id === sessionId ? { 
               ...s, 
-              linguisticId,
+              // If clicking the same one, clear it. Otherwise set it.
+              linguisticId: s.linguisticId === linguisticId ? undefined : linguisticId,
               settings: { 
                 ...s.settings, 
-                temperature: control.temperature !== undefined ? control.temperature : s.settings.temperature, 
-                topP: control.topP !== undefined ? control.topP : s.settings.topP, 
-                maxTokens: control.maxTokens !== undefined ? control.maxTokens : s.settings.maxTokens,
-                format: (control.format as any) || s.settings.format
+                temperature: (s.linguisticId !== linguisticId && control?.temperature !== undefined) ? control.temperature : s.settings.temperature, 
+                topP: (s.linguisticId !== linguisticId && control?.topP !== undefined) ? control.topP : s.settings.topP, 
+                maxTokens: (s.linguisticId !== linguisticId && control?.maxTokens !== undefined) ? control.maxTokens : s.settings.maxTokens,
+                format: (s.linguisticId !== linguisticId && control?.format) ? (control.format as any) : s.settings.format
               }
             } : s
           )
@@ -274,6 +275,17 @@ export const useAppStore = create<AppState>()(
 
       setActiveParameterTab: (tab) => set({ activeParameterTab: tab })
     }),
-    { name: 'aetheria-storage' }
+    { 
+      name: 'aetheria-storage-v2',
+      storage: createJSONStorage(() => localStorage),
+      // Merge static libraries on rehydration to ensure they are always complete
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.personas = PERSONAS;
+          state.frameworks = FRAMEWORKS;
+          state.linguisticControls = LINGUISTICS;
+        }
+      }
+    }
   )
 );

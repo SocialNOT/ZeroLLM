@@ -62,6 +62,7 @@ export function ChatInterface() {
     updateSession,
     personas, 
     frameworks,
+    linguisticControls,
     connections,
     activeConnectionId,
     currentUserRole,
@@ -83,6 +84,7 @@ export function ChatInterface() {
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
   const framework = frameworks.find(f => f.id === session?.frameworkId);
+  const linguistic = linguisticControls.find(l => l.id === session?.linguisticId);
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
   useEffect(() => {
@@ -127,12 +129,17 @@ export function ChatInterface() {
     setIsTyping(true);
 
     try {
-      const activeSystemPrompt = framework ? framework.content : persona.system_prompt;
+      // LINKING LOGIC: Combine Persona + Framework + Linguistic instructions
+      const combinedSystemPrompt = [
+        `You are acting as: ${persona.name}. ${persona.system_prompt}`,
+        framework ? `\n\n[STRUCTURAL FRAMEWORK: ${framework.name}]\nUse the following structure for your thinking and output:\n${framework.content}` : '',
+        linguistic ? `\n\n[LINGUISTIC CONSTRAINTS: ${linguistic.name}]\nAdhere to these rules strictly:\n${linguistic.system_instruction}` : ''
+      ].filter(Boolean).join('\n\n').trim();
       
       const responseContent = await personaDrivenChat({
         baseUrl: connection.baseUrl,
         modelId: connection.modelId,
-        systemPrompt: activeSystemPrompt,
+        systemPrompt: combinedSystemPrompt,
         userMessage: textToSend,
         temperature: session.settings.temperature,
         topP: session.settings.topP,
@@ -258,7 +265,7 @@ export function ChatInterface() {
                     >
                       <Layers size={10} className={cn("transition-transform group-hover:scale-110", isFrameworkActive ? "text-primary-foreground" : "text-primary")} />
                       <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
-                        Framework: {framework?.name || "Standard"}
+                        Framework: {framework?.name || "None"}
                       </span>
                     </button>
                   </SheetTrigger>
@@ -287,7 +294,7 @@ export function ChatInterface() {
                     >
                       <Cpu size={10} className={cn("transition-transform group-hover:scale-110", isLinguisticActive ? "text-destructive-foreground" : "text-muted-foreground")} />
                       <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
-                        Model: {connection.modelId || "AUTO"}
+                        Logic: {linguistic?.name || "Standard"}
                       </span>
                     </button>
                   </SheetTrigger>
@@ -329,11 +336,6 @@ export function ChatInterface() {
               <div className="mx-auto max-w-3xl">
                 <div className="relative bg-muted rounded-[2rem] p-2 transition-all focus-within:ring-4 focus-within:ring-primary/5 border border-border glow-multi">
                   <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center">
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      className="hidden" 
-                    />
                     <Button 
                       type="button" 
                       variant="ghost" 
