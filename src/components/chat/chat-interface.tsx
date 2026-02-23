@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -70,6 +69,7 @@ export function ChatInterface() {
     availableModels,
     updateConnection,
     checkConnection,
+    activeParameterTab,
     setActiveParameterTab
   } = useAppStore();
   
@@ -99,22 +99,12 @@ export function ChatInterface() {
     }
   }, [session?.messages, isTyping]);
 
-  const handleGenerateTitle = async (text: string) => {
-    if (!session) return;
-    try {
-      const title = await generateChatTitle(text);
-      updateSession(session.id, { title });
-    } catch (e) {
-      updateSession(session.id, { title: text.substring(0, 20) + "..." });
-    }
-  };
-
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
     if (!textToSend.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
 
     if (session.messages.length === 0) {
-      handleGenerateTitle(textToSend);
+      generateChatTitle(textToSend).then(title => updateSession(session.id, { title }));
     }
 
     const userMsg = {
@@ -129,7 +119,6 @@ export function ChatInterface() {
     setIsTyping(true);
 
     try {
-      // LINKING LOGIC: Combine Persona + Framework + Linguistic instructions
       const combinedSystemPrompt = [
         `You are acting as: ${persona.name}. ${persona.system_prompt}`,
         framework ? `\n\n[STRUCTURAL FRAMEWORK: ${framework.name}]\nUse the following structure for your thinking and output:\n${framework.content}` : '',
@@ -182,289 +171,203 @@ export function ChatInterface() {
     }
   };
 
-  const formattedTime = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "";
-  const formattedDate = currentTime ? currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : "";
+  const formattedTime = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
 
   if (!session) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-background">
-        <div className="relative mb-10">
-          <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full animate-pulse" />
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.06)] glow-multi">
-            <Zap className="text-primary animate-bounce" size={50} />
-          </div>
-        </div>
-        <p className="max-w-md text-muted-foreground font-medium leading-relaxed opacity-80 mt-4">
-          Select a cognitive thread from the chronicle or initialize a new sequence to begin orchestration.
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-transparent">
+        <Zap className="text-primary mb-4 animate-pulse" size={48} />
+        <p className="max-w-xs text-muted-foreground font-medium text-sm">
+          Initialize a cognitive sequence to begin.
         </p>
       </div>
     );
   }
 
-  const isFrameworkActive = !!session.frameworkId;
-  const isLinguisticActive = !!session.linguisticId;
-
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background p-4 lg:p-6 gap-6 transition-colors duration-500">
-      <div className="flex flex-col flex-1 gap-6 min-w-0 h-full overflow-hidden">
-        <div className="flex flex-col flex-1 bg-card rounded-[2.5rem] border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] overflow-hidden">
-          
-          <Sheet>
-            <div className="flex flex-col border-b border-border px-8 py-5 bg-card/80 backdrop-blur-md sticky top-0 z-10 gap-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-5">
-                  <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
-                  
-                  <div className="hidden md:flex flex-col items-start text-left border-l border-border pl-6">
-                    <div className="flex items-center gap-2">
-                      <Clock size={12} className="text-primary/70" />
-                      <span className="text-[14px] font-code font-bold text-primary leading-tight tracking-widest">{formattedTime}</span>
-                    </div>
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">{formattedDate}</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
-                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    >
-                      {theme === "dark" ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-slate-900" />}
-                    </Button>
-                    <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted border border-border">
-                      <ShieldCheck size={14} className="text-primary/70" />
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentUserRole}</span>
-                    </div>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
-                        <Settings2 size={20} />
-                      </Button>
-                    </SheetTrigger>
-                  </div>
+    <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden bg-card/50 backdrop-blur-sm transition-colors duration-500 lg:p-4 gap-4">
+      <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden bg-card border-b lg:border border-border lg:rounded-[2rem] shadow-sm">
+        
+        <Sheet>
+          <div className="flex flex-col border-b border-border px-4 py-3 sm:px-8 sm:py-5 bg-card/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-xl" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-primary tracking-widest uppercase truncate max-w-[120px]">
+                    {session.title}
+                  </span>
+                  <span className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-tight">{formattedTime} • {currentUserRole}</span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3 mt-1 overflow-hidden">
-                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.25em] truncate shrink-0 max-w-[150px]">
-                  / {session.title}
-                </span>
-                
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 pr-4">
-                  <SheetTrigger asChild>
-                    <button 
-                      onClick={() => setActiveParameterTab('frameworks')}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all group shrink-0",
-                        isFrameworkActive 
-                          ? "bg-primary text-primary-foreground border-primary shadow-md" 
-                          : "bg-muted/50 border-border text-muted-foreground hover:border-primary/30"
-                      )}
-                    >
-                      <Layers size={10} className={cn("transition-transform group-hover:scale-110", isFrameworkActive ? "text-primary-foreground" : "text-primary")} />
-                      <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
-                        Framework: {framework?.name || "None"}
-                      </span>
-                    </button>
-                  </SheetTrigger>
-
-                  <SheetTrigger asChild>
-                    <button 
-                      onClick={() => setActiveParameterTab('personas')}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-accent-foreground border border-accent shadow-md transition-all group shrink-0"
-                    >
-                      <UserCircle size={10} className="text-accent-foreground group-hover:scale-110 transition-transform" />
-                      <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
-                        Persona: {persona.name}
-                      </span>
-                    </button>
-                  </SheetTrigger>
-
-                  <SheetTrigger asChild>
-                    <button 
-                      onClick={() => setActiveParameterTab('linguistic')}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all group shrink-0",
-                        isLinguisticActive
-                          ? "bg-destructive text-destructive-foreground border-destructive shadow-md" 
-                          : "bg-muted border-border text-muted-foreground hover:border-destructive/30"
-                      )}
-                    >
-                      <Cpu size={10} className={cn("transition-transform group-hover:scale-110", isLinguisticActive ? "text-destructive-foreground" : "text-muted-foreground")} />
-                      <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
-                        Logic: {linguistic?.name || "Standard"}
-                      </span>
-                    </button>
-                  </SheetTrigger>
-                </div>
+              
+              <div className="flex items-center gap-1.5">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-9 w-9 rounded-xl text-muted-foreground"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {theme === "dark" ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} />}
+                </Button>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground">
+                    <Settings2 size={18} />
+                  </Button>
+                </SheetTrigger>
               </div>
             </div>
 
-            <ScrollArea className="flex-1 custom-scrollbar">
-              <div className="mx-auto flex w-full max-w-4xl flex-col py-10 px-8">
-                {session.messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-32 text-center opacity-40">
-                    <Terminal size={40} className="mb-6 text-muted-foreground" />
-                    <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-muted-foreground">Sequence Standby</p>
-                  </div>
-                ) : (
-                  session.messages.map((msg) => (
-                    <ChatMessage 
-                      key={msg.id} 
-                      message={msg} 
-                      onRegenerate={msg.role === 'assistant' ? handleRegenerate : undefined} 
-                    />
-                  ))
-                )}
-                {isTyping && (
-                  <div className="flex items-center gap-4 px-10 py-10 text-[11px] text-primary font-bold uppercase tracking-[0.3em] animate-pulse">
-                    <div className="flex gap-1">
-                      <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-                      <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-                      <div className="h-1 w-1 rounded-full bg-primary animate-bounce" />
-                    </div>
-                    Computing Response
-                  </div>
-                )}
-                <div ref={scrollRef} className="h-4" />
-              </div>
-            </ScrollArea>
+            <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar py-1">
+              <SheetTrigger asChild>
+                <button 
+                  onClick={() => setActiveParameterTab('frameworks')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
+                    session.frameworkId 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-muted/50 text-muted-foreground border-border"
+                  )}
+                >
+                  <Layers size={8} />
+                  {framework?.name || "No Framework"}
+                </button>
+              </SheetTrigger>
 
-            <div className="p-8 bg-gradient-to-t from-card via-card to-transparent">
-              <div className="mx-auto max-w-3xl">
-                <div className="relative bg-muted rounded-[2rem] p-2 transition-all focus-within:ring-4 focus-within:ring-primary/5 border border-border glow-multi">
-                  <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="h-12 w-12 text-muted-foreground hover:text-primary hover:bg-card rounded-2xl transition-all ml-1 shrink-0"
-                    >
-                      <Paperclip size={20} />
-                    </Button>
-                    <Input
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      disabled={currentUserRole === 'Viewer' || isTyping}
-                      placeholder={currentUserRole === 'Viewer' ? "Restricted Access" : `Direct command...`}
-                      className="h-14 w-full border-none bg-transparent px-4 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
-                    />
-                    <Button 
-                      type="submit" 
-                      disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
-                      className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all mr-1 shrink-0 glow-multi"
-                    >
-                      <Send size={18} />
-                    </Button>
-                  </form>
-                </div>
-              </div>
+              <SheetTrigger asChild>
+                <button 
+                  onClick={() => setActiveParameterTab('personas')}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent text-accent-foreground border border-accent text-[8px] font-bold uppercase tracking-widest shrink-0"
+                >
+                  <UserCircle size={8} />
+                  {persona.name}
+                </button>
+              </SheetTrigger>
+
+              <SheetTrigger asChild>
+                <button 
+                  onClick={() => setActiveParameterTab('linguistic')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all shrink-0",
+                    session.linguisticId 
+                      ? "bg-destructive text-destructive-foreground border-destructive" 
+                      : "bg-muted/50 text-muted-foreground border-border"
+                  )}
+                >
+                  <Cpu size={8} />
+                  {linguistic?.name || "Logic: Standard"}
+                </button>
+              </SheetTrigger>
             </div>
+          </div>
 
-            <SheetContent className="w-full sm:min-w-[450px] border-l border-border p-0 rounded-l-[3rem] overflow-hidden bg-card">
-              <SheetHeader className="p-10 border-b border-border bg-card">
-                <SheetTitle className="text-2xl font-headline font-bold">Module Parameters</SheetTitle>
-                <p className="text-xs text-muted-foreground font-medium">Fine-tune frameworks, personas, and linguistic logic.</p>
-              </SheetHeader>
-              <ParameterControls />
-            </SheetContent>
-          </Sheet>
-        </div>
+          <ScrollArea className="flex-1 custom-scrollbar">
+            <div className="mx-auto flex w-full max-w-3xl flex-col py-6 sm:py-10 px-4 sm:px-8">
+              {session.messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 opacity-30">
+                  <Terminal size={32} className="mb-4 text-muted-foreground" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em]">Node Idle</p>
+                </div>
+              ) : (
+                session.messages.map((msg) => (
+                  <ChatMessage 
+                    key={msg.id} 
+                    message={msg} 
+                    onRegenerate={msg.role === 'assistant' ? handleRegenerate : undefined} 
+                  />
+                ))
+              )}
+              {isTyping && (
+                <div className="flex items-center gap-3 px-4 py-6 text-[10px] text-primary font-bold uppercase tracking-[0.2em]">
+                  <div className="flex gap-1">
+                    <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+                    <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+                    <div className="h-1 w-1 rounded-full bg-primary animate-bounce" />
+                  </div>
+                  Computing
+                </div>
+              )}
+              <div ref={scrollRef} className="h-4" />
+            </div>
+          </ScrollArea>
+
+          <div className="p-4 sm:p-8 bg-card border-t lg:border-none">
+            <div className="mx-auto max-w-2xl">
+              <form 
+                onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
+                className="relative flex items-center bg-muted rounded-2xl sm:rounded-[2rem] p-1.5 sm:p-2 border border-border"
+              >
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground hover:bg-card rounded-xl sm:rounded-2xl shrink-0"
+                >
+                  <Paperclip size={18} />
+                </Button>
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={currentUserRole === 'Viewer' || isTyping}
+                  placeholder="Direct command..."
+                  className="h-10 sm:h-14 w-full border-none bg-transparent px-2 sm:px-4 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
+                  className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-primary text-primary-foreground shrink-0"
+                >
+                  <Send size={16} />
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          <SheetContent side="right" className="w-full sm:min-w-[450px] border-l border-border p-0 overflow-hidden bg-card">
+            <SheetHeader className="p-6 sm:p-10 border-b border-border bg-card">
+              <SheetTitle className="text-xl sm:text-2xl font-headline font-bold">Module Parameters</SheetTitle>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Cognitive Fine-Tuning</p>
+            </SheetHeader>
+            <ParameterControls />
+          </SheetContent>
+        </Sheet>
       </div>
 
-      <div className="hidden xl:flex flex-col w-[300px] gap-6 shrink-0 h-full overflow-y-auto custom-scrollbar">
-        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
-          <div className="flex items-center gap-3 mb-8">
-            <Activity size={18} className="text-primary" />
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Node Status</h4>
+      {/* Desktop Info Sidebar */}
+      <div className="hidden xl:flex flex-col w-[280px] gap-4 shrink-0 h-full">
+        <div className="bg-card rounded-[2rem] p-6 border border-border shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <Activity size={16} className="text-primary" />
+            <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Status</h4>
           </div>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>
-              <Badge variant="outline" className={cn(
-                "text-[9px] font-bold uppercase tracking-widest border-2",
-                connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-50/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
-              )}>
-                {connectionStatus === 'online' ? <Wifi size={10} className="mr-1.5" /> : <WifiOff size={10} className="mr-1.5" />}
-                {connectionStatus === 'online' ? "Online" : "Offline"}
-              </Badge>
-            </div>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <div className="space-y-2 cursor-pointer group">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-3 group-hover:text-primary transition-colors">Endpoint Node</span>
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted border border-border group-hover:border-primary/20 group-hover:bg-primary/5 transition-all">
-                    <Globe size={14} className="text-primary/60 shrink-0" />
-                    <span className="text-[10px] font-mono font-bold text-foreground truncate">{connection.baseUrl.replace(/https?:\/\//, '')}</span>
-                  </div>
-                </div>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] rounded-[2rem] p-6 shadow-2xl border-border bg-card">
-                <h4 className="text-xs font-bold uppercase tracking-widest mb-4">Update Signal Target</h4>
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
-                    <Input 
-                      value={tempUrl} 
-                      onChange={(e) => setTempUrl(e.target.value)}
-                      placeholder="http://..." 
-                      className="pl-12 rounded-xl text-xs h-10 border-border bg-muted"
-                    />
-                  </div>
-                  <Button onClick={handleUpdateUrl} className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20">Sync Node</Button>
-                </div>
-              </PopoverContent>
-            </Popover>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[9px] font-bold text-muted-foreground uppercase">Node</span>
+            <Badge variant="outline" className={cn(
+              "text-[8px] font-bold uppercase tracking-widest py-0.5 px-2",
+              connectionStatus === 'online' ? "border-emerald-500/20 text-emerald-500 bg-emerald-50/5" : "border-rose-500/20 text-rose-500 bg-rose-50/5"
+            )}>
+              {connectionStatus}
+            </Badge>
+          </div>
+          <div className="p-3 rounded-xl bg-muted border border-border text-[9px] font-mono truncate">
+            {connection.baseUrl.replace(/https?:\/\//, '')}
           </div>
         </div>
 
-        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
-          <div className="flex items-center gap-3 mb-8">
-            <Cpu size={18} className="text-primary" />
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Active Engine</h4>
+        <div className="bg-card rounded-[2rem] p-6 border border-border shadow-sm flex-1">
+          <div className="flex items-center gap-3 mb-6">
+            <Database size={16} className="text-primary" />
+            <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Telemetry</h4>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full h-12 rounded-2xl border-border bg-muted text-[10px] font-bold uppercase tracking-widest justify-between px-5 hover:bg-card hover:border-primary/30 transition-all">
-                <span className="truncate max-w-[140px]">{connection.modelId || "AUTO SELECT"}</span>
-                <ChevronDown size={14} className="text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[260px] rounded-[1.5rem] p-2 bg-card/95 backdrop-blur-2xl border-border shadow-2xl">
-              <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground border-b border-border">Discovered Models</div>
-              {availableModels.length > 0 ? (
-                availableModels.map(m => (
-                  <DropdownMenuItem key={m} onClick={() => updateConnection(connection.id, { modelId: m })} className="text-[11px] font-bold rounded-xl py-3 px-4 cursor-pointer hover:bg-primary/5 hover:text-primary">
-                    {m}
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <div className="py-8 text-center text-[10px] text-muted-foreground font-bold uppercase tracking-widest">No models found</div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] flex-1 min-h-[300px]">
-          <div className="flex items-center gap-3 mb-8">
-            <Database size={18} className="text-primary" />
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Cognitive Memory</h4>
-          </div>
-          <div className="space-y-6">
-            <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-2">Memory Path</span>
-              <span className="text-xs font-bold uppercase tracking-tight">{session.settings.memoryType} Optimized</span>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <span className="text-[8px] font-bold text-muted-foreground uppercase block">Active Engine</span>
+              <span className="text-[10px] font-bold block truncate">{connection.modelId || "Auto"}</span>
             </div>
-            <div className="p-5 rounded-2xl bg-muted border border-border">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">Signal Latency</span>
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-tighter">12ms Handshake</span>
-              </div>
+            <div className="space-y-1">
+              <span className="text-[8px] font-bold text-muted-foreground uppercase block">Memory Path</span>
+              <span className="text-[10px] font-bold block">{session.settings.memoryType}</span>
             </div>
           </div>
         </div>

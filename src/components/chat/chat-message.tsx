@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Message } from "@/types";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Copy, 
   User, 
@@ -41,7 +40,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
     setIsCopied(true);
-    toast({ title: "Copied to clipboard", duration: 1500 });
+    toast({ title: "Copied", duration: 1000 });
     setTimeout(() => setIsCopied(false), 2000);
   };
 
@@ -54,7 +53,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       audio.onended = () => setIsPlaying(false);
       audio.play();
     } catch (error) {
-      toast({ variant: "destructive", title: "Audio Error", description: "Failed to generate speech." });
+      toast({ variant: "destructive", title: "Audio Error" });
       setIsPlaying(false);
     }
   };
@@ -63,7 +62,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
     setIsTranslating(true);
     try {
       const { translatedText } = await translateText({ text: message.content, targetLanguage: lang });
-      toast({ title: `Translated to ${lang}`, description: translatedText });
+      toast({ title: `Translation (${lang})`, description: translatedText });
     } catch (error) {
       toast({ variant: "destructive", title: "Translation Error" });
     } finally {
@@ -71,83 +70,51 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Aetheria AI Response',
-          text: message.content,
-        });
-      } catch (err) {
-        console.error('Share failed', err);
-      }
-    } else {
-      handleCopy();
-      toast({ title: "Sharing not supported", description: "Copied to clipboard instead." });
-    }
-  };
-
   return (
     <div className={cn(
-      "group flex w-full mb-10 transition-all animate-in fade-in slide-in-from-bottom-2 duration-500",
+      "group flex w-full mb-6 sm:mb-10 animate-in fade-in slide-in-from-bottom-2 duration-500",
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
-        "flex max-w-[85%] lg:max-w-[75%] gap-4",
+        "flex max-w-[92%] sm:max-w-[85%] lg:max-w-[75%] gap-2 sm:gap-4",
         isAssistant ? "flex-row" : "flex-row-reverse"
       )}>
         <div className="flex-shrink-0 pt-1">
           <div className={cn(
-            "relative h-10 w-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg",
+            "h-8 w-8 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg",
             isAssistant ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
           )}>
-            {isAssistant ? (
-              <div className="relative">
-                <div className="absolute inset-0 bg-white/20 blur-lg rounded-full animate-pulse" />
-                <Bot className="relative" size={20} />
-              </div>
-            ) : (
-              <User size={20} />
-            )}
+            {isAssistant ? <Bot size={16} className="sm:size-5" /> : <User size={16} className="sm:size-5" />}
           </div>
         </div>
 
         <div className={cn(
-          "flex flex-col gap-2",
+          "flex flex-col gap-1.5",
           isAssistant ? "items-start" : "items-end"
         )}>
-          <div className="flex items-center gap-2 px-1">
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-              {isAssistant ? "AI Intelligence" : "Originator Node"}
-            </span>
-            {isAssistant && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[7px] font-bold text-emerald-600 uppercase tracking-tighter">Computed</span>
-              </div>
-            )}
-          </div>
+          <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">
+            {isAssistant ? "AI Engine" : "User Node"}
+          </span>
 
           <div className={cn(
-            "px-6 py-4 rounded-[2rem] shadow-xl text-[15px] leading-relaxed transition-all",
-            isAssistant 
-              ? "bg-accent text-accent-foreground rounded-tl-none" 
-              : "bg-primary text-primary-foreground rounded-tr-none"
+            "chat-bubble-base",
+            isAssistant ? "chat-bubble-assistant" : "chat-bubble-user"
           )}>
-            {message.content.split('\n').map((line, i) => (
-              <p key={i} className="mb-4 last:mb-0">{line}</p>
-            ))}
+            <div className="text-[13px] sm:text-[15px] leading-relaxed whitespace-pre-wrap">
+              {message.content}
+            </div>
           </div>
           
           {isAssistant && message.content.includes("ERROR:") && (
-            <div className="mt-2 p-3 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-bold uppercase tracking-widest flex items-center gap-3">
-              <Cpu size={12} className="animate-pulse" />
-              Node Protocol Failure: Establish connection.
+            <div className="mt-2 p-2 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[9px] font-bold uppercase tracking-widest flex items-center gap-2">
+              <Cpu size={10} className="animate-pulse" />
+              Node Protocol Failure
             </div>
           )}
 
           <div className={cn(
-            "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0",
+            "flex items-center gap-1 mt-1 transition-all duration-300",
+            "sm:opacity-0 sm:group-hover:opacity-100",
             !isAssistant && "flex-row-reverse"
           )}>
             {isAssistant && (
@@ -164,9 +131,9 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                       {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={12} />}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="rounded-2xl p-2 border-border shadow-xl">
-                    {['Spanish', 'French', 'German', 'Chinese', 'Japanese'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-bold uppercase tracking-wider rounded-xl cursor-pointer">
+                  <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-xl">
+                    {['Spanish', 'French', 'Japanese'].map(l => (
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[9px] font-bold uppercase tracking-widest rounded-lg">
                         {l}
                       </DropdownMenuItem>
                     ))}
@@ -174,9 +141,6 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleShare}>
-              <Share2 size={12} />
-            </Button>
             <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleCopy}>
               {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
             </Button>

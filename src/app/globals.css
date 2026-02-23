@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%; /* Black */
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
@@ -42,19 +42,19 @@
     --card-foreground: 0 0% 98%;
     --popover: 222 47% 11%;
     --popover-foreground: 0 0% 98%;
-    --primary: 24 95% 64%; /* Muted Orange */
+    --primary: 24 95% 64%;
     --primary-foreground: 222 47% 11%;
-    --secondary: 0 72% 51%; /* Muted Red */
+    --secondary: 0 72% 51%;
     --secondary-foreground: 0 0% 100%;
     --muted: 217 32% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 142 70% 45%; /* Muted Green */
+    --accent: 142 70% 45%;
     --accent-foreground: 222 47% 11%;
-    --destructive: 47 95% 55%; /* Muted Yellow */
+    --destructive: 47 95% 55%;
     --destructive-foreground: 222 47% 11%;
     --border: 217 32% 17%;
     --input: 217 32% 17%;
-    --ring: 47 95% 55%; /* Yellow ring */
+    --ring: 47 95% 55%;
     
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 40% 98%;
@@ -72,82 +72,58 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased transition-colors duration-500;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-headline tracking-tight font-bold text-foreground;
+    @apply bg-background text-foreground font-body antialiased transition-colors duration-500 overflow-hidden;
   }
 }
 
-.bento-tile {
-  @apply bg-card rounded-[2.5rem] border border-border shadow-[0_8px_40px_rgba(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)];
+.sleek-animated-border {
+  position: relative;
+  border-radius: var(--radius);
+  background: var(--card);
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+.sleek-animated-border::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    hsl(var(--primary) / 0.2),
+    transparent 25%,
+    transparent 50%,
+    hsl(var(--accent) / 0.2),
+    transparent 75%
+  );
+  border-radius: calc(var(--radius) + 2px);
+  z-index: -1;
+  animation: border-rotate 10s linear infinite;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-200/60 rounded-full hover:bg-slate-300 transition-colors;
+@keyframes border-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .chat-bubble-user {
-  @apply bg-primary text-primary-foreground rounded-3xl rounded-tr-none shadow-xl shadow-primary/20 p-5;
+  @apply bg-primary text-primary-foreground rounded-[1.5rem] rounded-tr-none shadow-lg shadow-primary/10 px-4 py-3 sm:px-6 sm:py-4;
 }
 
 .chat-bubble-assistant {
-  @apply bg-accent text-accent-foreground rounded-3xl rounded-tl-none shadow-lg p-5;
+  @apply bg-accent text-accent-foreground rounded-[1.5rem] rounded-tl-none shadow-md px-4 py-3 sm:px-6 sm:py-4;
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(0.98); }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
-
-.logo-shimmer {
-  background: linear-gradient(90deg, #002366, #800000, #006400, #002366);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shine 5s linear infinite;
-}
-
-.dark .logo-shimmer {
-  background: linear-gradient(90deg, #e3342f, #f6e05e, #38c172, #f6993f, #e3342f);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shine 5s linear infinite;
-}
-
-@keyframes shine {
-  to {
-    background-position: 300% center;
-  }
-}
-
-.glow-multi {
-  box-shadow: 0 0 15px rgba(0, 35, 102, 0.2), 
-              0 0 30px rgba(128, 0, 0, 0.1);
-  animation: glow-pulse 4s infinite alternate;
-}
-
-.dark .glow-multi {
-  box-shadow: 0 0 15px rgba(227, 52, 47, 0.3), 
-              0 0 30px rgba(246, 153, 63, 0.2), 
-              0 0 45px rgba(246, 224, 94, 0.1);
-  animation: glow-pulse 4s infinite alternate;
-}
-
-@keyframes glow-pulse {
-  0% { transform: scale(1); opacity: 0.9; }
-  100% { transform: scale(1.01); opacity: 1; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
 }

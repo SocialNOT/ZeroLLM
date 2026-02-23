@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -17,30 +16,31 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // Ensure there's always at least one session for the active workspace
+  // Ensure there's always at least one session
   useEffect(() => {
-    if (activeWorkspaceId && isConfigured) {
-      const workspaceSessions = sessions.filter(s => s.workspaceId === activeWorkspaceId);
-      if (workspaceSessions.length === 0) {
-        createSession(activeWorkspaceId);
-      } else if (!sessions.find(s => s.id === useAppStore.getState().activeSessionId)) {
-        setActiveSession(workspaceSessions[0].id);
+    if (isConfigured) {
+      if (sessions.length === 0) {
+        createSession(activeWorkspaceId || 'default');
+      } else if (!useAppStore.getState().activeSessionId) {
+        setActiveSession(sessions[0].id);
       }
     }
-  }, [activeWorkspaceId, isConfigured]);
+  }, [isConfigured, sessions.length]);
 
   if (!mounted) return null;
 
   return (
     <SidebarProvider>
       {!isConfigured && <SetupOverlay />}
-      <div className="flex h-screen w-full overflow-hidden bg-background">
-        <AppSidebar />
-        <SidebarInset className="flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-hidden">
-            <ChatInterface />
-          </main>
-        </SidebarInset>
+      <div className="flex h-svh w-full overflow-hidden bg-background p-0 sm:p-2">
+        <div className="relative flex h-full w-full overflow-hidden sleek-animated-border">
+          <AppSidebar />
+          <SidebarInset className="flex flex-col overflow-hidden bg-transparent">
+            <main className="flex-1 overflow-hidden">
+              <ChatInterface />
+            </main>
+          </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );
