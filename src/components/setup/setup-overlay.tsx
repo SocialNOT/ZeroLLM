@@ -6,25 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Zap, Server, Cpu, Loader2, AlertCircle } from "lucide-react";
+import { Zap, Server, Cpu, Loader2, AlertCircle, Key } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function SetupOverlay() {
   const { completeInitialSetup } = useAppStore();
   const [baseUrl, setBaseUrl] = useState("http://localhost:11434/v1");
   const [modelId, setModelId] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [isTesting, setIsTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleStart = async () => {
     setError(null);
     setIsTesting(true);
-    
     try {
-      const isOnline = await completeInitialSetup(baseUrl, modelId || "unspecified");
+      const isOnline = await completeInitialSetup(baseUrl, modelId || "unspecified", apiKey);
       if (!isOnline) {
-        setError("Could not reach the backend. Ensure the server is running and CORS is allowed.");
+        setError("Could not reach the backend. Check the URL, API token, and ensure the server allows requests.");
       }
     } catch (err) {
       setError("An unexpected error occurred during setup.");
@@ -34,63 +33,68 @@ export function SetupOverlay() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-xl p-4 overflow-y-auto">
-      <Card className="w-full max-w-md border-white/10 bg-card/50 shadow-2xl my-auto">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20">
-            <Zap className="text-accent" size={32} fill="currentColor" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-2xl p-4">
+      <Card className="w-full max-w-md border-white/10 bg-slate-900 shadow-2xl overflow-hidden rounded-[2.5rem]">
+        <CardHeader className="text-center pb-2 pt-10">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-primary shadow-[0_0_30px_rgba(79,70,229,0.4)]">
+            <Zap className="text-white" size={36} fill="currentColor" />
           </div>
-          <CardTitle className="font-headline text-2xl font-bold cyan-glow">Initialize Aetheria</CardTitle>
-          <CardDescription>Connect to your local or remote LLM engine to begin.</CardDescription>
+          <CardTitle className="font-headline text-3xl font-bold text-white tracking-tight">Initialize Aetheria</CardTitle>
+          <CardDescription className="text-slate-400 font-medium">Link your command center to a local or remote engine node.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 pt-4">
+        <CardContent className="space-y-5 pt-6 px-8">
           {error && (
-            <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive text-xs py-2 px-3">
+            <Alert variant="destructive" className="bg-rose-500/10 border-rose-500/20 text-rose-400">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="text-[11px] font-bold">Connection Error</AlertTitle>
-              <AlertDescription className="text-[10px] opacity-90">{error}</AlertDescription>
+              <AlertTitle className="text-[11px] font-bold uppercase tracking-widest">Protocol Failure</AlertTitle>
+              <AlertDescription className="text-xs opacity-90">{error}</AlertDescription>
             </Alert>
           )}
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">API Base URL</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Node API Endpoint</Label>
             <div className="relative">
-              <Server className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Server className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input 
                 value={baseUrl} 
                 onChange={(e) => setBaseUrl(e.target.value)}
                 placeholder="http://localhost:11434/v1"
-                className="pl-10 border-slate-200 bg-white rounded-xl h-11 text-sm focus:ring-primary/20"
+                className="pl-12 border-slate-700 bg-slate-800 text-white rounded-2xl h-12 text-sm focus:ring-primary/40 focus:border-primary/40"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Default Model ID (Optional)</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">API Token (Optional)</Label>
             <div className="relative">
-              <Cpu className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Key className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input 
+                type="password"
+                value={apiKey} 
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="sk-..."
+                className="pl-12 border-slate-700 bg-slate-800 text-white rounded-2xl h-12 text-sm focus:ring-primary/40 focus:border-primary/40"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Primary Model ID</Label>
+            <div className="relative">
+              <Cpu className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input 
                 value={modelId} 
                 onChange={(e) => setModelId(e.target.value)}
-                placeholder="e.g. llama3:8b"
-                className="pl-10 border-slate-200 bg-white rounded-xl h-11 text-sm focus:ring-primary/20"
+                placeholder="llama3:8b"
+                className="pl-12 border-slate-700 bg-slate-800 text-white rounded-2xl h-12 text-sm focus:ring-primary/40 focus:border-primary/40"
               />
             </div>
-            <p className="text-[10px] text-muted-foreground px-1 italic">Discoverable models will be listed in settings once connected.</p>
           </div>
         </CardContent>
-        <CardFooter className="pt-2">
+        <CardFooter className="pb-10 pt-4 px-8">
           <Button 
             onClick={handleStart} 
             disabled={!baseUrl || isTesting}
-            className="w-full h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform shadow-lg shadow-primary/20"
+            className="w-full h-14 rounded-2xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-xs hover:scale-[1.02] transition-all shadow-xl shadow-primary/20"
           >
-            {isTesting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Validating...
-              </>
-            ) : (
-              "Initialize Engine"
-            )}
+            {isTesting ? <><Loader2 className="mr-3 h-5 w-5 animate-spin" />Handshaking...</> : "Authorize Connection"}
           </Button>
         </CardFooter>
       </Card>

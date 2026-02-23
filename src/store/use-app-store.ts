@@ -29,7 +29,7 @@ interface AppState {
   setActiveSession: (id: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
   updateSessionSettings: (sessionId: string, settings: Partial<ChatSession['settings']>) => void;
-  completeInitialSetup: (baseUrl: string, modelId: string) => Promise<boolean>;
+  completeInitialSetup: (baseUrl: string, modelId: string, apiKey?: string) => Promise<boolean>;
   setRole: (role: UserRole) => void;
   checkConnection: () => Promise<void>;
   refreshModels: () => Promise<void>;
@@ -91,13 +91,9 @@ export const useAppStore = create<AppState>()(
 
         set({ connectionStatus: 'checking' });
         try {
-          // Use Server Action to bypass Mixed Content/CORS
-          const isOnline = await testConnectionAction(activeConn.baseUrl);
+          const isOnline = await testConnectionAction(activeConn.baseUrl, activeConn.apiKey);
           set({ connectionStatus: isOnline ? 'online' : 'offline' });
-          
-          if (isOnline) {
-            await get().refreshModels();
-          }
+          if (isOnline) await get().refreshModels();
         } catch (e) {
           set({ connectionStatus: 'offline' });
         }
@@ -106,59 +102,45 @@ export const useAppStore = create<AppState>()(
       refreshModels: async () => {
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return;
-
         try {
-          // Use Server Action
-          const models = await fetchModelsAction(activeConn.baseUrl);
+          const models = await fetchModelsAction(activeConn.baseUrl, activeConn.apiKey);
           set({ availableModels: models.map(m => m.id) });
-        } catch (e) {
-          // Fail silently
-        }
+        } catch (e) {}
       },
 
       triggerModelLoad: async (modelId) => {
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return false;
-
         set({ isModelLoading: true });
         try {
-          // Use Server Action
-          const success = await loadModelAction(activeConn.baseUrl, modelId);
-          return success;
+          return await loadModelAction(activeConn.baseUrl, modelId, activeConn.apiKey);
         } finally {
           set({ isModelLoading: false });
         }
       },
 
-      completeInitialSetup: async (baseUrl, modelId) => {
+      completeInitialSetup: async (baseUrl, modelId, apiKey) => {
         const id = 'default-conn';
         set({ connectionStatus: 'checking' });
-        
         try {
-          // Use Server Action
-          const isOnline = await testConnectionAction(baseUrl);
-          
+          const isOnline = await testConnectionAction(baseUrl, apiKey);
           const newConn: ModelConnection = {
             id,
             name: 'Primary Engine',
             provider: 'Custom',
             baseUrl,
+            apiKey,
             modelId,
             contextWindow: 4096,
             status: isOnline ? 'online' : 'offline'
           };
-
           set({ 
             connections: [newConn], 
             activeConnectionId: id,
             isConfigured: true,
             connectionStatus: isOnline ? 'online' : 'offline'
           });
-
-          if (isOnline) {
-            await get().refreshModels();
-          }
-
+          if (isOnline) await get().refreshModels();
           return isOnline;
         } catch (err) {
           set({ connectionStatus: 'offline' });

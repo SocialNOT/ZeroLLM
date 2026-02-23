@@ -12,11 +12,9 @@ export interface LLMModel {
 function normalizeUrl(url: string): string {
   if (!url) return '';
   let normalized = url.trim();
-  // Ensure protocol exists
   if (!/^https?:\/\//i.test(normalized)) {
     normalized = `http://${normalized}`;
   }
-  // Remove trailing slashes
   return normalized.replace(/\/+$/, '');
 }
 
@@ -36,17 +34,24 @@ async function safeJsonParse(response: Response): Promise<any> {
 function joinPath(base: string, path: string): string {
   const normalizedBase = normalizeUrl(base);
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  
-  // Prevent double v1 slashes or accidental double slashes
-  const fullUrl = `${normalizedBase}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
-  return fullUrl;
+  return `${normalizedBase}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
 }
 
-export async function testConnection(baseUrl: string): Promise<boolean> {
+function getHeaders(apiKey?: string) {
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+  return headers;
+}
+
+export async function testConnection(baseUrl: string, apiKey?: string): Promise<boolean> {
   if (!baseUrl || baseUrl.length < 5) return false;
   const normalizedBase = normalizeUrl(baseUrl);
   
-  // Try common status endpoints
   const endpoints = [
     joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models'),
     normalizedBase
@@ -56,7 +61,7 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' },
+        headers: getHeaders(apiKey),
         signal: AbortSignal.timeout(3000)
       });
       if (response.ok) return true;
@@ -65,7 +70,7 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
   return false;
 }
 
-export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
+export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLMModel[]> {
   if (!baseUrl) return [];
   const normalizedBase = normalizeUrl(baseUrl);
   const url = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models');
@@ -73,7 +78,7 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
   try {
     const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' },
+      headers: getHeaders(apiKey),
       signal: AbortSignal.timeout(5000)
     });
     
@@ -87,7 +92,7 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
   return [];
 }
 
-export async function loadModel(baseUrl: string, modelId: string): Promise<boolean> {
+export async function loadModel(baseUrl: string, modelId: string, apiKey?: string): Promise<boolean> {
   if (!baseUrl || !modelId) return false;
   const base = normalizeUrl(baseUrl).replace(/\/v1$/, '');
   const loadUrl = joinPath(base, '/api/v1/models/load');
@@ -95,23 +100,23 @@ export async function loadModel(baseUrl: string, modelId: string): Promise<boole
   try {
     const response = await fetch(loadUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(apiKey),
       body: JSON.stringify({ model_key: modelId })
     });
     return response.ok;
   } catch (e) {
-    return true; // Fallback for servers that don't have explicit load endpoint
+    return true; 
   }
 }
 
-export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
+export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any, apiKey?: string) {
   if (!baseUrl) throw new Error("No engine URL provided.");
   const normalizedBase = normalizeUrl(baseUrl);
   const chatUrl = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
   
   const response = await fetch(chatUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    headers: getHeaders(apiKey),
     body: JSON.stringify({
       model: modelId || "default",
       messages: messages.map(m => ({ role: m.role, content: m.content })),

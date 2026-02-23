@@ -8,25 +8,25 @@
 import { testConnection, fetchModels, loadModel } from '@/lib/llm-api';
 import { LLMModel } from '@/lib/llm-api';
 
-export async function testConnectionAction(baseUrl: string): Promise<boolean> {
+export async function testConnectionAction(baseUrl: string, apiKey?: string): Promise<boolean> {
   try {
-    return await testConnection(baseUrl);
+    return await testConnection(baseUrl, apiKey);
   } catch (error) {
     return false;
   }
 }
 
-export async function fetchModelsAction(baseUrl: string): Promise<LLMModel[]> {
+export async function fetchModelsAction(baseUrl: string, apiKey?: string): Promise<LLMModel[]> {
   try {
-    return await fetchModels(baseUrl);
+    return await fetchModels(baseUrl, apiKey);
   } catch (error) {
     return [];
   }
 }
 
-export async function loadModelAction(baseUrl: string, modelId: string): Promise<boolean> {
+export async function loadModelAction(baseUrl: string, modelId: string, apiKey?: string): Promise<boolean> {
   try {
-    return await loadModel(baseUrl, modelId);
+    return await loadModel(baseUrl, modelId, apiKey);
   } catch (error) {
     return false;
   }
