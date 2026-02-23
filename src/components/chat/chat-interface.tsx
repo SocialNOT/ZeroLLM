@@ -185,7 +185,7 @@ export function ChatInterface() {
               <div className="flex items-center gap-5">
                 <SidebarTrigger className="lg:hidden h-10 w-10 text-muted-foreground hover:bg-muted rounded-2xl" />
                 <div className="flex flex-col">
-                  <h3 className="logo-shimmer text-3xl font-headline font-bold leading-none tracking-tighter">ZEROGPT</h3>
+                  {/* Logo moved to Sidebar */}
                 </div>
               </div>
               

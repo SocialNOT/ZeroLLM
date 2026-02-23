@@ -78,7 +78,7 @@ export function AppSidebar() {
               <Zap size={24} fill="currentColor" className="animate-pulse" />
             </div>
             <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:hidden">
-              <span className="font-headline text-xl font-bold tracking-tight text-slate-900">Aetheria Hub</span>
+              <span className="logo-shimmer font-headline text-2xl font-bold tracking-tighter leading-none">ZEROGPT</span>
               <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-60">Engine Node</span>
             </div>
           </div>
