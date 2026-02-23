@@ -23,6 +23,7 @@ interface AppState {
   availableModels: string[];
   connectionStatus: 'online' | 'offline' | 'checking';
   isModelLoading: boolean;
+  activeParameterTab: string;
   
   // Actions
   addWorkspace: (w: Workspace) => void;
@@ -50,6 +51,7 @@ interface AppState {
   checkConnection: () => Promise<void>;
   refreshModels: () => Promise<void>;
   triggerModelLoad: (modelId: string) => Promise<boolean>;
+  setActiveParameterTab: (tab: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -80,6 +82,7 @@ export const useAppStore = create<AppState>()(
       availableModels: [],
       connectionStatus: 'offline',
       isModelLoading: false,
+      activeParameterTab: 'frameworks',
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -267,7 +270,9 @@ export const useAppStore = create<AppState>()(
             } : s
           )
         }));
-      }
+      },
+
+      setActiveParameterTab: (tab) => set({ activeParameterTab: tab })
     }),
     { name: 'aetheria-storage' }
   )

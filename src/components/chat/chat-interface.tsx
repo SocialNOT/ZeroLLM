@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -67,7 +68,8 @@ export function ChatInterface() {
     connectionStatus,
     availableModels,
     updateConnection,
-    checkConnection
+    checkConnection,
+    setActiveParameterTab
   } = useAppStore();
   
   const { theme, setTheme } = useTheme();
@@ -192,6 +194,9 @@ export function ChatInterface() {
     );
   }
 
+  const isFrameworkActive = !!session.frameworkId;
+  const isLinguisticActive = !!session.linguisticId;
+
   return (
     <div className="flex h-full w-full overflow-hidden bg-background p-4 lg:p-6 gap-6 transition-colors duration-500">
       <div className="flex flex-col flex-1 gap-6 min-w-0 h-full overflow-hidden">
@@ -242,27 +247,46 @@ export function ChatInterface() {
                 
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 pr-4">
                   <SheetTrigger asChild>
-                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all group shrink-0">
-                      <Layers size={10} className="text-primary group-hover:scale-110 transition-transform" />
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-primary whitespace-nowrap">
+                    <button 
+                      onClick={() => setActiveParameterTab('frameworks')}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all group shrink-0",
+                        isFrameworkActive 
+                          ? "bg-primary text-primary-foreground border-primary shadow-md" 
+                          : "bg-muted/50 border-border text-muted-foreground hover:border-primary/30"
+                      )}
+                    >
+                      <Layers size={10} className={cn("transition-transform group-hover:scale-110", isFrameworkActive ? "text-primary-foreground" : "text-primary")} />
+                      <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
                         Framework: {framework?.name || "Standard"}
                       </span>
                     </button>
                   </SheetTrigger>
 
                   <SheetTrigger asChild>
-                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/5 border border-accent/10 hover:bg-accent/10 transition-all group shrink-0">
+                    <button 
+                      onClick={() => setActiveParameterTab('personas')}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-accent-foreground border border-accent shadow-md transition-all group shrink-0"
+                    >
                       <UserCircle size={10} className="text-accent-foreground group-hover:scale-110 transition-transform" />
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-accent-foreground whitespace-nowrap">
+                      <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
                         Persona: {persona.name}
                       </span>
                     </button>
                   </SheetTrigger>
 
                   <SheetTrigger asChild>
-                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted border border-border hover:bg-card transition-all group shrink-0">
-                      <Cpu size={10} className="text-muted-foreground group-hover:scale-110 transition-transform" />
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    <button 
+                      onClick={() => setActiveParameterTab('linguistic')}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all group shrink-0",
+                        isLinguisticActive
+                          ? "bg-destructive text-destructive-foreground border-destructive shadow-md" 
+                          : "bg-muted border-border text-muted-foreground hover:border-destructive/30"
+                      )}
+                    >
+                      <Cpu size={10} className={cn("transition-transform group-hover:scale-110", isLinguisticActive ? "text-destructive-foreground" : "text-muted-foreground")} />
+                      <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">
                         Model: {connection.modelId || "AUTO"}
                       </span>
                     </button>

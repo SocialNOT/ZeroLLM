@@ -35,7 +35,9 @@ export function ParameterControls() {
     linguisticControls,
     applyFramework,
     applyPersona,
-    applyLinguisticControl
+    applyLinguisticControl,
+    activeParameterTab,
+    setActiveParameterTab
   } = useAppStore();
 
   const [isDeveloping, setIsDeveloping] = useState(false);
@@ -45,7 +47,7 @@ export function ParameterControls() {
 
   return (
     <div className="flex flex-col h-full bg-card">
-      <Tabs defaultValue="frameworks" className="w-full h-full flex flex-col">
+      <Tabs value={activeParameterTab} onValueChange={setActiveParameterTab} className="w-full h-full flex flex-col">
         <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1.5 rounded-none border-b border-border h-12">
           <TabsTrigger value="frameworks" className="text-[10px] font-bold uppercase tracking-widest gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Layers size={12} />
@@ -84,21 +86,27 @@ export function ParameterControls() {
                       className={cn(
                         "p-4 rounded-[1.5rem] border transition-all cursor-pointer group",
                         session.frameworkId === f.id 
-                          ? "bg-primary/5 border-primary shadow-sm" 
+                          ? "bg-primary text-primary-foreground border-primary shadow-lg scale-[1.02]" 
                           : "bg-muted/30 border-border hover:border-primary/30 hover:bg-card"
                       )}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-bold text-foreground">{f.name}</span>
-                          <Badge variant="outline" className="text-[7px] font-bold uppercase tracking-tighter py-0 px-1 border-primary/20 text-primary/70">{f.category}</Badge>
+                          <span className={cn("text-[11px] font-bold", session.frameworkId === f.id ? "text-primary-foreground" : "text-foreground")}>{f.name}</span>
+                          <Badge variant="outline" className={cn(
+                            "text-[7px] font-bold uppercase tracking-tighter py-0 px-1 border-primary/20",
+                            session.frameworkId === f.id ? "bg-white/20 text-white border-white/20" : "text-primary/70"
+                          )}>{f.category}</Badge>
                         </div>
-                        {session.frameworkId === f.id && <Check size={12} className="text-primary" />}
+                        {session.frameworkId === f.id && <Check size={12} className="text-primary-foreground" />}
                       </div>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">{f.description}</p>
+                      <p className={cn("text-[10px] leading-relaxed line-clamp-2", session.frameworkId === f.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{f.description}</p>
                       <div className="flex flex-wrap gap-1 mt-3">
                         {f.tags.slice(0, 3).map(t => (
-                          <span key={t} className="px-2 py-0.5 rounded-full bg-background border border-border text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">{t}</span>
+                          <span key={t} className={cn(
+                            "px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase tracking-tighter",
+                            session.frameworkId === f.id ? "bg-white/10 border-white/10 text-white" : "bg-background border-border text-muted-foreground"
+                          )}>{t}</span>
                         ))}
                       </div>
                     </div>
@@ -120,7 +128,7 @@ export function ParameterControls() {
                       className={cn(
                         "flex flex-col items-center gap-3 p-5 rounded-[2rem] border transition-all relative overflow-hidden",
                         session.personaId === p.id 
-                          ? "bg-primary border-primary text-primary-foreground shadow-xl shadow-primary/20 scale-95" 
+                          ? "bg-accent border-accent text-accent-foreground shadow-xl shadow-accent/20 scale-95" 
                           : "bg-muted/30 border-border text-muted-foreground hover:bg-card hover:border-border"
                       )}
                     >
@@ -134,7 +142,7 @@ export function ParameterControls() {
                         <span className="text-[10px] font-bold uppercase tracking-widest block">{p.name}</span>
                         <span className={cn(
                           "text-[7px] font-bold uppercase tracking-tighter mt-1 block",
-                          session.personaId === p.id ? "text-white/60" : "text-muted-foreground/60"
+                          session.personaId === p.id ? "text-accent-foreground/60" : "text-muted-foreground/60"
                         )}>{p.category}</span>
                       </div>
                     </button>
@@ -156,14 +164,16 @@ export function ParameterControls() {
                         onClick={() => applyLinguisticControl(session.id, lc.id)}
                         className={cn(
                           "flex items-center justify-between p-4 rounded-[1.5rem] border transition-all text-left",
-                          session.linguisticId === lc.id ? "bg-accent/10 border-accent" : "bg-muted/30 border-border hover:bg-card"
+                          session.linguisticId === lc.id 
+                            ? "bg-destructive text-destructive-foreground border-destructive shadow-lg" 
+                            : "bg-muted/30 border-border hover:bg-card"
                         )}
                       >
                         <div>
-                          <div className="text-[11px] font-bold text-foreground">{lc.name}</div>
-                          <div className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{lc.category} • {lc.description}</div>
+                          <div className={cn("text-[11px] font-bold", session.linguisticId === lc.id ? "text-destructive-foreground" : "text-foreground")}>{lc.name}</div>
+                          <div className={cn("text-[9px] uppercase tracking-widest mt-1", session.linguisticId === lc.id ? "text-destructive-foreground/70" : "text-muted-foreground")}>{lc.category} • {lc.description}</div>
                         </div>
-                        {session.linguisticId === lc.id && <Check size={12} className="text-accent" />}
+                        {session.linguisticId === lc.id && <Check size={12} className="text-destructive-foreground" />}
                       </button>
                     ))}
                   </div>
