@@ -21,17 +21,15 @@ const PersonaDrivenChatInputSchema = z.object({
   topP: z.number().min(0).max(1).default(0.95),
   maxTokens: z.number().int().positive().default(1024),
   history: z.array(MessageSchema).optional(),
+  memoryType: z.string().optional(),
+  enabledTools: z.array(z.string()).optional(),
 });
 export type PersonaDrivenChatInput = z.infer<typeof PersonaDrivenChatInputSchema>;
-
-const PersonaDrivenChatOutputSchema = z.object({
-  response: z.string().describe('The AI\'s generated response text.')
-});
-export type PersonaDrivenChatOutput = z.infer<typeof PersonaDrivenChatOutputSchema>;
 
 /**
  * Public wrapper for the persona-driven chat flow.
  * Directly interfaces with the self-hosted LLM backend.
+ * Returns a structured string to avoid Server Action serialization issues.
  */
 export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<string> {
   try {
@@ -55,6 +53,12 @@ export async function personaDrivenChat(input: PersonaDrivenChatInput): Promise<
     return response;
   } catch (error: any) {
     console.error("Engine failure:", error);
+    
+    // Check for specific LM Studio error message
+    if (error.message?.toLowerCase().includes("no models loaded")) {
+      return `Error: No models are active on your engine. Please go to Settings and click "Load to Memory" for ${input.modelId || 'your selected model'}.`;
+    }
+
     return `Error: Unable to reach the engine at ${input.baseUrl}. ${error.message}`;
   }
 }

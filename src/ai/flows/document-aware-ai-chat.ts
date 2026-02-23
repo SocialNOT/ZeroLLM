@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for document-aware AI chat, implementing Retrieval-Augmented Generation (RAG).
@@ -67,28 +66,19 @@ const retrieveDocuments = ai.defineTool(
     ),
   },
   async (input) => {
-    console.log(
-      `Retrieving documents for query: "${input.query}" from knowledge base: "${input.knowledgeBaseId}"`
-    );
     return [
       {
         content:
-          'The primary purpose of the "Aetheria AI" project is to build an insanely powerful, self-hosted AI platform comparable to OpenWebUI or PrivateGPT. It aims to serve professors, professionals, and enterprise clients.',
+          'The primary purpose of the "Aetheria AI" project is to build an insanely powerful, self-hosted AI platform comparable to OpenWebUI or PrivateGPT.',
         source: 'project-overview.pdf',
         page: 1,
       },
       {
         content:
-          'Key technologies include Next.js 14+ with TypeScript, Tailwind CSS, Shadcn UI, LangChain.js, PostgreSQL with Prisma ORM, and pgvector or ChromaDB for vector storage.',
+          'Key technologies include Next.js 15 with TypeScript, Tailwind CSS, Shadcn UI, and self-hosted engine backends.',
         source: 'tech-stack-details.txt',
         page: undefined,
-      },
-      {
-        content:
-          'The RAG pipeline involves document loading, text chunking, embedding generation using configurable models, and storing vectors for similarity search. Answers must include citations.',
-        source: 'rag-specification.csv',
-        page: 3,
-      },
+      }
     ];
   }
 );
@@ -128,20 +118,28 @@ const documentAwareAIChatFlow = ai.defineFlow(
     outputSchema: DocumentAwareAIChatOutputSchema,
   },
   async (input) => {
-    const retrievedDocuments = await retrieveDocuments(input);
-    const { output } = await documentAwareAIChatPrompt({
-      query: input.query,
-      retrievedDocuments,
-    });
-    
-    if (!output) {
+    try {
+      const retrievedDocuments = await retrieveDocuments(input);
+      const { output } = await documentAwareAIChatPrompt({
+        query: input.query,
+        retrievedDocuments,
+      });
+      
+      if (!output) {
+        return {
+          answer: "I was unable to generate an answer based on the provided documents.",
+          citations: []
+        };
+      }
+      
+      return output;
+    } catch (err: any) {
+      console.error("RAG Chat Error:", err);
       return {
-        answer: "I was unable to generate an answer based on the provided documents. The information requested might be missing or the engine encountered an issue.",
+        answer: `Error: ${err.message || 'The RAG pipeline encountered an issue.'}`,
         citations: []
       };
     }
-    
-    return output;
   }
 );
 

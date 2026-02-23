@@ -39,17 +39,29 @@ async function safeJsonParse(response: Response): Promise<any> {
   }
 }
 
+/**
+ * Constructs a clean API path without double slashes.
+ */
+function joinPath(base: string, path: string): string {
+  const normalizedBase = normalizeUrl(base);
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // If base already contains /v1, don't double add it if the path includes it
+  if (normalizedBase.endsWith('/v1') && cleanPath.startsWith('/v1')) {
+    return `${normalizedBase.substring(0, normalizedBase.length - 3)}${cleanPath}`;
+  }
+  
+  return `${normalizedBase}${cleanPath}`;
+}
+
 export async function testConnection(baseUrl: string): Promise<boolean> {
-  const normalizedBase = normalizeUrl(baseUrl);
-  // Try standard model list endpoint to verify connection
-  const url = normalizedBase.includes('/v1') ? `${normalizedBase}/models` : `${normalizedBase}/v1/models`;
+  const url = joinPath(baseUrl, baseUrl.includes('/v1') ? '/models' : '/v1/models');
   
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       mode: 'cors',
-      // Short timeout for initial ping
       signal: AbortSignal.timeout(5000)
     });
     
@@ -60,8 +72,7 @@ export async function testConnection(baseUrl: string): Promise<boolean> {
 }
 
 export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
-  const normalizedBase = normalizeUrl(baseUrl);
-  const url = normalizedBase.includes('/v1') ? `${normalizedBase}/models` : `${normalizedBase}/v1/models`;
+  const url = joinPath(baseUrl, baseUrl.includes('/v1') ? '/models' : '/v1/models');
   
   try {
     const response = await fetch(url, {
@@ -85,7 +96,7 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
       return data.models.map((m: any) => ({ id: m.name, name: m.name }));
     }
   } catch (error) {
-    // Fail silently for model discovery to avoid UI noise
+    // Fail silently for model discovery
   }
   return [];
 }
@@ -94,9 +105,9 @@ export async function fetchModels(baseUrl: string): Promise<LLMModel[]> {
  * Triggers a model load on the backend if supported (e.g. LM Studio)
  */
 export async function loadModel(baseUrl: string, modelId: string): Promise<boolean> {
-  const normalizedBase = normalizeUrl(baseUrl);
   // LM Studio specific endpoint usually sits alongside /v1
-  const url = normalizedBase.replace('/v1', '') + '/api/v1/models/load';
+  const normalizedBase = normalizeUrl(baseUrl);
+  const url = joinPath(normalizedBase.replace(/\/v1$/, ''), '/api/v1/models/load');
   
   try {
     const response = await fetch(url, {
@@ -112,8 +123,7 @@ export async function loadModel(baseUrl: string, modelId: string): Promise<boole
 }
 
 export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any) {
-  const normalizedBase = normalizeUrl(baseUrl);
-  const chatUrl = normalizedBase.includes('/v1') ? `${normalizedBase}/chat/completions` : `${normalizedBase}/v1/chat/completions`;
+  const chatUrl = joinPath(baseUrl, baseUrl.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
   
   const body = {
     model: modelId || "default",
