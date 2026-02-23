@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'ZEROGPT | Advanced AI Orchestration Hub',
+  title: 'ZeroGPT | Advanced AI Orchestration Hub',
   description: 'Enterprise-grade interface for model orchestration and local AI intelligence.',
 };
 

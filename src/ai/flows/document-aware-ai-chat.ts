@@ -69,7 +69,7 @@ const retrieveDocuments = ai.defineTool(
     return [
       {
         content:
-          'The primary purpose of the "Aetheria AI" project is to build an insanely powerful, self-hosted AI platform comparable to OpenWebUI or PrivateGPT.',
+          'The primary purpose of the "ZeroGPT" project is to build an insanely powerful, self-hosted AI platform comparable to OpenWebUI or PrivateGPT.',
         source: 'project-overview.pdf',
         page: 1,
       },

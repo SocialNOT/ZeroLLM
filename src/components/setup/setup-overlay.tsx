@@ -39,7 +39,7 @@ export function SetupOverlay() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-primary shadow-[0_0_30px_rgba(79,70,229,0.4)]">
             <Zap className="text-white" size={36} fill="currentColor" />
           </div>
-          <CardTitle className="font-headline text-3xl font-bold text-white tracking-tight">Initialize Aetheria</CardTitle>
+          <CardTitle className="font-headline text-3xl font-bold text-white tracking-tight">Initialize ZeroGPT</CardTitle>
           <CardDescription className="text-slate-400 font-medium">Link your command center to a local or remote engine node.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-6 px-8">
