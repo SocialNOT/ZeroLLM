@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAppStore } from "@/store/use-app-store";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -12,15 +12,20 @@ import {
   Layers, 
   UserCircle, 
   Type, 
-  Plus, 
   Check, 
   Zap, 
-  Activity,
-  Sliders
+  Sliders,
+  ChevronRight,
+  FolderOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { 
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 
 export function ParameterControls() {
   const { 
@@ -37,8 +42,32 @@ export function ParameterControls() {
     setActiveParameterTab
   } = useAppStore();
 
-  const [isDeveloping, setIsDeveloping] = useState(false);
   const session = sessions.find(s => s.id === activeSessionId);
+
+  // Grouping logic for each category
+  const groupedFrameworks = useMemo(() => {
+    return frameworks.reduce((acc, f) => {
+      if (!acc[f.category]) acc[f.category] = [];
+      acc[f.category].push(f);
+      return acc;
+    }, {} as Record<string, typeof frameworks>);
+  }, [frameworks]);
+
+  const groupedPersonas = useMemo(() => {
+    return personas.reduce((acc, p) => {
+      if (!acc[p.category]) acc[p.category] = [];
+      acc[p.category].push(p);
+      return acc;
+    }, {} as Record<string, typeof personas>);
+  }, [personas]);
+
+  const groupedLinguistic = useMemo(() => {
+    return linguisticControls.reduce((acc, l) => {
+      if (!acc[l.category]) acc[l.category] = [];
+      acc[l.category].push(l);
+      return acc;
+    }, {} as Record<string, typeof linguisticControls>);
+  }, [linguisticControls]);
 
   if (!session) return null;
 
@@ -64,93 +93,141 @@ export function ParameterControls() {
           <ScrollArea className="h-full">
             <div className="p-6 space-y-8 pb-24">
               
-              {/* Architectural Protocols */}
+              {/* Architectural Protocols (ARCH) */}
               <TabsContent value="frameworks" className="mt-0 space-y-6 outline-none">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Layers size={14} className="text-primary" />
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Architectural Protocols</Label>
-                  </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Layers size={14} className="text-primary" />
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Architectural Protocols</Label>
                 </div>
 
-                <div className="grid gap-2">
-                  {frameworks.map(f => (
-                    <div 
-                      key={f.id} 
-                      onClick={() => applyFramework(session.id, f.id)}
-                      className={cn(
-                        "p-4 rounded-2xl border transition-all cursor-pointer group",
-                        session.frameworkId === f.id 
-                          ? "bg-primary text-primary-foreground border-primary shadow-xl" 
-                          : "bg-muted/30 border-border hover:border-primary/20 hover:bg-card"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={cn("text-[11px] font-bold", session.frameworkId === f.id ? "text-primary-foreground" : "text-foreground")}>{f.name}</span>
-                        {session.frameworkId === f.id && <Check size={12} className="text-primary-foreground" />}
-                      </div>
-                      <p className={cn("text-[10px] leading-snug line-clamp-2 opacity-70", session.frameworkId === f.id ? "text-primary-foreground" : "text-muted-foreground")}>{f.description}</p>
-                    </div>
+                <Accordion type="single" collapsible className="w-full space-y-2">
+                  {Object.entries(groupedFrameworks).map(([category, items]) => (
+                    <AccordionItem key={category} value={category} className="border-none">
+                      <AccordionTrigger className="flex px-4 py-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all hover:no-underline border border-border/50">
+                        <div className="flex items-center gap-3">
+                          <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <FolderOpen size={12} className="text-primary" />
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">{category}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-2 pb-0">
+                        <div className="grid gap-2 pl-4 border-l-2 border-primary/10 ml-3 py-2">
+                          {items.map(f => (
+                            <div 
+                              key={f.id} 
+                              onClick={() => applyFramework(session.id, f.id)}
+                              className={cn(
+                                "p-4 rounded-2xl border transition-all cursor-pointer group",
+                                session.frameworkId === f.id 
+                                  ? "bg-primary text-primary-foreground border-primary shadow-lg" 
+                                  : "bg-white border-border hover:border-primary/20 hover:shadow-md"
+                              )}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={cn("text-[11px] font-bold", session.frameworkId === f.id ? "text-primary-foreground" : "text-foreground")}>{f.name}</span>
+                                {session.frameworkId === f.id && <Check size={12} className="text-primary-foreground" />}
+                              </div>
+                              <p className={cn("text-[10px] leading-snug line-clamp-2 opacity-70", session.frameworkId === f.id ? "text-primary-foreground" : "text-muted-foreground")}>{f.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                   ))}
-                </div>
+                </Accordion>
               </TabsContent>
 
-              {/* Cognitive Identities */}
+              {/* Cognitive Identities (ID) */}
               <TabsContent value="personas" className="mt-0 space-y-6 outline-none">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-4">
                   <UserCircle size={14} className="text-primary" />
                   <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Cognitive Identities</Label>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {personas.map(p => (
-                    <button 
-                      key={p.id} 
-                      onClick={() => applyPersona(session.id, p.id)}
-                      className={cn(
-                        "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all",
-                        session.personaId === p.id 
-                          ? "bg-accent border-accent text-accent-foreground shadow-lg shadow-accent/10" 
-                          : "bg-muted/30 border-border text-muted-foreground hover:bg-card"
-                      )}
-                    >
-                      <div className={cn(
-                        "h-10 w-10 rounded-xl flex items-center justify-center",
-                        session.personaId === p.id ? "bg-white/20" : "bg-card border border-border"
-                      )}>
-                        <Zap size={16} className={session.personaId === p.id ? "text-white" : "text-primary"} />
-                      </div>
-                      <span className="text-[9px] font-bold uppercase tracking-widest block text-center line-clamp-1">{p.name}</span>
-                    </button>
+
+                <Accordion type="single" collapsible className="w-full space-y-2">
+                  {Object.entries(groupedPersonas).map(([category, items]) => (
+                    <AccordionItem key={category} value={category} className="border-none">
+                      <AccordionTrigger className="flex px-4 py-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all hover:no-underline border border-border/50">
+                        <div className="flex items-center gap-3">
+                          <div className="h-6 w-6 rounded-lg bg-accent/10 flex items-center justify-center">
+                            <Zap size={12} className="text-accent" />
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">{category}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-2 pb-0">
+                        <div className="grid grid-cols-2 gap-2 pl-4 border-l-2 border-accent/10 ml-3 py-2">
+                          {items.map(p => (
+                            <button 
+                              key={p.id} 
+                              onClick={() => applyPersona(session.id, p.id)}
+                              className={cn(
+                                "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all text-center",
+                                session.personaId === p.id 
+                                  ? "bg-accent border-accent text-accent-foreground shadow-lg shadow-accent/10" 
+                                  : "bg-white border-border text-muted-foreground hover:bg-card hover:shadow-md"
+                              )}
+                            >
+                              <div className={cn(
+                                "h-10 w-10 rounded-xl flex items-center justify-center",
+                                session.personaId === p.id ? "bg-white/20" : "bg-muted/50 border border-border"
+                              )}>
+                                <Zap size={16} className={session.personaId === p.id ? "text-white" : "text-primary"} />
+                              </div>
+                              <span className="text-[9px] font-bold uppercase tracking-widest block line-clamp-1">{p.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                   ))}
-                </div>
+                </Accordion>
               </TabsContent>
 
-              {/* Linguistic Controls & Fine-Tuning */}
+              {/* Linguistic Controls (LOGIC) */}
               <TabsContent value="linguistic" className="mt-0 space-y-8 outline-none">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-4">
                     <Type size={14} className="text-primary" />
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Linguistic Presets</Label>
                   </div>
-                  <div className="grid gap-2">
-                    {linguisticControls.map(lc => (
-                      <button 
-                        key={lc.id} 
-                        onClick={() => applyLinguisticControl(session.id, lc.id)}
-                        className={cn(
-                          "flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
-                          session.linguisticId === lc.id 
-                            ? "bg-destructive text-destructive-foreground border-destructive" 
-                            : "bg-muted/30 border-border hover:bg-card"
-                        )}
-                      >
-                        <div className={cn("text-[10px] font-bold uppercase tracking-widest", session.linguisticId === lc.id ? "text-destructive-foreground" : "text-foreground")}>
-                          {lc.name}
-                        </div>
-                        {session.linguisticId === lc.id && <Check size={12} className="text-destructive-foreground" />}
-                      </button>
+
+                  <Accordion type="single" collapsible className="w-full space-y-2">
+                    {Object.entries(groupedLinguistic).map(([category, items]) => (
+                      <AccordionItem key={category} value={category} className="border-none">
+                        <AccordionTrigger className="flex px-4 py-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all hover:no-underline border border-border/50">
+                          <div className="flex items-center gap-3">
+                            <div className="h-6 w-6 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                              <Type size={12} className="text-rose-500" />
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">{category}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-2 pb-0">
+                          <div className="grid gap-2 pl-4 border-l-2 border-rose-500/10 ml-3 py-2">
+                            {items.map(lc => (
+                              <button 
+                                key={lc.id} 
+                                onClick={() => applyLinguisticControl(session.id, lc.id)}
+                                className={cn(
+                                  "flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
+                                  session.linguisticId === lc.id 
+                                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg" 
+                                    : "bg-white border-border hover:bg-card hover:shadow-md"
+                                )}
+                              >
+                                <div className={cn("text-[10px] font-bold uppercase tracking-widest", session.linguisticId === lc.id ? "text-destructive-foreground" : "text-foreground")}>
+                                  {lc.name}
+                                </div>
+                                {session.linguisticId === lc.id && <Check size={12} className="text-destructive-foreground" />}
+                              </button>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </div>
+                  </Accordion>
                 </div>
 
                 <Separator className="bg-border/50" />
@@ -161,7 +238,7 @@ export function ParameterControls() {
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Precision Controls</Label>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-4 bg-muted/20 p-4 rounded-2xl border border-border/50">
                     <div className="flex items-center justify-between">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase">Creativity (Temp)</Label>
                       <span className="text-[10px] font-mono font-bold text-primary">{session.settings.temperature}</span>
@@ -175,7 +252,7 @@ export function ParameterControls() {
                     />
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-4 bg-muted/20 p-4 rounded-2xl border border-border/50">
                     <div className="flex items-center justify-between">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase">Response Depth</Label>
                       <span className="text-[10px] font-mono font-bold text-primary">{session.settings.maxTokens}</span>
@@ -195,7 +272,7 @@ export function ParameterControls() {
                       value={session.settings.memoryType}
                       onValueChange={(val: any) => updateSessionSettings(session.id, { memoryType: val })}
                     >
-                      <SelectTrigger className="h-11 rounded-xl border-border bg-muted/30 text-[10px] font-bold uppercase px-4">
+                      <SelectTrigger className="h-11 rounded-xl border-border bg-white text-[10px] font-bold uppercase px-4 shadow-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-border shadow-2xl">
