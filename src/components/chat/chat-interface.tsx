@@ -68,7 +68,7 @@ export function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [timeLeft, setTimeLeft] = useState<string>("30:00");
+  const [timeLeft, setTimeLeft] = useState<string>("60:00");
   const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -95,9 +95,9 @@ export function ChatInterface() {
           midnight.setHours(24, 0, 0, 0);
           remaining = Math.max(0, midnight.getTime() - now.getTime());
         } else {
-          // Standard Security Window (30 mins)
+          // Standard Security Window (1 Hour)
           const elapsed = now.getTime() - sessionStartTime;
-          remaining = Math.max(0, (30 * 60 * 1000) - elapsed);
+          remaining = Math.max(0, (60 * 60 * 1000) - elapsed);
         }
 
         const h = Math.floor(remaining / 3600000);
@@ -188,7 +188,7 @@ export function ChatInterface() {
 
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
-    if (!textToSend.trim() || !session || isTyping || currentUserRole === 'Viewer') return;
+    if (!textToSend.trim() || !session || isTyping) return;
 
     if (isListening) {
       recognitionRef.current.stop();
@@ -637,13 +637,13 @@ export function ChatInterface() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                disabled={currentUserRole === 'Viewer' || isTyping}
+                disabled={isTyping}
                 placeholder={isListening ? "Sampling Audio..." : "Input command..."}
                 className="h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-3 text-[13px] font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/40"
               />
               <Button 
                 type="submit" 
-                disabled={!input.trim() || isTyping || currentUserRole === 'Viewer'}
+                disabled={!input.trim() || isTyping}
                 className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all shrink-0"
               >
                 <Send size={16} />

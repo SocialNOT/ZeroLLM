@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect } from "react";
@@ -69,7 +68,7 @@ export function SessionGuard() {
             </div>
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center">
               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-1">Limit</span>
-              <span className="text-[10px] font-black text-slate-700 uppercase">30 Min</span>
+              <span className="text-[10px] font-black text-slate-700 uppercase">1 Hour</span>
             </div>
           </div>
 

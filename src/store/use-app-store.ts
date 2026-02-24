@@ -387,12 +387,12 @@ export const useAppStore = create<AppState>()(
           return;
         }
         
-        // 2. 30 Minute Security Gate (Bypassed for Guest/Viewer identities as per protocol)
+        // 2. 1 Hour Security Gate (Bypassed for Guest/Viewer identities as per protocol)
         if (currentUserRole !== 'Viewer') {
           const duration = now - sessionStartTime;
-          const thirtyMinutes = 30 * 60 * 1000;
+          const oneHour = 60 * 60 * 1000;
           
-          if (duration > thirtyMinutes) {
+          if (duration > oneHour) {
             set({ isSessionLocked: true });
           }
         }
