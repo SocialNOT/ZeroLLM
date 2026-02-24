@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Zap, Mail, Lock, LogIn, Loader2, UserCircle } from "lucide-react";
+import { Mail, Lock, LogIn, Loader2, UserCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store/use-app-store";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -36,7 +36,7 @@ export default function LoginPage() {
     const userRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userRef);
     
-    // Determine target role node
+    // Determine target role node: Only standard users/admins get infinite sessions.
     const role = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL ? "Admin" : (isGuest ? "Viewer" : "User");
     
     if (!userDoc.exists()) {
@@ -125,19 +125,27 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="text-center space-y-2">
-          <div className="mx-auto h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 mb-4">
-            <Zap size={24} fill="currentColor" />
-          </div>
-          <h1 className="logo-shimmer font-headline text-3xl font-black tracking-tighter">ZEROGPT</h1>
-          <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-slate-400">Initialize Identity Node</p>
-        </div>
-
+        
         <Card className="border-none bg-white shadow-[0_30px_90px_rgba(0,0,0,0.08)] rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="pb-2 pt-6">
-            <CardTitle className="text-lg font-bold text-slate-900">{isRegistering ? "Create Node" : "Energize Session"}</CardTitle>
-            <CardDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Secure Cloud Handshake</CardDescription>
+          <CardHeader className="pb-2 pt-10 text-center">
+            {/* Command Center Animated Logo */}
+            <div className="mb-6">
+              <h1 className="logo-shimmer font-headline text-4xl font-black tracking-tighter leading-none select-none">
+                ZEROGPT
+              </h1>
+              <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-slate-400 mt-2 animate-pulse">
+                Neural Command Hub
+              </p>
+            </div>
+
+            <CardTitle className="text-lg font-bold text-slate-900 mt-4">
+              {isRegistering ? "Create Node" : "Energize Session"}
+            </CardTitle>
+            <CardDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
+              Secure Cloud Handshake Required
+            </CardDescription>
           </CardHeader>
+          
           <CardContent className="space-y-3">
             <form onSubmit={handleEmailAuth} className="space-y-3">
               <div className="space-y-1">
@@ -195,6 +203,7 @@ export default function LoginPage() {
               </Button>
             </div>
           </CardContent>
+          
           <CardFooter className="bg-slate-50/50 border-t border-slate-100 flex justify-center py-3">
             <button 
               onClick={() => setIsRegistering(!isRegistering)}
@@ -204,6 +213,20 @@ export default function LoginPage() {
             </button>
           </CardFooter>
         </Card>
+
+        <div className="text-center opacity-60">
+          <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+            <span className="text-slate-400">Node crafted by</span>
+            <a 
+              href="https://www.eastindiaautomation.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="animate-color-shift inline-block"
+            >
+              Rajib Singh
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
