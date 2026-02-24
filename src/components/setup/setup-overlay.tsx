@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -6,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Zap, Server, Cpu, Loader2, AlertCircle, Key } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Zap, Server, Cpu, Loader2, AlertCircle, Key, CheckCircle2, ChevronRight } from "lucide-react";
+import { testConnectionAction, fetchModelsAction } from "@/ai/actions/engine-actions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function SetupOverlay() {
   const { completeInitialSetup } = useAppStore();
@@ -15,93 +17,164 @@ export function SetupOverlay() {
   const [modelId, setModelId] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [isTesting, setIsTesting] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [models, setModels] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const handleStart = async () => {
+  const handleVerify = async () => {
     setError(null);
     setIsTesting(true);
     try {
-      const isOnline = await completeInitialSetup(baseUrl, modelId || "unspecified", apiKey);
-      if (!isOnline) {
-        setError("Protocol failed. Check endpoint node, authentication token, and firewall status.");
+      const isOnline = await testConnectionAction(baseUrl, apiKey);
+      if (isOnline) {
+        const fetchedModels = await fetchModelsAction(baseUrl, apiKey);
+        setModels(fetchedModels.map(m => m.id));
+        setIsVerified(true);
+        if (fetchedModels.length > 0) {
+          setModelId(fetchedModels[0].id);
+        }
+      } else {
+        setError("Node handshake failed. Verify URL and Access Secret.");
       }
     } catch (err) {
-      setError("An unexpected neural node exception occurred.");
+      setError("Signal integrity failure. Check firewall and network.");
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleFinalize = async () => {
+    setError(null);
+    setIsTesting(true);
+    try {
+      const success = await completeInitialSetup(baseUrl, modelId || "unspecified", apiKey);
+      if (!success) {
+        setError("Finalization protocol rejected. Node may have timed out.");
+      }
+    } catch (err) {
+      setError("Finalization protocol error.");
     } finally {
       setIsTesting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/90 backdrop-blur-2xl p-4">
-      <div className="w-full max-w-md flex flex-col items-center gap-8">
-        <Card className="w-full border-slate-200 bg-white shadow-3xl overflow-hidden rounded-[3rem]">
-          <CardHeader className="text-center pt-12 pb-2">
-            <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary shadow-2xl shadow-primary/20">
-              <Zap className="text-white" size={36} fill="currentColor" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-3xl p-4">
+      <div className="w-full max-w-sm animate-in fade-in zoom-in duration-500">
+        <Card className="border-none bg-white shadow-[0_40px_120px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="text-center pt-8 pb-4">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
+              <Zap size={28} fill="currentColor" className={isTesting ? "animate-pulse" : ""} />
             </div>
-            <CardTitle className="font-headline text-3xl font-bold text-slate-900 tracking-tight">ZeroGPT Engine</CardTitle>
-            <CardDescription className="text-slate-500 font-medium px-8 mt-2">Initialize your cognitive node by linking to a local or remote engine endpoint.</CardDescription>
+            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900">Node Initialization</CardTitle>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-12 mt-1">Configure your primary cognitive engine.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-5 pt-8 px-10">
+
+          <CardContent className="space-y-4 px-8">
             {error && (
-              <Alert variant="destructive" className="bg-rose-50 border-rose-100 text-rose-600 rounded-2xl">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle className="text-[10px] font-bold uppercase tracking-widest">Protocol Failure</AlertTitle>
-                <AlertDescription className="text-[11px] opacity-90">{error}</AlertDescription>
-              </Alert>
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-600 animate-in slide-in-from-top-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <p className="text-[10px] font-bold uppercase leading-tight">{error}</p>
+              </div>
             )}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Node API Endpoint</Label>
-              <div className="relative">
-                <Server className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input 
-                  value={baseUrl} 
-                  onChange={(e) => setBaseUrl(e.target.value)}
-                  placeholder="http://localhost:11434/v1"
-                  className="pl-12 border-slate-200 bg-slate-50 text-slate-900 rounded-2xl h-12 text-sm focus:ring-primary/40"
-                />
+
+            {!isVerified ? (
+              <div className="space-y-4 animate-in fade-in duration-300">
+                <div className="space-y-1.5">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Endpoint Node</Label>
+                  <div className="relative">
+                    <Server className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+                    <Input 
+                      value={baseUrl} 
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="http://localhost:11434/v1"
+                      className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Access Secret (Optional)</Label>
+                  <div className="relative">
+                    <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+                    <Input 
+                      type="password"
+                      value={apiKey} 
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="sk-..."
+                      className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Access Secret (Optional)</Label>
-              <div className="relative">
-                <Key className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input 
-                  type="password"
-                  value={apiKey} 
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="sk-..."
-                  className="pl-12 border-slate-200 bg-slate-50 text-slate-900 rounded-2xl h-12 text-sm focus:ring-primary/40"
-                />
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-600">
+                  <CheckCircle2 size={16} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Node Signal Synchronized</span>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Primary Model Identifier</Label>
+                  <div className="relative">
+                    <Cpu className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 z-10" size={14} />
+                    {models.length > 0 ? (
+                      <Select value={modelId} onValueChange={setModelId}>
+                        <SelectTrigger className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20">
+                          <SelectValue placeholder="Select indexed model" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100">
+                          {models.map(m => (
+                            <SelectItem key={m} value={m} className="text-xs font-bold">{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input 
+                        value={modelId} 
+                        onChange={(e) => setModelId(e.target.value)}
+                        placeholder="llama3:8b"
+                        className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Primary Model ID</Label>
-              <div className="relative">
-                <Cpu className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input 
-                  value={modelId} 
-                  onChange={(e) => setModelId(e.target.value)}
-                  placeholder="llama3:8b"
-                  className="pl-12 border-slate-200 bg-slate-50 text-slate-900 rounded-2xl h-12 text-sm focus:ring-primary/40"
-                />
-              </div>
-            </div>
+            )}
           </CardContent>
-          <CardFooter className="pb-12 pt-6 px-10">
-            <Button 
-              onClick={handleStart} 
-              disabled={!baseUrl || isTesting}
-              className="w-full h-14 rounded-2xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[11px] hover:scale-[1.02] transition-all shadow-2xl shadow-primary/20"
-            >
-              {isTesting ? <><Loader2 className="mr-3 h-5 w-5 animate-spin" />Syncing...</> : "Authorize Handshake"}
-            </Button>
+
+          <CardFooter className="pt-4 pb-8 px-8">
+            {!isVerified ? (
+              <Button 
+                onClick={handleVerify} 
+                disabled={!baseUrl || isTesting}
+                className="w-full h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+              >
+                {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Node Signal"}
+                {!isTesting && <ChevronRight size={14} />}
+              </Button>
+            ) : (
+              <div className="w-full flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsVerified(false)}
+                  className="h-12 flex-1 rounded-xl text-[9px] font-bold uppercase tracking-widest border-slate-100 text-slate-400 hover:bg-slate-50"
+                >
+                  Reset
+                </Button>
+                <Button 
+                  onClick={handleFinalize} 
+                  disabled={isTesting}
+                  className="h-12 flex-[2] rounded-xl bg-emerald-600 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-emerald-200 gap-2"
+                >
+                  {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Energize Node"}
+                </Button>
+              </div>
+            )}
           </CardFooter>
         </Card>
 
-        <div className="text-center opacity-60">
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+        <div className="mt-6 text-center opacity-60">
+          <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
             <span className="text-slate-400">Node crafted by</span>
             <a 
               href="https://www.eastindiaautomation.com" 
