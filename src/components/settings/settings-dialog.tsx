@@ -53,7 +53,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const [urlInput, setUrlInput] = useState(conn?.baseUrl || "");
   const [tokenInput, setTokenInput] = useState(conn?.apiKey || "");
   const [latency, setLatency] = useState("0ms");
-  const [isEngineExpanded, setIsEngineExpanded] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<'engine' | 'shield' | 'vault' | null>('engine');
 
   useEffect(() => {
     if (connectionStatus === 'online') {
@@ -64,7 +64,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   }, [connectionStatus]);
 
   const handleRefresh = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card collapse
+    e.stopPropagation();
     if (conn) {
       updateConnection(conn.id, { baseUrl: urlInput, apiKey: tokenInput });
       await checkConnection();
@@ -72,7 +72,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   };
 
   const handleLoadModel = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card collapse
+    e.stopPropagation();
     if (!conn?.modelId) return;
     const success = await triggerModelLoad(conn.modelId);
     if (success) {
@@ -89,252 +89,247 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const toggleSection = (section: 'engine' | 'shield' | 'vault') => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full border-slate-200 bg-slate-50/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[2.5rem] p-0 overflow-hidden outline-none gap-0">
-        <div className="flex flex-col h-full">
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full border-slate-200 bg-slate-50/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-0 overflow-hidden outline-none gap-0">
+        <div className="flex flex-col max-h-[85vh] sm:max-h-[80vh]">
           {/* Header Node */}
-          <header className="p-5 sm:p-8 bg-white border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-primary text-white shadow-xl shadow-primary/20">
-                <Settings2 size={20} className="sm:w-6 sm:h-6" />
+          <header className="p-4 sm:p-6 bg-white border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
+                <Settings2 size={18} />
               </div>
               <div>
-                <DialogTitle className="font-headline text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">System Control</DialogTitle>
-                <DialogDescription className="text-slate-500 font-medium text-[10px] sm:text-xs mt-0.5">Neural Node Configuration & Telemetry</DialogDescription>
+                <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight">System Control</DialogTitle>
+                <p className="text-slate-500 font-bold text-[8px] uppercase tracking-widest">Neural Node Configuration</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2">
               <Badge variant="outline" className={cn(
-                "text-[8px] sm:text-[10px] uppercase font-bold gap-1.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full border-2 flex-1 sm:flex-none justify-center",
+                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-full border flex justify-center",
                 connectionStatus === 'online' ? "border-emerald-100 text-emerald-600 bg-emerald-50" : "border-rose-100 text-rose-50"
               )}>
-                <Activity size={10} className={cn("sm:w-3 sm:h-3", connectionStatus === 'online' ? "animate-pulse" : "")} />
-                <span className="hidden xs:inline">Latency:</span> {latency}
+                <Activity size={10} className={cn(connectionStatus === 'online' ? "animate-pulse" : "")} />
+                Latency: {latency}
               </Badge>
               <Badge variant="outline" className={cn(
-                "text-[8px] sm:text-[10px] uppercase font-bold gap-1.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full border-2 flex-1 sm:flex-none justify-center",
+                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-full border flex justify-center",
                 connectionStatus === 'online' ? "border-emerald-100 text-emerald-600 bg-emerald-50" : "border-rose-100 text-rose-500 bg-rose-50"
               )}>
-                {connectionStatus === 'online' ? <Wifi size={10} className="sm:w-3 sm:h-3" /> : <WifiOff size={10} className="sm:w-3 sm:h-3" />}
+                {connectionStatus === 'online' ? <Wifi size={10} /> : <WifiOff size={10} />}
                 {connectionStatus}
               </Badge>
             </div>
           </header>
 
-          <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 max-h-[75vh] sm:max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3">
             
-            {/* Engine Node Card (Main) - Collapsible */}
-            <Card className="md:col-span-8 bg-white border-slate-200 shadow-sm rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden">
-              <CardContent className="p-0">
-                <div 
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setIsEngineExpanded(!isEngineExpanded)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setIsEngineExpanded(!isEngineExpanded);
-                    }
-                  }}
-                  className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 transition-colors group text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                      <Server size={18} />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-widest">Engine Interface</h3>
-                      {!isEngineExpanded && (
-                        <p className="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px] sm:max-w-none">
-                          {conn?.baseUrl || "unconfigured"}
-                        </p>
-                      )}
-                    </div>
+            {/* Engine Node Card */}
+            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden">
+              <div 
+                onClick={() => toggleSection('engine')}
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <Server size={16} />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Button 
-                      size="sm" 
-                      variant="secondary" 
-                      className="h-8 text-[9px] sm:text-[10px] font-bold uppercase rounded-xl gap-2 px-3"
-                      onClick={handleRefresh}
-                      disabled={connectionStatus === 'checking'}
-                    >
-                      {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={12} />}
-                      <span className="hidden xs:inline">Sync Node</span>
-                      <span className="xs:hidden">Sync</span>
-                    </Button>
-                    <ChevronDown className={cn(
-                      "h-4 w-4 text-slate-300 transition-transform duration-300",
-                      isEngineExpanded ? "rotate-180" : ""
-                    )} />
+                  <div className="flex flex-col">
+                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Engine Interface</h3>
+                    <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter mt-1">
+                      {connectionStatus === 'online' ? "ENDPOINT SYNCHRONIZED" : "NODE DISCONNECTED"}
+                    </span>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="h-7 text-[8px] font-bold uppercase rounded-lg gap-1.5 px-2"
+                    onClick={handleRefresh}
+                    disabled={connectionStatus === 'checking'}
+                  >
+                    {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={10} />}
+                    Sync
+                  </Button>
+                  <ChevronDown className={cn("h-4 w-4 text-slate-300 transition-transform duration-300", expandedSection === 'engine' && "rotate-180")} />
+                </div>
+              </div>
 
-                {isEngineExpanded && (
-                  <div className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-5 sm:space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <Separator className="bg-slate-50" />
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">API Endpoint</Label>
+              {expandedSection === 'engine' && (
+                <CardContent className="px-4 pb-4 pt-0 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <Separator className="bg-slate-50" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Node Endpoint</Label>
+                      <Input 
+                        value={urlInput} 
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        className="rounded-lg border-slate-100 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                        placeholder="http://localhost:11434/v1"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Access Secret</Label>
+                      <div className="relative">
+                        <Key className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
                         <Input 
-                          value={urlInput} 
-                          onChange={(e) => setUrlInput(e.target.value)}
-                          className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] sm:text-[11px] h-10 focus:ring-primary/20"
-                          placeholder="http://localhost:11434/v1"
+                          type="password"
+                          value={tokenInput} 
+                          onChange={(e) => setTokenInput(e.target.value)}
+                          className="rounded-lg border-slate-100 bg-slate-50 font-mono text-[10px] h-9 pl-8 focus:ring-primary/20"
+                          placeholder="sk-..."
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Access Secret</Label>
-                        <div className="relative">
-                          <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
-                          <Input 
-                            type="password"
-                            value={tokenInput} 
-                            onChange={(e) => setTokenInput(e.target.value)}
-                            className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] sm:text-[11px] h-10 pl-9 focus:ring-primary/20"
-                            placeholder="sk-..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator className="bg-slate-50" />
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                            <Cpu size={18} />
-                          </div>
-                          <h3 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-widest">Compute Core</h3>
-                        </div>
-                        {conn?.modelId && (
-                          <Button 
-                            size="sm" 
-                            onClick={handleLoadModel}
-                            disabled={isModelLoading}
-                            className="h-8 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 gap-2 px-3"
-                          >
-                            {isModelLoading ? <Loader2 className="animate-spin h-3 w-3" /> : <Zap size={12} />}
-                            Energize
-                          </Button>
-                        )}
-                      </div>
-
-                      <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Active Model Identifier</Label>
-                          <Input 
-                            value={conn?.modelId || ""} 
-                            onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
-                            className="rounded-xl border-white bg-white font-mono text-[10px] sm:text-[11px] h-10 shadow-sm"
-                            placeholder="e.g. llama3:8b"
-                          />
-                        </div>
-
-                        {availableModels.length > 0 && (
-                          <div className="space-y-3 pt-2">
-                            <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Detected Local Nodes</Label>
-                            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">
-                              {availableModels.map(model => (
-                                <button 
-                                  key={model}
-                                  onClick={() => conn && updateConnection(conn.id, { modelId: model })}
-                                  className={cn(
-                                    "text-[8px] sm:text-[9px] font-bold py-1.5 px-3 rounded-lg border-2 transition-all",
-                                    conn?.modelId === model 
-                                      ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20' 
-                                      : 'border-white bg-white text-slate-400 hover:border-slate-200'
-                                  )}
-                                >
-                                  {model}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
+
+                  <div className="bg-slate-50 p-3 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Cpu size={14} className="text-emerald-600" />
+                        <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Core</span>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={handleLoadModel}
+                        disabled={isModelLoading}
+                        className="h-7 rounded-lg text-[8px] font-bold uppercase bg-emerald-600 hover:bg-emerald-700 shadow-sm gap-1.5 px-2"
+                      >
+                        {isModelLoading ? <Loader2 className="animate-spin h-3 w-3" /> : <Zap size={10} />}
+                        Energize
+                      </Button>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Active Model Identifier</Label>
+                      <Input 
+                        value={conn?.modelId || ""} 
+                        onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
+                        className="rounded-lg border-white bg-white font-mono text-[10px] h-9 shadow-sm"
+                        placeholder="e.g. llama3:8b"
+                      />
+                    </div>
+                    {availableModels.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto custom-scrollbar pr-1 pt-1">
+                        {availableModels.map(model => (
+                          <button 
+                            key={model}
+                            onClick={() => conn && updateConnection(conn.id, { modelId: model })}
+                            className={cn(
+                              "text-[8px] font-bold py-1 px-2 rounded-md border-2 transition-all",
+                              conn?.modelId === model 
+                                ? 'border-primary bg-primary text-white shadow-sm' 
+                                : 'border-white bg-white text-slate-400 hover:border-slate-200'
+                            )}
+                          >
+                            {model}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              )}
             </Card>
 
-            {/* Sidebar Cards (Shield & Vault) */}
-            <div className="md:col-span-4 flex flex-col gap-4 sm:gap-6">
-              {/* Neural Shield Card */}
-              <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shrink-0">
-                <CardContent className="p-4 sm:p-6 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-                      <Shield size={18} />
-                    </div>
-                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest">Neural Shield</h3>
+            {/* Neural Shield Card */}
+            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden">
+              <div 
+                onClick={() => toggleSection('shield')}
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                    <Shield size={16} />
                   </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-bold">
-                      <span className="text-slate-400 uppercase tracking-tight">Signal Guard</span>
-                      <span className="text-emerald-500 uppercase">ACTIVE</span>
+                  <div className="flex flex-col">
+                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Neural Shield</h3>
+                    <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-tighter mt-1 animate-pulse">SIGNAL GUARD ACTIVE</span>
+                  </div>
+                </div>
+                <ChevronDown className={cn("h-4 w-4 text-slate-300 transition-transform duration-300", expandedSection === 'shield' && "rotate-180")} />
+              </div>
+
+              {expandedSection === 'shield' && (
+                <CardContent className="px-4 pb-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <Separator className="bg-slate-50" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center">
+                      <Lock size={12} className="text-indigo-500 mb-1" />
+                      <span className="text-[7px] font-bold text-slate-400 uppercase">AES-256</span>
+                      <span className="text-[8px] font-bold text-slate-800 mt-0.5">ENCRYPTED</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center">
+                      <Fingerprint size={12} className="text-indigo-500 mb-1" />
+                      <span className="text-[7px] font-bold text-slate-400 uppercase">SHA-RSA</span>
+                      <span className="text-[8px] font-bold text-slate-800 mt-0.5">VERIFIED</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[7px] font-bold text-slate-400 uppercase">
+                      <span>Integrity Level</span>
+                      <span className="text-emerald-500">94%</span>
+                    </div>
+                    <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-500 w-[94%]" />
                     </div>
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center text-center">
-                        <Lock size={12} className="text-indigo-500 mb-1" />
-                        <span className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase">AES-256</span>
-                      </div>
-                      <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center text-center">
-                        <Fingerprint size={12} className="text-indigo-500 mb-1" />
-                        <span className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase">SHA-RSA</span>
-                      </div>
-                    </div>
                   </div>
                 </CardContent>
-              </Card>
+              )}
+            </Card>
 
-              {/* Cognitive Vault Card */}
-              <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shrink-0">
-                <CardContent className="p-4 sm:p-6 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-600">
-                      <Database size={18} />
-                    </div>
-                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest">Cognitive Vault</h3>
+            {/* Cognitive Vault Card */}
+            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden">
+              <div 
+                onClick={() => toggleSection('vault')}
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-600 group-hover:scale-110 transition-transform">
+                    <Database size={16} />
                   </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-bold">
-                      <span className="text-slate-400 uppercase tracking-tight">Memory Index</span>
-                      <span className="text-primary uppercase">OPTIMAL</span>
+                  <div className="flex flex-col">
+                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Cognitive Vault</h3>
+                    <span className="text-[8px] text-primary font-bold uppercase tracking-tighter mt-1">MEMORY INDEX OPTIMAL</span>
+                  </div>
+                </div>
+                <ChevronDown className={cn("h-4 w-4 text-slate-300 transition-transform duration-300", expandedSection === 'vault' && "rotate-180")} />
+              </div>
+
+              {expandedSection === 'vault' && (
+                <CardContent className="px-4 pb-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <Separator className="bg-slate-50" />
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Box size={12} className="text-rose-500" />
+                      <span className="text-[8px] font-bold text-slate-400 uppercase">Semantic Segments</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <span className="text-[10px] font-mono font-bold">1,428</span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[7px] font-bold text-slate-400 uppercase">
+                      <span>Index Fidelity</span>
+                      <span className="text-primary">72%</span>
+                    </div>
+                    <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full bg-primary w-[72%]" />
                     </div>
-                    <div className="grid grid-cols-1 gap-2 pt-1">
-                      <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Box size={12} className="text-rose-500" />
-                          <span className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase">Segments</span>
-                        </div>
-                        <span className="text-[10px] font-mono font-bold">1,428</span>
-                      </div>
-                    </div>
                   </div>
                 </CardContent>
-              </Card>
-            </div>
+              )}
+            </Card>
           </div>
 
           {/* Footer Node */}
-          <footer className="p-4 sm:p-6 bg-slate-100/50 border-t border-slate-200 flex items-center justify-center shrink-0">
-            <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.4em] text-slate-400 flex items-center gap-2 sm:gap-3 text-center">
+          <footer className="p-3 sm:p-4 bg-slate-100/50 border-t border-slate-200 flex items-center justify-center shrink-0">
+            <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2">
               <Zap size={10} className="text-primary" fill="currentColor" />
               Signals Encapsulated • ZeroGPT Core 2.0
             </p>
