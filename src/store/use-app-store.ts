@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
@@ -53,7 +54,7 @@ interface AppState {
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
-  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice') => void;
+  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge') => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -194,7 +195,10 @@ export const useAppStore = create<AppState>()(
             enabledTools: [],
             webSearchEnabled: false,
             reasoningEnabled: false,
-            voiceResponseEnabled: false
+            voiceResponseEnabled: false,
+            calculatorEnabled: false,
+            codeEnabled: false,
+            knowledgeEnabled: false
           }
         };
         set((state) => ({ sessions: state.sessions ? [...state.sessions, newSession] : [newSession], activeSessionId: id }));
@@ -284,13 +288,16 @@ export const useAppStore = create<AppState>()(
             if (tool === 'webSearch') settings.webSearchEnabled = !settings.webSearchEnabled;
             if (tool === 'reasoning') settings.reasoningEnabled = !settings.reasoningEnabled;
             if (tool === 'voice') settings.voiceResponseEnabled = !settings.voiceResponseEnabled;
+            if (tool === 'calculator') settings.calculatorEnabled = !settings.calculatorEnabled;
+            if (tool === 'code') settings.codeEnabled = !settings.codeEnabled;
+            if (tool === 'knowledge') settings.knowledgeEnabled = !settings.knowledgeEnabled;
             
             // Sync actual tools array for Genkit
-            let enabledTools = [...settings.enabledTools];
-            if (tool === 'webSearch') {
-              if (settings.webSearchEnabled && !enabledTools.includes('web_search')) enabledTools.push('web_search');
-              if (!settings.webSearchEnabled) enabledTools = enabledTools.filter(t => t !== 'web_search');
-            }
+            const enabledTools: string[] = [];
+            if (settings.webSearchEnabled) enabledTools.push('web_search');
+            if (settings.calculatorEnabled) enabledTools.push('calculator');
+            if (settings.codeEnabled) enabledTools.push('code_interpreter');
+            if (settings.knowledgeEnabled) enabledTools.push('knowledge_search');
 
             return { ...s, settings: { ...settings, enabledTools } };
           })
@@ -301,7 +308,7 @@ export const useAppStore = create<AppState>()(
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar }))
     }),
     { 
-      name: 'zerogpt-storage-v2',
+      name: 'zerogpt-storage-v3',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {

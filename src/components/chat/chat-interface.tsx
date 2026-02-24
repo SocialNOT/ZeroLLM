@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -14,7 +15,10 @@ import {
   MicOff, 
   Search,
   Wifi,
-  WifiOff
+  WifiOff,
+  Calculator,
+  Terminal,
+  Database
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
@@ -327,47 +331,92 @@ export function ChatInterface() {
 
         {/* Blazing Fast Command Module */}
         <div className="flex-shrink-0 p-4 sm:p-8 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
-          <div className="mx-auto max-w-3xl space-y-4">
+          <div className="mx-auto max-w-3xl space-y-6">
             
-            {/* Adaptive Tool Grid - Mobile Friendly */}
-            <div className="grid grid-cols-3 sm:flex sm:items-center sm:justify-center gap-2">
+            {/* Neural Tool Grid - Square Pad Design */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-lg mx-auto">
               <button 
                 onClick={() => toggleTool(session.id, 'webSearch')}
+                title="Web Grounding"
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all",
+                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
                   session.settings.webSearchEnabled 
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Search size={14} />
-                <span className="hidden sm:inline">Grounding</span>
+                <Search size={18} />
+                <span className="text-[7px] font-bold uppercase tracking-tighter">Search</span>
               </button>
               
               <button 
                 onClick={() => toggleTool(session.id, 'reasoning')}
+                title="Deep Thinking"
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all",
+                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
                   session.settings.reasoningEnabled 
                     ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Brain size={14} />
-                <span className="hidden sm:inline">Thinking</span>
+                <Brain size={18} />
+                <span className="text-[7px] font-bold uppercase tracking-tighter">Think</span>
               </button>
 
               <button 
                 onClick={() => toggleTool(session.id, 'voice')}
+                title="Voice Synthesis"
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all",
+                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
                   session.settings.voiceResponseEnabled 
                     ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                {session.settings.voiceResponseEnabled ? <Mic size={14} /> : <MicOff size={14} />}
-                <span className="hidden sm:inline">Voice</span>
+                {session.settings.voiceResponseEnabled ? <Mic size={18} /> : <MicOff size={18} />}
+                <span className="text-[7px] font-bold uppercase tracking-tighter">Voice</span>
+              </button>
+
+              <button 
+                onClick={() => toggleTool(session.id, 'calculator')}
+                title="Mathematical Logic"
+                className={cn(
+                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  session.settings.calculatorEnabled 
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                )}
+              >
+                <Calculator size={18} />
+                <span className="text-[7px] font-bold uppercase tracking-tighter">Math</span>
+              </button>
+
+              <button 
+                onClick={() => toggleTool(session.id, 'code')}
+                title="Code Interpreter"
+                className={cn(
+                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  session.settings.codeEnabled 
+                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20" 
+                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                )}
+              >
+                <Terminal size={18} />
+                <span className="text-[7px] font-bold uppercase tracking-tighter">Code</span>
+              </button>
+
+              <button 
+                onClick={() => toggleTool(session.id, 'knowledge')}
+                title="Knowledge Vault"
+                className={cn(
+                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  session.settings.knowledgeEnabled 
+                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20" 
+                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                )}
+              >
+                <Database size={18} />
+                <span className="text-[7px] font-bold uppercase tracking-tighter">Vault</span>
               </button>
             </div>
 

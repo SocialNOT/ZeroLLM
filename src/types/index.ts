@@ -91,6 +91,9 @@ export interface ChatSession {
     webSearchEnabled?: boolean;
     reasoningEnabled?: boolean;
     voiceResponseEnabled?: boolean;
+    calculatorEnabled?: boolean;
+    codeEnabled?: boolean;
+    knowledgeEnabled?: boolean;
   };
 }
 
