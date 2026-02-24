@@ -264,40 +264,45 @@ export function ChatInterface() {
             </div>
           </div>
 
-          {/* Quick Fine-Tuning Tabs */}
-          <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar py-1">
+          {/* Quick Fine-Tuning Grid Module */}
+          <div className="grid grid-cols-3 mt-4 border border-border rounded-xl overflow-hidden bg-muted/5 divide-x divide-border">
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('personas')}
-                className="px-3 py-1.5 rounded-full bg-accent/10 text-accent text-[8px] font-bold uppercase tracking-widest border border-accent/20 hover:bg-accent/20 transition-all shrink-0"
+                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-accent/5 transition-all group text-center"
               >
-                ID: {persona.name}
+                <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-accent transition-colors">Identity</span>
+                <span className="text-[9px] font-bold text-accent uppercase truncate w-full mt-0.5">
+                  {persona.name}
+                </span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('frameworks')}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border transition-all shrink-0",
-                  session.frameworkId 
-                    ? "bg-primary text-primary-foreground border-primary" 
-                    : "bg-muted text-muted-foreground border-border"
-                )}
+                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-primary/5 transition-all group text-center"
               >
-                {framework?.name || "No Framework"}
+                <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-primary transition-colors">Architecture</span>
+                <span className={cn(
+                  "text-[9px] font-bold uppercase truncate w-full mt-0.5",
+                  session.frameworkId ? "text-primary" : "text-muted-foreground/40"
+                )}>
+                  {framework?.name || "None"}
+                </span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('linguistic')}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border transition-all shrink-0",
-                  session.linguisticId 
-                    ? "bg-destructive text-destructive-foreground border-destructive" 
-                    : "bg-muted text-muted-foreground border-border"
-                )}
+                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-destructive/5 transition-all group text-center"
               >
-                {linguistic?.name || "Logic: Default"}
+                <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-destructive transition-colors">Logic</span>
+                <span className={cn(
+                  "text-[9px] font-bold uppercase truncate w-full mt-0.5",
+                  session.linguisticId ? "text-destructive" : "text-muted-foreground/40"
+                )}>
+                  {linguistic?.name || "Default"}
+                </span>
               </button>
             </SheetTrigger>
           </div>
