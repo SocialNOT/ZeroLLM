@@ -87,7 +87,6 @@ export function ChatInterface() {
       const now = new Date();
       setCurrentTime(now);
       
-      // Update session timer
       if (sessionStartTime) {
         const elapsed = Date.now() - sessionStartTime;
         const remaining = Math.max(0, (30 * 60 * 1000) - elapsed);
@@ -99,7 +98,6 @@ export function ChatInterface() {
     return () => clearInterval(timer);
   }, [sessionStartTime]);
 
-  // Latency Simulation
   useEffect(() => {
     if (mounted && connectionStatus === 'online') {
       const updateLatency = () => {
@@ -114,7 +112,6 @@ export function ChatInterface() {
     }
   }, [connectionStatus, mounted]);
 
-  // Initialize Speech Recognition
   useEffect(() => {
     if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitRecognition' in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -261,9 +258,7 @@ export function ChatInterface() {
                   accumulatedContent += delta;
                   updateMessage(session.id, assistantMsgId, { content: accumulatedContent });
                 }
-              } catch (e) {
-                // Ignore parsing errors for empty or malformed chunks
-              }
+              } catch (e) {}
             }
           }
         }
@@ -334,6 +329,23 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
+        {/* Dedicated Neural Session Timer Row */}
+        <div className="flex-shrink-0 flex items-center justify-center py-1.5 border-b border-border/50 bg-slate-50/30 z-30">
+          <Link href="/auth/login" className="w-full max-w-[200px]">
+            <div className="group flex items-center justify-center gap-3 bg-white/80 backdrop-blur-md px-4 py-1 rounded-full border border-slate-100 shadow-sm transition-all hover:shadow-md hover:scale-105 active:scale-95 animate-multi-color-pulse">
+              <Clock size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-black font-mono tracking-tight text-slate-900 leading-none">
+                  {timeLeft}
+                </span>
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary leading-none group-hover:underline">
+                  Energize Identity
+                </span>
+              </div>
+            </div>
+          </Link>
+        </div>
+
         {/* Interactive System Status Header */}
         <div className="flex-shrink-0 flex flex-col border-b border-border px-3 py-2 sm:px-6 sm:py-2.5 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
@@ -365,21 +377,6 @@ export function ChatInterface() {
                 </div>
               </button>
             </SettingsDialog>
-
-            {/* Neural Session Timer Capsule */}
-            <Link href="/auth/login" className="flex-1 max-w-[120px] sm:max-w-[160px]">
-              <div className="group flex items-center justify-center gap-2 bg-white/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-100 shadow-sm transition-all hover:shadow-md hover:scale-105 active:scale-95 animate-multi-color-pulse">
-                <Clock size={12} className="text-slate-400 group-hover:text-primary transition-colors" />
-                <div className="flex flex-col items-center">
-                  <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tight text-slate-900 leading-none">
-                    {timeLeft}
-                  </span>
-                  <span className="text-[5px] font-black uppercase tracking-widest text-primary leading-none mt-0.5 group-hover:underline">
-                    Energize
-                  </span>
-                </div>
-              </div>
-            </Link>
 
             {/* Indian Flag Colored Clock - Center Aligned One Row */}
             {mounted && (
@@ -520,7 +517,6 @@ export function ChatInterface() {
         <div className="flex-shrink-0 p-3 sm:p-4 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
           <div className="mx-auto max-w-4xl space-y-3">
             
-            {/* Neural Tool Strip */}
             <div className="flex items-center justify-center gap-2 mx-auto w-full sm:w-[66%] overflow-x-auto no-scrollbar">
               <button 
                 onClick={() => toggleTool(session.id, 'webSearch')}
