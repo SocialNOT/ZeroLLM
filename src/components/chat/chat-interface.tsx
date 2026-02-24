@@ -17,7 +17,14 @@ import {
   WifiOff,
   Calculator,
   Terminal,
-  Database
+  Database,
+  Shield,
+  ArrowRight,
+  Cpu,
+  Command,
+  Sparkles,
+  Layers,
+  UserCircle
 } from "lucide-react";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
@@ -216,6 +223,33 @@ export function ChatInterface() {
 
   const formattedTime = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
 
+  const cognitiveStarters = [
+    { 
+      title: "Analytical Depth", 
+      description: "Apply First Principles thinking", 
+      prompt: "Apply First Principles thinking to analyze: ",
+      icon: <Brain size={16} className="text-primary" />
+    },
+    { 
+      title: "Technical Audit", 
+      description: "Perform a STRIDE threat model", 
+      prompt: "Perform a STRIDE threat model on: ",
+      icon: <Shield size={16} className="text-destructive" />
+    },
+    { 
+      title: "Code Architect", 
+      description: "Design type-safe systems", 
+      prompt: "Help me architect a high-performance system in Rust that: ",
+      icon: <Terminal size={16} className="text-accent" />
+    },
+    { 
+      title: "Knowledge Discovery", 
+      description: "Scan local documentation", 
+      prompt: "Search the internal knowledge base for: ",
+      icon: <Database size={16} className="text-primary" />
+    }
+  ];
+
   if (!session) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-transparent">
@@ -235,7 +269,7 @@ export function ChatInterface() {
         <div className="flex-shrink-0 flex flex-col border-b border-border px-4 py-3 sm:px-8 sm:py-4 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
-              <button className="flex items-center gap-3 group transition-all hover:opacity-80">
+              <button className="flex items-center gap-3 group transition-all hover:opacity-80 text-left">
                 <div className={cn(
                   "h-8 w-8 rounded-xl flex items-center justify-center transition-all shadow-lg",
                   connectionStatus === 'online' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
@@ -311,9 +345,58 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-4xl flex-col py-8 px-4 sm:px-8">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 opacity-30">
-                <Zap size={40} className="text-primary mb-4" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-900">Neural Node Ready</p>
+              <div className="flex flex-col items-center justify-center py-12 px-4 sm:px-0">
+                <div className="relative mb-12">
+                  <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                  <div className="relative h-20 w-20 rounded-[2.5rem] bg-white border border-slate-100 shadow-2xl flex items-center justify-center text-primary group transition-transform hover:scale-110">
+                    <Zap size={40} fill="currentColor" className="animate-pulse" />
+                  </div>
+                </div>
+                
+                <div className="text-center mb-12 space-y-2">
+                  <h2 className="text-3xl font-headline font-bold text-slate-900 tracking-tight">Neural Node Ready</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">Initialize cognitive sequence</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                  {cognitiveStarters.map((starter, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setInput(starter.prompt)}
+                      className="group flex flex-col items-start p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-2xl hover:border-primary/20 transition-all text-left relative overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2.5 rounded-2xl bg-slate-50 group-hover:bg-primary/5 transition-colors">
+                          {starter.icon}
+                        </div>
+                        <span className="text-[13px] font-bold text-slate-900 tracking-tight">{starter.title}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-medium leading-relaxed">{starter.description}</p>
+                      <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                        <ArrowRight size={16} className="text-primary" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-16 flex items-center gap-4">
+                  <SettingsDialog>
+                    <Button variant="outline" className="h-12 rounded-2xl gap-3 px-6 text-[10px] font-bold uppercase tracking-[0.2em] bg-white border-slate-100 shadow-xl shadow-slate-200/50 hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all">
+                      <Cpu size={16} className="text-primary" />
+                      System Control
+                    </Button>
+                  </SettingsDialog>
+                  <SheetTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveParameterTab('frameworks')}
+                      className="h-12 rounded-2xl gap-3 px-6 text-[10px] font-bold uppercase tracking-[0.2em] bg-white border-slate-100 shadow-xl shadow-slate-200/50 hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all"
+                    >
+                      <Command size={16} className="text-accent" />
+                      Cognitive Hub
+                    </Button>
+                  </SheetTrigger>
+                </div>
               </div>
             ) : (
               session.messages.map((msg) => (
