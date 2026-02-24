@@ -45,10 +45,7 @@ export function ParameterControls() {
     applyPersona,
     applyLinguisticControl,
     activeParameterTab,
-    setActiveParameterTab,
-    duplicatePersona,
-    duplicateFramework,
-    duplicateLinguisticControl
+    setActiveParameterTab
   } = useAppStore();
 
   const session = sessions.find(s => s.id === activeSessionId);
@@ -144,21 +141,14 @@ export function ParameterControls() {
                               <div className="flex items-center justify-between mb-2">
                                 <span className="text-[12px] font-bold">{f.name}</span>
                                 <div className="flex items-center gap-2">
-                                  {f.isCustom ? (
-                                    <LibraryEditor mode="edit" type="framework" item={f}>
-                                      <button className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.frameworkId === f.id ? "text-white" : "text-slate-400")}>
-                                        <Edit3 size={12} />
-                                      </button>
-                                    </LibraryEditor>
-                                  ) : (
+                                  <LibraryEditor mode={f.isCustom ? "edit" : "create"} type="framework" item={f}>
                                     <button 
-                                      onClick={() => duplicateFramework(f.id)}
                                       className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.frameworkId === f.id ? "text-white" : "text-slate-400")}
-                                      title="Modify (Create Custom Copy)"
+                                      title={f.isCustom ? "Edit Custom Protocol" : "Modify & Clone Protocol"}
                                     >
                                       <Edit3 size={12} />
                                     </button>
-                                  )}
+                                  </LibraryEditor>
                                   {session.frameworkId === f.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                                 </div>
                               </div>
@@ -233,21 +223,14 @@ export function ParameterControls() {
                                   <span className="text-[12px] font-bold">{p.name}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  {p.isCustom ? (
-                                    <LibraryEditor mode="edit" type="persona" item={p}>
-                                      <button className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.personaId === p.id ? "text-white" : "text-slate-400")}>
-                                        <Edit3 size={12} />
-                                      </button>
-                                    </LibraryEditor>
-                                  ) : (
+                                  <LibraryEditor mode={p.isCustom ? "edit" : "create"} type="persona" item={p}>
                                     <button 
-                                      onClick={() => duplicatePersona(p.id)}
                                       className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.personaId === p.id ? "text-white" : "text-slate-400")}
-                                      title="Modify (Create Custom Copy)"
+                                      title={p.isCustom ? "Edit Custom Identity" : "Modify & Clone Identity"}
                                     >
                                       <Edit3 size={12} />
                                     </button>
-                                  )}
+                                  </LibraryEditor>
                                   {session.personaId === p.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                                 </div>
                               </div>
@@ -318,21 +301,14 @@ export function ParameterControls() {
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="text-[12px] font-bold uppercase tracking-widest">{lc.name}</span>
                                   <div className="flex items-center gap-2">
-                                    {lc.isCustom ? (
-                                      <LibraryEditor mode="edit" type="linguistic" item={lc}>
-                                        <button className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.linguisticId === lc.id ? "text-white" : "text-slate-400")}>
-                                          <Edit3 size={12} />
-                                        </button>
-                                      </LibraryEditor>
-                                    ) : (
+                                    <LibraryEditor mode={lc.isCustom ? "edit" : "create"} type="linguistic" item={lc}>
                                       <button 
-                                        onClick={() => duplicateLinguisticControl(lc.id)}
                                         className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.linguisticId === lc.id ? "text-white" : "text-slate-400")}
-                                        title="Modify (Create Custom Copy)"
+                                        title={lc.isCustom ? "Edit Custom logic" : "Modify & Clone Logic"}
                                       >
                                         <Edit3 size={12} />
                                       </button>
-                                    )}
+                                    </LibraryEditor>
                                     {session.linguisticId === lc.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                                   </div>
                                 </div>

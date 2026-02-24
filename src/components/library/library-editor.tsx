@@ -31,29 +31,30 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
   const { addPersona, updatePersona, addFramework, updateFramework, addLinguisticControl, updateLinguisticControl } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: item?.name || "",
-    description: item?.description || "",
-    content: item?.system_prompt || item?.content || item?.system_instruction || "",
-    category: item?.category || "Custom"
+    name: "",
+    description: "",
+    content: "",
+    category: "Custom"
   });
 
+  // Re-populate form whenever the dialog opens or the item changes
   useEffect(() => {
-    if (item) {
+    if (isOpen) {
       setFormData({
-        name: item.name,
-        description: item.description,
-        content: item.system_prompt || item.content || item.system_instruction || "",
-        category: item.category || "Custom"
+        name: item ? (mode === 'create' ? `Copy of ${item.name}` : item.name) : "",
+        description: item?.description || "",
+        content: item ? (item.system_prompt || item.content || item.system_instruction || "") : "",
+        category: item?.category || "Custom"
       });
     }
-  }, [item]);
+  }, [isOpen, item, mode]);
 
   const handleSave = () => {
     if (!formData.name.trim() || !formData.content.trim()) {
       toast({
         variant: "destructive",
         title: "Validation Error",
-        description: "Protocol name and core logic are required nodes."
+        description: "Protocol identifier and core logic are required nodes."
       });
       return;
     }
@@ -103,6 +104,12 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
     linguistic: { title: "Linguistic Controller", content: "Instruction Set" }
   };
 
+  const dialogTitle = mode === 'create' && item 
+    ? `Clone & Refine ${labels[type].title}` 
+    : mode === 'create' 
+      ? `Initialize ${labels[type].title}` 
+      : `Refine ${labels[type].title}`;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -114,9 +121,9 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
             <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
               <Zap size={20} />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 text-left">
               <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
-                {mode === 'create' ? `Initialize ${labels[type].title}` : `Refine ${labels[type].title}`}
+                {dialogTitle}
               </DialogTitle>
               <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">Configure your custom neural protocol.</p>
             </div>
@@ -125,7 +132,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
 
         <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Protocol Identifier</Label>
               <Input 
                 value={formData.name}
@@ -134,7 +141,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
                 className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Category Cluster</Label>
               <Input 
                 value={formData.category}
@@ -145,7 +152,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 text-left">
             <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Descriptive Telemetry</Label>
             <Input 
               value={formData.description}
@@ -155,7 +162,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 text-left">
             <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">{labels[type].content}</Label>
             <Textarea 
               value={formData.content}
