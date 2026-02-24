@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useMemo } from "react";
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (!authLoading && (!user || user.email !== 'admin@worldoftexts.com')) {
+    if (!authLoading && (!user || user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL)) {
       router.push('/');
     }
   }, [user, authLoading, router]);
