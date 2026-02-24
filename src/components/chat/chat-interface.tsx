@@ -279,31 +279,28 @@ export function ChatInterface() {
         <div className="flex-shrink-0 flex flex-col border-b border-border px-4 py-2 sm:px-8 sm:py-3 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
-              <button className="flex items-center gap-2.5 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-2 py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95">
+              <button className="flex items-center gap-2 sm:gap-2.5 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-1.5 py-1 sm:px-2 sm:py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95 max-w-[140px] sm:max-w-none">
                 <div className={cn(
-                  "h-8 w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border",
+                  "h-7 w-7 sm:h-8 sm:w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border shrink-0",
                   connectionStatus === 'online' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-rose-50 text-rose-500 border-rose-100"
                 )}>
                   {connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
                 </div>
-                <div className="flex flex-col items-start text-left pr-1 overflow-hidden hidden sm:flex">
-                  <div className="flex items-center gap-1.5 leading-none">
+                <div className="flex flex-col items-start text-left pr-1 overflow-hidden min-w-0">
+                  <div className="flex items-center gap-1 leading-none">
                     <span className={cn(
-                      "text-[9px] font-black uppercase tracking-[0.1em]",
+                      "text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em] whitespace-nowrap",
                       connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600"
                     )}>
                       {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
                     </span>
                     {connectionStatus === 'online' && (
-                      <>
-                        <div className="h-1 w-1 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="text-[7px] font-mono font-bold text-slate-400 ml-1">
-                          {latency}
-                        </span>
-                      </>
+                      <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-400 ml-0.5">
+                        {latency}
+                      </span>
                     )}
                   </div>
-                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate max-w-[120px]">
+                  <span className="text-[6px] sm:text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate w-full">
                     {connection.modelId || "Primary Engine"}
                   </span>
                 </div>
@@ -311,7 +308,7 @@ export function ChatInterface() {
             </SettingsDialog>
 
             {/* Indian Flag Colored Clock - Center Aligned Single Row */}
-            <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden px-2">
               <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
                 {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}
               </span>
@@ -325,7 +322,7 @@ export function ChatInterface() {
               </span>
             </div>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
                   <Settings2 size={14} />
