@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server';
 import { performWebSearch } from '@/lib/llm-api';
 
@@ -28,12 +29,25 @@ export async function POST(req: NextRequest) {
       const lastUserMsg = messages[messages.length - 1]?.content;
       if (lastUserMsg) {
         const searchResults = await performWebSearch(lastUserMsg);
-        // Inject grounding context at the top of the stack
-        activeMessages = [
-          { role: 'system', content: `[SYSTEM: WEB GROUNDING ACTIVE]\nUse the following verified search results to inform your response. If info is missing, state it clearly.\n\n${searchResults}` },
-          ...messages
-        ];
+        
+        // Inject grounding context into the system prompt (first message)
+        if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
+          activeMessages[0] = {
+            ...activeMessages[0],
+            content: `${activeMessages[0].content}\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nUse the following verified search results to inform your response. If info is missing, state it clearly.\n\n${searchResults}`
+          };
+        } else {
+          activeMessages = [
+            { role: 'system', content: `[SYSTEM: WEB GROUNDING ACTIVE]\nUse the following verified search results to inform your response. If info is missing, state it clearly.\n\n${searchResults}` },
+            ...messages
+          ];
+        }
       }
+    }
+
+    // Reasoning Enhancement for Custom Engines
+    if (settings?.reasoningEnabled && activeMessages.length > 0 && activeMessages[0].role === 'system') {
+      activeMessages[0].content += `\n\n[SYSTEM: REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.`;
     }
 
     const response = await fetch(finalUrl, {

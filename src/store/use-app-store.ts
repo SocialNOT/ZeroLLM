@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
@@ -61,16 +62,13 @@ interface AppState {
 
   completeInitialSetup: (baseUrl: string, modelId: string, apiKey?: string) => Promise<boolean>;
   setRole: (role: UserRole) => void;
+  startSession: () => void;
   checkConnection: () => Promise<void>;
   refreshModels: () => Promise<void>;
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
   toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge') => void;
-  
-  // Security Actions
-  startSession: () => void;
-  lockSession: () => void;
   checkSessionExpiry: () => void;
 }
 
@@ -153,6 +151,7 @@ export const useAppStore = create<AppState>()(
 
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
+      startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       
       checkConnection: async () => {
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
@@ -371,13 +370,11 @@ export const useAppStore = create<AppState>()(
       setActiveParameterTab: (tab) => set({ activeParameterTab: tab }),
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar })),
       
-      startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
-      lockSession: () => set({ isSessionLocked: true }),
       checkSessionExpiry: () => {
         const { sessionStartTime, currentUserRole, isSessionLocked } = get();
         if (!sessionStartTime) return;
         
-        // Identity Gate: Only Guest/Viewer roles are subject to session expiry locks.
+        // Identity Gate: Only Guest/Viewer roles are subject to session limits.
         if (currentUserRole !== 'Viewer') {
           if (isSessionLocked) set({ isSessionLocked: false });
           return;

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -230,7 +231,7 @@ export function ChatInterface() {
             ...session.messages,
             { role: 'user', content: textToSend }
           ],
-          settings: session.settings, // Full settings pass-through for grounding
+          settings: session.settings,
           apiKey: connection?.apiKey
         })
       });
@@ -391,7 +392,7 @@ export function ChatInterface() {
                 <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
                   {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}
                 </span>
-                <div className="bg-white px-1.5 py-0.5 rounded border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
+                <div className="bg-white px-1.5 py-0.5 rounded border border-slate-100 shadow-[0_2px_100px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
                   <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900 leading-none">
                     {currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00"}
                   </span>

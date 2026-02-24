@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'genkit';
@@ -108,10 +109,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       // Perform real search if grounding is enabled
       if (input.webSearchEnabled) {
         const searchResults = await performWebSearch(input.userMessage);
-        finalMessages.push({
-          role: 'system' as const,
-          content: `[WEB GROUNDING ACQUIRED]\nUse these search results to answer precisely:\n\n${searchResults}`
-        });
+        finalMessages[0].content += `\n\n[WEB GROUNDING ACQUIRED]\nUse these search results to answer precisely:\n\n${searchResults}`;
       }
 
       finalMessages.push({ role: 'user' as const, content: input.userMessage });
