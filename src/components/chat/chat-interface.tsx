@@ -333,6 +333,7 @@ export function ChatInterface() {
         {/* Sleek Neural Session Timer Row - Zero Margin Industrial Bar */}
         <div className="flex-shrink-0 flex items-center justify-center gap-3 py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
           <div className="flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none animate-multi-color-pulse">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none mr-1">Session TTL:</span>
             <Clock size={10} className="text-slate-400" />
             <span className="text-[10px] font-black font-mono tracking-tight text-slate-900 leading-none">
               {timeLeft}
