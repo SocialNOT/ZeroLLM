@@ -18,6 +18,7 @@ import { useAppStore } from "@/store/use-app-store";
 import { Persona, Framework, LinguisticControl } from "@/types";
 import { toast } from "@/hooks/use-toast";
 import { Save, Zap, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LibraryEditorProps {
   children: React.ReactNode;
@@ -107,72 +108,72 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-xl w-[95vw] rounded-[2.5rem] border border-slate-100 bg-white shadow-3xl overflow-hidden p-0">
-        <DialogHeader className="p-8 border-b border-slate-50 bg-slate-50/50">
+      <DialogContent className="max-w-xl w-[95vw] sm:w-full border-white/20 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
+        <DialogHeader className="p-6 border-b border-slate-100 bg-white/50 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
               <Zap size={20} />
             </div>
-            <div>
-              <DialogTitle className="font-headline text-xl font-bold text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
                 {mode === 'create' ? `Initialize ${labels[type].title}` : `Refine ${labels[type].title}`}
               </DialogTitle>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Configure your custom neural protocol.</p>
+              <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">Configure your custom neural protocol.</p>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-8 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Protocol Identifier</Label>
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Protocol Identifier</Label>
               <Input 
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g. Tactical Strategist"
-                className="rounded-xl border-slate-100 bg-slate-50 h-11 focus:ring-primary/20"
+                className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Category Cluster</Label>
+            <div className="space-y-1.5">
+              <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Category Cluster</Label>
               <Input 
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 placeholder="Custom"
-                className="rounded-xl border-slate-100 bg-slate-50 h-11 focus:ring-primary/20"
+                className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Descriptive Telemetry</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Descriptive Telemetry</Label>
             <Input 
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
               placeholder="Brief overview of protocol behavior..."
-              className="rounded-xl border-slate-100 bg-slate-50 h-11 focus:ring-primary/20"
+              className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-medium focus:ring-primary/20"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">{labels[type].content}</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">{labels[type].content}</Label>
             <Textarea 
               value={formData.content}
               onChange={(e) => setFormData({...formData, content: e.target.value})}
               placeholder="Enter core system instructions and behavioral constraints..."
-              className="rounded-2xl border-slate-100 bg-slate-50 min-h-[200px] font-mono text-sm leading-relaxed p-4 focus:ring-primary/20"
+              className="rounded-2xl border-slate-100 bg-slate-50 min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
             />
           </div>
         </div>
 
-        <DialogFooter className="p-6 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between sm:justify-between">
+        <DialogFooter className="p-6 bg-slate-50/50 border-t border-slate-100 shrink-0 flex flex-row items-center justify-between sm:justify-between gap-4">
           <div className="flex items-center gap-2 text-amber-600">
-            <AlertCircle size={14} />
-            <span className="text-[9px] font-bold uppercase tracking-wider italic">Node will be persisted locally</span>
+            <AlertCircle size={14} className="shrink-0" />
+            <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none hidden sm:inline">Local Node Persisted</span>
           </div>
           <Button 
             onClick={handleSave}
-            className="h-11 px-8 rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+            className="h-11 px-8 flex-1 sm:flex-none rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
           >
             <Save size={14} />
             Commit Node
