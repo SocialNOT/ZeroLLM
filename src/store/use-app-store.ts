@@ -86,7 +86,7 @@ export const useAppStore = create<AppState>()(
       connectionStatus: 'offline',
       isModelLoading: false,
       activeParameterTab: 'frameworks',
-      showInfoSidebar: false, // Default to false for wider chat
+      showInfoSidebar: false,
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -201,14 +201,26 @@ export const useAppStore = create<AppState>()(
             knowledgeEnabled: false
           }
         };
-        set((state) => ({ sessions: state.sessions ? [...state.sessions, newSession] : [newSession], activeSessionId: id }));
+        set((state) => ({ 
+          sessions: state.sessions ? [...state.sessions, newSession] : [newSession], 
+          activeSessionId: id 
+        }));
         return id;
       },
 
-      deleteSession: (id) => set((state) => ({
-        sessions: state.sessions.filter(s => s.id !== id),
-        activeSessionId: state.activeSessionId === id ? null : state.activeSessionId
-      })),
+      deleteSession: (id) => set((state) => {
+        const filteredSessions = state.sessions.filter(s => s.id !== id);
+        let nextActiveId = state.activeSessionId;
+        
+        if (state.activeSessionId === id) {
+          nextActiveId = filteredSessions.length > 0 ? filteredSessions[0].id : null;
+        }
+        
+        return {
+          sessions: filteredSessions,
+          activeSessionId: nextActiveId
+        };
+      }),
 
       addMessage: (sessionId, message) => set((state) => ({
         sessions: state.sessions.map(s => 
@@ -292,7 +304,6 @@ export const useAppStore = create<AppState>()(
             if (tool === 'code') settings.codeEnabled = !settings.codeEnabled;
             if (tool === 'knowledge') settings.knowledgeEnabled = !settings.knowledgeEnabled;
             
-            // Sync actual tools array for Genkit
             const enabledTools: string[] = [];
             if (settings.webSearchEnabled) enabledTools.push('web_search');
             if (settings.calculatorEnabled) enabledTools.push('calculator');

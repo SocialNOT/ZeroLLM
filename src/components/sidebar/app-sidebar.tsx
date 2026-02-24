@@ -84,6 +84,7 @@ export function AppSidebar() {
   };
 
   const handleDeleteSession = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
     e.stopPropagation();
     deleteSession(id);
   };
@@ -242,7 +243,7 @@ export function AppSidebar() {
                     <SidebarMenuAction
                       onClick={(e) => handleDeleteSession(e, session.id)}
                       showOnHover
-                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg"
+                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg z-50"
                     >
                       <Trash2 size={12} />
                     </SidebarMenuAction>

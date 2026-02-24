@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -8,7 +9,15 @@ import { useEffect, useState } from "react";
 import { SetupOverlay } from "@/components/setup/setup-overlay";
 
 export default function Home() {
-  const { createSession, activeWorkspaceId, sessions, setActiveSession, isConfigured } = useAppStore();
+  const { 
+    createSession, 
+    activeWorkspaceId, 
+    sessions, 
+    setActiveSession, 
+    activeSessionId,
+    isConfigured 
+  } = useAppStore();
+  
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -17,13 +26,13 @@ export default function Home() {
 
   useEffect(() => {
     if (isConfigured && mounted) {
-      if (sessions.length === 0) {
+      if (!sessions || sessions.length === 0) {
         createSession(activeWorkspaceId || 'ws-1');
-      } else if (!useAppStore.getState().activeSessionId) {
+      } else if (!activeSessionId) {
         setActiveSession(sessions[0].id);
       }
     }
-  }, [isConfigured, sessions.length, activeWorkspaceId, mounted]);
+  }, [isConfigured, sessions.length, activeWorkspaceId, mounted, activeSessionId, createSession, setActiveSession]);
 
   if (!mounted) return null;
 
