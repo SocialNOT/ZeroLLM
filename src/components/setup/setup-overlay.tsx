@@ -59,13 +59,13 @@ export function SetupOverlay() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-3xl p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-3xl p-4 overflow-hidden">
       {/* Animated Text Logo */}
-      <div className="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-1000 shrink-0">
+      <div className="mb-6 text-center animate-in fade-in slide-in-from-top-4 duration-1000 shrink-0">
         <h1 className="logo-shimmer font-headline text-5xl sm:text-7xl font-black tracking-tighter leading-none select-none">
           ZEROGPT
         </h1>
-        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-slate-400 mt-3 animate-pulse">
+        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-slate-400 mt-2 animate-pulse">
           Neural Command Hub
         </p>
       </div>
@@ -144,7 +144,7 @@ export function SetupOverlay() {
                         <SelectTrigger className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20">
                           <SelectValue placeholder="Select indexed model" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100">
+                        <SelectContent className="rounded-xl border-slate-100 z-[200]">
                           {models.map(m => (
                             <SelectItem key={m} value={m} className="text-xs font-bold">{m}</SelectItem>
                           ))}
