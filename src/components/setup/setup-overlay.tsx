@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -7,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Zap, Server, Cpu, Loader2, AlertCircle, Key, CheckCircle2, ChevronRight } from "lucide-react";
+import { Zap, Server, Cpu, Loader2, AlertCircle, Key, CheckCircle2, ChevronRight, ShieldCheck } from "lucide-react";
 import { testConnectionAction, fetchModelsAction } from "@/ai/actions/engine-actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 export function SetupOverlay() {
   const { completeInitialSetup } = useAppStore();
@@ -59,15 +59,37 @@ export function SetupOverlay() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-3xl p-4">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-3xl p-4 overflow-y-auto">
+      {/* Animated Text Logo */}
+      <div className="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-1000 shrink-0">
+        <h1 className="logo-shimmer font-headline text-5xl sm:text-7xl font-black tracking-tighter leading-none select-none">
+          ZEROGPT
+        </h1>
+        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-slate-400 mt-3 animate-pulse">
+          Neural Command Hub
+        </p>
+      </div>
+
       <div className="w-full max-w-sm animate-in fade-in zoom-in duration-500">
         <Card className="border-none bg-white shadow-[0_40px_120px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden">
           <CardHeader className="text-center pt-8 pb-4">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
               <Zap size={28} fill="currentColor" className={isTesting ? "animate-pulse" : ""} />
             </div>
-            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900">Node Initialization</CardTitle>
-            <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-12 mt-1">Configure your primary cognitive engine.</CardDescription>
+            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900">Energize Node</CardTitle>
+            <CardDescription className="text-[9px] uppercase font-black tracking-widest text-primary mt-1">HANDSHAKE REQUIRED</CardDescription>
+            
+            <div className="flex items-center justify-center gap-1.5 mt-4">
+              <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">
+                <ShieldCheck size={10} className="mr-1" /> Secure
+              </Badge>
+              <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">
+                <Server size={10} className="mr-1" /> Local
+              </Badge>
+              <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">
+                <Cpu size={10} className="mr-1" /> Neural
+              </Badge>
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-4 px-8">

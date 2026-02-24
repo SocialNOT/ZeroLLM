@@ -45,6 +45,26 @@
   }
 }
 
+.logo-shimmer {
+  background: linear-gradient(
+    to right,
+    hsl(var(--primary)) 0%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--primary)) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: logo-shimmer 3s linear infinite;
+}
+
+@keyframes logo-shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
 .sleek-animated-border {
   position: relative;
   border-radius: var(--radius);
