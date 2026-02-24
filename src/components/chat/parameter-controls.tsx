@@ -15,8 +15,9 @@ import {
   Check, 
   Zap, 
   Sliders,
-  ChevronRight,
-  FolderOpen
+  FolderOpen,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,6 +27,7 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 export function ParameterControls() {
   const { 
@@ -44,7 +46,6 @@ export function ParameterControls() {
 
   const session = sessions.find(s => s.id === activeSessionId);
 
-  // Grouping logic for each category
   const groupedFrameworks = useMemo(() => {
     return frameworks.reduce((acc, f) => {
       if (!acc[f.category]) acc[f.category] = [];
@@ -112,23 +113,45 @@ export function ParameterControls() {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 pb-0">
-                        <div className="grid gap-2 pl-4 border-l-2 border-primary/10 ml-3 py-2">
+                        <div className="grid gap-3 pl-4 border-l-2 border-primary/10 ml-3 py-2">
                           {items.map(f => (
                             <div 
                               key={f.id} 
-                              onClick={() => applyFramework(session.id, f.id)}
                               className={cn(
-                                "p-4 rounded-2xl border transition-all cursor-pointer group",
+                                "p-5 rounded-2xl border transition-all group relative overflow-hidden",
                                 session.frameworkId === f.id 
                                   ? "bg-primary text-primary-foreground border-primary shadow-lg" 
-                                  : "bg-white border-border hover:border-primary/20 hover:shadow-md"
+                                  : "bg-white border-border hover:border-primary/20"
                               )}
                             >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className={cn("text-[11px] font-bold", session.frameworkId === f.id ? "text-primary-foreground" : "text-foreground")}>{f.name}</span>
-                                {session.frameworkId === f.id && <Check size={12} className="text-primary-foreground" />}
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[12px] font-bold">{f.name}</span>
+                                {session.frameworkId === f.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                               </div>
-                              <p className={cn("text-[10px] leading-snug line-clamp-2 opacity-70", session.frameworkId === f.id ? "text-primary-foreground" : "text-muted-foreground")}>{f.description}</p>
+                              <p className={cn("text-[10px] leading-relaxed mb-4", session.frameworkId === f.id ? "text-white/80" : "text-muted-foreground")}>{f.description}</p>
+                              
+                              <div className="space-y-3">
+                                <div className="flex flex-wrap gap-1.5">
+                                  {f.keypoints.map((kp, idx) => (
+                                    <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.frameworkId === f.id ? "bg-white/10 text-white" : "bg-primary/5 text-primary")}>
+                                      • {kp}
+                                    </span>
+                                  ))}
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => applyFramework(session.id, f.id)}
+                                  className={cn(
+                                    "w-full h-8 rounded-xl text-[9px] font-bold uppercase tracking-widest gap-2",
+                                    session.frameworkId === f.id 
+                                      ? "bg-white text-primary hover:bg-white/90" 
+                                      : "bg-primary text-white hover:bg-primary/90"
+                                  )}
+                                >
+                                  {session.frameworkId === f.id ? <Check size={12} /> : <Zap size={12} />}
+                                  {session.frameworkId === f.id ? "Energized" : "Activate Protocol"}
+                                </Button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -151,32 +174,57 @@ export function ParameterControls() {
                       <AccordionTrigger className="flex px-4 py-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all hover:no-underline border border-border/50">
                         <div className="flex items-center gap-3">
                           <div className="h-6 w-6 rounded-lg bg-accent/10 flex items-center justify-center">
-                            <Zap size={12} className="text-accent" />
+                            <Sparkles size={12} className="text-accent" />
                           </div>
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">{category}</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 pb-0">
-                        <div className="grid grid-cols-2 gap-2 pl-4 border-l-2 border-accent/10 ml-3 py-2">
+                        <div className="grid gap-3 pl-4 border-l-2 border-accent/10 ml-3 py-2">
                           {items.map(p => (
-                            <button 
+                            <div 
                               key={p.id} 
-                              onClick={() => applyPersona(session.id, p.id)}
                               className={cn(
-                                "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all text-center",
+                                "p-5 rounded-2xl border transition-all group relative overflow-hidden",
                                 session.personaId === p.id 
-                                  ? "bg-accent border-accent text-accent-foreground shadow-lg shadow-accent/10" 
-                                  : "bg-white border-border text-muted-foreground hover:bg-card hover:shadow-md"
+                                  ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/10" 
+                                  : "bg-white border-border hover:border-accent/20"
                               )}
                             >
-                              <div className={cn(
-                                "h-10 w-10 rounded-xl flex items-center justify-center",
-                                session.personaId === p.id ? "bg-white/20" : "bg-muted/50 border border-border"
-                              )}>
-                                <Zap size={16} className={session.personaId === p.id ? "text-white" : "text-primary"} />
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className={cn("h-6 w-6 rounded-lg flex items-center justify-center", session.personaId === p.id ? "bg-white/20" : "bg-accent/5")}>
+                                    <UserCircle size={12} className={session.personaId === p.id ? "text-white" : "text-accent"} />
+                                  </div>
+                                  <span className="text-[12px] font-bold">{p.name}</span>
+                                </div>
+                                {session.personaId === p.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                               </div>
-                              <span className="text-[9px] font-bold uppercase tracking-widest block line-clamp-1">{p.name}</span>
-                            </button>
+                              <p className={cn("text-[10px] leading-relaxed mb-4", session.personaId === p.id ? "text-white/80" : "text-muted-foreground")}>{p.description}</p>
+                              
+                              <div className="space-y-3">
+                                <div className="flex flex-wrap gap-1.5">
+                                  {p.keypoints?.map((kp, idx) => (
+                                    <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.personaId === p.id ? "bg-white/10 text-white" : "bg-accent/5 text-accent")}>
+                                      • {kp}
+                                    </span>
+                                  ))}
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => applyPersona(session.id, p.id)}
+                                  className={cn(
+                                    "w-full h-8 rounded-xl text-[9px] font-bold uppercase tracking-widest gap-2",
+                                    session.personaId === p.id 
+                                      ? "bg-white text-accent hover:bg-white/90" 
+                                      : "bg-accent text-white hover:bg-accent/90"
+                                  )}
+                                >
+                                  {session.personaId === p.id ? <Check size={12} /> : <Zap size={12} />}
+                                  {session.personaId === p.id ? "Identity Linked" : "Energize Identity"}
+                                </Button>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </AccordionContent>
@@ -205,23 +253,46 @@ export function ParameterControls() {
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="pt-2 pb-0">
-                          <div className="grid gap-2 pl-4 border-l-2 border-rose-500/10 ml-3 py-2">
+                          <div className="grid gap-3 pl-4 border-l-2 border-rose-500/10 ml-3 py-2">
                             {items.map(lc => (
-                              <button 
+                              <div 
                                 key={lc.id} 
-                                onClick={() => applyLinguisticControl(session.id, lc.id)}
                                 className={cn(
-                                  "flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
+                                  "p-5 rounded-2xl border transition-all group relative overflow-hidden",
                                   session.linguisticId === lc.id 
-                                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg" 
-                                    : "bg-white border-border hover:bg-card hover:shadow-md"
+                                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/10" 
+                                    : "bg-white border-border hover:border-destructive/20"
                                 )}
                               >
-                                <div className={cn("text-[10px] font-bold uppercase tracking-widest", session.linguisticId === lc.id ? "text-destructive-foreground" : "text-foreground")}>
-                                  {lc.name}
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-[12px] font-bold uppercase tracking-widest">{lc.name}</span>
+                                  {session.linguisticId === lc.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                                 </div>
-                                {session.linguisticId === lc.id && <Check size={12} className="text-destructive-foreground" />}
-                              </button>
+                                <p className={cn("text-[10px] leading-relaxed mb-4", session.linguisticId === lc.id ? "text-white/80" : "text-muted-foreground")}>{lc.description}</p>
+                                
+                                <div className="space-y-3">
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {lc.keypoints?.map((kp, idx) => (
+                                      <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.linguisticId === lc.id ? "bg-white/10 text-white" : "bg-destructive/5 text-destructive")}>
+                                        • {kp}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => applyLinguisticControl(session.id, lc.id)}
+                                    className={cn(
+                                      "w-full h-8 rounded-xl text-[9px] font-bold uppercase tracking-widest gap-2",
+                                      session.linguisticId === lc.id 
+                                        ? "bg-white text-destructive hover:bg-white/90" 
+                                        : "bg-destructive text-white hover:bg-destructive/90"
+                                    )}
+                                  >
+                                    {session.linguisticId === lc.id ? <Check size={12} /> : <ArrowRight size={12} />}
+                                    {session.linguisticId === lc.id ? "Logic Active" : "Activate Logic"}
+                                  </Button>
+                                </div>
+                              </div>
                             ))}
                           </div>
                         </AccordionContent>
