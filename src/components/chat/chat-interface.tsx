@@ -221,8 +221,6 @@ export function ChatInterface() {
     }
   };
 
-  const formattedTime = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-
   const cognitiveStarters = [
     { 
       title: "First Principles Analysis", 
@@ -272,16 +270,31 @@ export function ChatInterface() {
                 )}>
                   {connectionStatus === 'online' ? <Wifi size={12} className="animate-pulse" /> : <WifiOff size={12} />}
                 </div>
-                <div className="flex flex-col items-start text-left">
+                <div className="flex flex-col items-start text-left hidden sm:flex">
                   <span className="text-[8px] font-bold text-slate-900 uppercase tracking-widest leading-none">
                     {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
                   </span>
                   <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-tight mt-0.5">
-                    {connection.modelId || "unspecified"} • {formattedTime}
+                    {connection.modelId || "unspecified"}
                   </span>
                 </div>
               </button>
             </SettingsDialog>
+
+            {/* Indian Flag Colored Clock - Center Aligned */}
+            <div className="flex flex-col items-center justify-center flex-1">
+              <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-[#FF9933] leading-none">
+                {currentTime?.toLocaleDateString('en-IN', { weekday: 'long' }) || "DAY"}
+              </span>
+              <div className="my-0.5 bg-white px-2 py-0.5 rounded-md shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-slate-100 flex items-center justify-center">
+                <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900">
+                  {currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00"}
+                </span>
+              </div>
+              <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-[#138808] leading-none">
+                {currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) || "DATE"}
+              </span>
+            </div>
             
             <div className="flex items-center gap-1">
               <SheetTrigger asChild>
