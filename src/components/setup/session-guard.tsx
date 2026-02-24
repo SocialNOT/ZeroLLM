@@ -17,13 +17,13 @@ import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 
 export function SessionGuard() {
-  const { isSessionLocked, checkSessionExpiry, lockSession } = useAppStore();
+  const { isSessionLocked, checkSessionExpiry, lockSession, currentUserRole } = useAppStore();
   const { user } = useUser();
   const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Check every 30 seconds for expiry
+    // Identity monitor logic: Poll for Diurnal Reset synchronicity every 30 seconds.
     const interval = setInterval(() => {
       checkSessionExpiry();
     }, 30000);
@@ -56,8 +56,9 @@ export function SessionGuard() {
               Neural Session Expired
             </DialogTitle>
             <DialogDescription className="text-xs font-medium text-slate-400 max-w-[280px] mx-auto leading-relaxed">
-              Your security node has timed out or reached the diurnal reset limit. 
-              Please re-energize your identity node to continue orchestration.
+              {currentUserRole === 'Viewer' 
+                ? "Your Guest identity node has reached the Diurnal Reset limit (24:00). Please re-energize your session to continue."
+                : "Your security node requires re-authentication to maintain signal integrity."}
             </DialogDescription>
           </div>
 
@@ -67,8 +68,8 @@ export function SessionGuard() {
               <span className="text-[10px] font-black text-rose-600 uppercase">Expired</span>
             </div>
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-1">Limit</span>
-              <span className="text-[10px] font-black text-slate-700 uppercase">1 Hour</span>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-1">Constraint</span>
+              <span className="text-[10px] font-black text-slate-700 uppercase">Diurnal Reset</span>
             </div>
           </div>
 
@@ -81,7 +82,7 @@ export function SessionGuard() {
           </Button>
           
           <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-300">
-            Secure Diurnal Reset active
+            Secure Midnight Reset protocol active
           </p>
         </div>
       </DialogContent>

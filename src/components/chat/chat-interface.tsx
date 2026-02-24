@@ -68,7 +68,7 @@ export function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [timeLeft, setTimeLeft] = useState<string>("60:00");
+  const [timeLeft, setTimeLeft] = useState<string>("24:00:00");
   const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -80,6 +80,8 @@ export function ChatInterface() {
   const linguistic = linguisticControls.find(l => l.id === session?.linguisticId);
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
+  const isGuest = currentUserRole === 'Viewer';
+
   useEffect(() => {
     setMounted(true);
     setCurrentTime(new Date());
@@ -87,32 +89,21 @@ export function ChatInterface() {
       const now = new Date();
       setCurrentTime(now);
       
-      if (sessionStartTime) {
-        let remaining = 0;
-        if (currentUserRole === 'Viewer') {
-          // Calculate TTL until Diurnal Reset (Midnight)
-          const midnight = new Date();
-          midnight.setHours(24, 0, 0, 0);
-          remaining = Math.max(0, midnight.getTime() - now.getTime());
-        } else {
-          // Standard Security Window (1 Hour)
-          const elapsed = now.getTime() - sessionStartTime;
-          remaining = Math.max(0, (60 * 60 * 1000) - elapsed);
-        }
+      if (isGuest && sessionStartTime) {
+        // Calculate TTL until Diurnal Reset (Midnight)
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0);
+        const remaining = Math.max(0, midnight.getTime() - now.getTime());
 
         const h = Math.floor(remaining / 3600000);
         const m = Math.floor((remaining % 3600000) / 60000);
         const s = Math.floor((remaining % 60000) / 1000);
         
-        if (h > 0) {
-          setTimeLeft(`${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-        } else {
-          setTimeLeft(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-        }
+        setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [sessionStartTime, currentUserRole]);
+  }, [sessionStartTime, isGuest]);
 
   useEffect(() => {
     if (mounted && connectionStatus === 'online') {
@@ -345,25 +336,27 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
-        {/* Sleek Neural Session Timer Row - Zero Margin Industrial Bar */}
-        <div className="flex-shrink-0 flex items-center justify-center gap-3 py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
-          <div className="flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none animate-multi-color-pulse">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none mr-1">Session TTL:</span>
-            <Clock size={10} className="text-slate-400" />
-            <span className="text-[10px] font-black font-mono tracking-tight text-slate-900 leading-none">
-              {timeLeft}
-            </span>
-          </div>
-          
-          <Link href="/auth/login">
-            <div className="group flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-primary/5 transition-all active:scale-95 cursor-pointer">
-              <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary leading-none group-hover:underline">
-                Sign In / Sign Up
+        {/* Sleek Neural Session Timer Row - Hidden for Authenticated Identities */}
+        {isGuest && (
+          <div className="flex-shrink-0 flex items-center justify-center gap-3 py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
+            <div className="flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none animate-multi-color-pulse">
+              <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none mr-1">Session TTL:</span>
+              <Clock size={10} className="text-slate-400" />
+              <span className="text-[10px] font-black font-mono tracking-tight text-slate-900 leading-none">
+                {timeLeft}
               </span>
-              <LogIn size={10} className="text-primary transition-transform group-hover:translate-x-0.5" />
             </div>
-          </Link>
-        </div>
+            
+            <Link href="/auth/login">
+              <div className="group flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-primary/5 transition-all active:scale-95 cursor-pointer">
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary leading-none group-hover:underline">
+                  Sign In / Sign Up
+                </span>
+                <LogIn size={10} className="text-primary transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Link>
+          </div>
+        )}
 
         {/* Interactive System Status Header */}
         <div className="flex-shrink-0 flex flex-col border-b border-border px-3 py-2 sm:px-6 sm:py-2.5 bg-card/90 backdrop-blur-xl z-20">
