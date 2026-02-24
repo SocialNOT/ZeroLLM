@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -15,9 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Zap, Mail, Lock, LogIn, Github, Loader2 } from "lucide-react";
+import { Zap, Mail, Lock, LogIn, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store/use-app-store";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -36,13 +37,24 @@ export default function LoginPage() {
     
     if (!userDoc.exists()) {
       const role = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL ? "Admin" : "User";
-      await setDoc(userRef, {
+      const userData = {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || email.split('@')[0],
         role: role,
         createdAt: Date.now()
-      });
+      };
+
+      // Pattern 1: Non-blocking mutation with standard error emission
+      setDoc(userRef, userData, { merge: true })
+        .catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'write',
+            requestResourceData: userData,
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        });
     }
     
     // Energize security session
