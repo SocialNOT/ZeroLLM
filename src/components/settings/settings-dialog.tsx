@@ -129,9 +129,17 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             {/* Engine Node Card (Main) - Collapsible */}
             <Card className="md:col-span-8 bg-white border-slate-200 shadow-sm rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden">
               <CardContent className="p-0">
-                <button 
+                <div 
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setIsEngineExpanded(!isEngineExpanded)}
-                  className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 transition-colors group text-left"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setIsEngineExpanded(!isEngineExpanded);
+                    }
+                  }}
+                  className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 transition-colors group text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -163,7 +171,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                       isEngineExpanded ? "rotate-180" : ""
                     )} />
                   </div>
-                </button>
+                </div>
 
                 {isEngineExpanded && (
                   <div className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-5 sm:space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
