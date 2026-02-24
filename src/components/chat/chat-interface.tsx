@@ -99,7 +99,7 @@ export function ChatInterface() {
 
   // Initialize Speech Recognition
   useEffect(() => {
-    if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+    if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitRecognition' in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
@@ -318,10 +318,10 @@ export function ChatInterface() {
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
         {/* Interactive System Status Header */}
-        <div className="flex-shrink-0 flex flex-col border-b border-border px-4 py-2 sm:px-8 sm:py-3 bg-card/90 backdrop-blur-xl z-20">
+        <div className="flex-shrink-0 flex flex-col border-b border-border px-3 py-2 sm:px-6 sm:py-2.5 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
-              <button className="flex items-center gap-2 sm:gap-2.5 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-1.5 py-1 sm:px-2 sm:py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95 min-w-[120px] sm:min-w-[160px]">
+              <button className="flex items-center gap-2 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-1.5 py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95 min-w-[120px] sm:min-w-[160px]">
                 <div className={cn(
                   "h-7 w-7 sm:h-8 sm:w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border shrink-0",
                   connectionStatus === 'online' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-rose-50 text-rose-500 border-rose-100"
@@ -381,7 +381,7 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('personas')}
-                className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-accent/10 transition-all group text-center active:scale-95"
+                className="flex flex-col items-center justify-center py-1 px-1 hover:bg-accent/10 transition-all group text-center active:scale-95"
               >
                 <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-accent">Identity</span>
                 <span className="text-[8px] font-bold text-accent uppercase truncate w-full mt-0.5 animate-pulse-glow">
@@ -392,7 +392,7 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('frameworks')}
-                className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-primary/10 transition-all group text-center active:scale-95"
+                className="flex flex-col items-center justify-center py-1 px-1 hover:bg-primary/10 transition-all group text-center active:scale-95"
               >
                 <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-primary">Arch</span>
                 <span className={cn(
@@ -406,7 +406,7 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('linguistic')}
-                className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-destructive/10 transition-all group text-center active:scale-95"
+                className="flex flex-col items-center justify-center py-1 px-1 hover:bg-destructive/10 transition-all group text-center active:scale-95"
               >
                 <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-destructive">Logic</span>
                 <span className={cn(
@@ -422,7 +422,7 @@ export function ChatInterface() {
 
         {/* Main Orchestration Scroll Area */}
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
-          <div className="mx-auto flex w-full max-w-4xl flex-col py-4 px-4 sm:px-8">
+          <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-2 sm:px-4">
             {session.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-2 sm:py-4 px-4 sm:px-0 animate-in fade-in zoom-in duration-700">
                 <div className="text-center mb-4 space-y-1">
@@ -485,8 +485,8 @@ export function ChatInterface() {
         </ScrollArea>
 
         {/* Command Module */}
-        <div className="flex-shrink-0 p-3 sm:p-6 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
-          <div className="mx-auto max-w-3xl space-y-3">
+        <div className="flex-shrink-0 p-3 sm:p-4 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
+          <div className="mx-auto max-w-4xl space-y-3">
             
             {/* Neural Tool Strip */}
             <div className="flex items-center justify-center gap-2 mx-auto w-full sm:w-[66%] overflow-x-auto no-scrollbar">
@@ -571,7 +571,7 @@ export function ChatInterface() {
 
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
-              className="relative flex items-center bg-muted/50 hover:bg-muted transition-all rounded-xl sm:rounded-2xl p-1 sm:p-1.5 border border-border shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
+              className="relative flex items-center bg-muted/50 hover:bg-muted transition-all rounded-xl sm:rounded-2xl p-1 border border-border shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
             >
               <div className="flex shrink-0">
                 <Button 
