@@ -29,12 +29,10 @@ import {
   Type,
   ChevronRight,
   Trash2,
-  ShieldAlert,
-  LogOut
+  ShieldAlert
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
-import { useUser, useAuth } from "@/firebase";
-import { signOut } from "firebase/auth";
+import { useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
@@ -60,11 +58,6 @@ export function AppSidebar() {
 
   const { isMobile, setOpenMobile } = useSidebar();
   const { user } = useUser();
-  const { auth } = useAuth();
-
-  const handleLogout = () => {
-    if (auth) signOut(auth);
-  };
 
   const customPersonas = personas.filter(p => p.isCustom);
   const customFrameworks = frameworks.filter(f => f.isCustom);
@@ -257,7 +250,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-6 space-y-2">
+      <SidebarFooter className="p-6">
         <SettingsDialog>
           <Button 
             variant="outline"
@@ -267,27 +260,6 @@ export function AppSidebar() {
             <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
           </Button>
         </SettingsDialog>
-        
-        {user ? (
-          <Button 
-            variant="ghost" 
-            className="w-full h-10 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl gap-3 px-4 transition-colors group-data-[collapsible=icon]:hidden"
-            onClick={handleLogout}
-          >
-            <LogOut size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Terminate Session</span>
-          </Button>
-        ) : (
-          <Link href="/login" className="w-full">
-            <Button 
-              variant="ghost" 
-              className="w-full h-10 text-primary hover:bg-primary/5 hover:text-primary rounded-xl gap-3 px-4 transition-colors group-data-[collapsible=icon]:hidden"
-            >
-              <UserCircle size={16} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Neural Auth</span>
-            </Button>
-          </Link>
-        )}
       </SidebarFooter>
     </Sidebar>
   );

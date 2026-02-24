@@ -27,7 +27,7 @@ export default function AdminDashboard() {
   // Redirect if not admin
   useEffect(() => {
     if (!authLoading && (!user || user.email !== 'admin@worldoftexts.com')) {
-      router.push('/login');
+      router.push('/');
     }
   }, [user, authLoading, router]);
 
@@ -58,7 +58,7 @@ export default function AdminDashboard() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Command Center</h1>
-              <p className="text-slate-500 text-sm">Secure Neural Node Management • spider</p>
+              <p className="text-slate-500 text-sm">Secure Neural Node Management</p>
             </div>
           </div>
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary py-1 px-4 rounded-full">
