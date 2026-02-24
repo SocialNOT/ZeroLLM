@@ -260,7 +260,10 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-6 space-y-2">
         <SettingsDialog>
-          <Button className="w-full h-12 bg-white border border-slate-100 text-slate-700 shadow-xl shadow-slate-200/50 hover:border-primary/30 hover:text-primary rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full">
+          <Button 
+            variant="outline"
+            className="w-full h-12 bg-white border-slate-100 text-slate-700 shadow-xl shadow-slate-200/50 hover:bg-slate-50 hover:text-primary hover:border-primary/30 rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full"
+          >
             <Settings2 size={18} className="shrink-0" />
             <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
           </Button>
@@ -269,7 +272,7 @@ export function AppSidebar() {
         {user ? (
           <Button 
             variant="ghost" 
-            className="w-full h-10 text-slate-400 hover:text-rose-500 rounded-xl gap-3 group-data-[collapsible=icon]:hidden"
+            className="w-full h-10 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl gap-3 group-data-[collapsible=icon]:hidden"
             onClick={handleLogout}
           >
             <LogOut size={16} />
@@ -277,7 +280,10 @@ export function AppSidebar() {
           </Button>
         ) : (
           <Link href="/login" className="w-full">
-            <Button variant="ghost" className="w-full h-10 text-primary hover:bg-primary/5 rounded-xl gap-3 group-data-[collapsible=icon]:hidden">
+            <Button 
+              variant="ghost" 
+              className="w-full h-10 text-primary hover:bg-primary/5 hover:text-primary rounded-xl gap-3 group-data-[collapsible=icon]:hidden"
+            >
               <UserCircle size={16} />
               <span className="text-[10px] font-bold uppercase tracking-widest">Neural Auth</span>
             </Button>
