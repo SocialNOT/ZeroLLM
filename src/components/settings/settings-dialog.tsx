@@ -64,14 +64,15 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   }, [connectionStatus]);
 
   const handleRefresh = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent card collapse
     if (conn) {
       updateConnection(conn.id, { baseUrl: urlInput, apiKey: tokenInput });
       await checkConnection();
     }
   };
 
-  const handleLoadModel = async () => {
+  const handleLoadModel = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card collapse
     if (!conn?.modelId) return;
     const success = await triggerModelLoad(conn.modelId);
     if (success) {
