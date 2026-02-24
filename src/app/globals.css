@@ -15,12 +15,12 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 0 0% 0%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 0 0% 20%; /* Darkened for readability */
+    --muted-foreground: 0 0% 10%; /* Ultra-dark for max readability */
     --accent: 120 100% 20%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 25%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 0%; /* Sharp borders */
+    --border: 0 0% 0%; /* Sharp industrial borders */
     --input: 0 0% 0%;
     --ring: 225 100% 30%;
     --radius: 1.5rem;
@@ -36,53 +36,60 @@
   }
 
   /* Monday: Tiranga (Saffron, Green, Navy) */
-  .theme-0, .theme-monday {
-    --primary: 28 100% 60%; /* Saffron */
+  .theme-0 {
+    --primary: 28 100% 50%; /* Saffron */
     --accent: 124 77% 29%; /* Green */
     --ring: 225 100% 25%; /* Navy */
     --destructive: 0 100% 30%;
+    --background: 28 100% 98%;
   }
 
-  /* Tuesday: Solar Flare (Orange, Gold) */
-  .theme-1, .theme-tuesday {
-    --primary: 20 100% 50%;
-    --accent: 45 100% 50%;
-    --ring: 20 100% 20%;
+  /* Tuesday: Solar Flare (Orange, Deep Gold) */
+  .theme-1 {
+    --primary: 25 100% 45%;
+    --accent: 45 100% 40%;
+    --ring: 25 100% 20%;
+    --background: 45 100% 98%;
   }
 
   /* Wednesday: Indigo Pulse (Blue, Cyan) */
-  .theme-2, .theme-wednesday {
-    --primary: 220 100% 50%;
-    --accent: 180 100% 40%;
+  .theme-2 {
+    --primary: 220 100% 45%;
+    --accent: 185 100% 35%;
     --ring: 240 100% 20%;
+    --background: 220 100% 98%;
   }
 
-  /* Thursday: Emerald Crown (Green, Bronze) */
-  .theme-3, .theme-thursday {
-    --primary: 142 76% 36%;
-    --accent: 35 60% 40%;
+  /* Thursday: Emerald Crown (Vivid Green, Bronze) */
+  .theme-3 {
+    --primary: 142 76% 30%;
+    --accent: 35 60% 35%;
     --ring: 142 100% 10%;
+    --background: 142 100% 98%;
   }
 
-  /* Friday: Crimson Edge (Red, Slate) */
-  .theme-4, .theme-friday {
-    --primary: 0 100% 50%;
-    --accent: 215 25% 27%;
+  /* Friday: Crimson Edge (Sharp Red, Slate) */
+  .theme-4 {
+    --primary: 0 100% 45%;
+    --accent: 215 25% 20%;
     --ring: 0 100% 10%;
+    --background: 0 100% 98%;
   }
 
-  /* Saturday: Ultraviolet (Purple, Pink) */
-  .theme-5, .theme-saturday {
-    --primary: 270 100% 60%;
-    --accent: 320 100% 50%;
+  /* Saturday: Ultraviolet (Vibrant Purple, Pink) */
+  .theme-5 {
+    --primary: 270 100% 55%;
+    --accent: 320 100% 45%;
     --ring: 270 100% 20%;
+    --background: 270 100% 98%;
   }
 
-  /* Sunday: Cyber Lime (Lime, Teal) */
-  .theme-6, .theme-sunday {
-    --primary: 75 100% 45%;
-    --accent: 170 100% 35%;
+  /* Sunday: Cyber Lime (High-Contrast Lime, Teal) */
+  .theme-6 {
+    --primary: 75 100% 40%;
+    --accent: 170 100% 30%;
     --ring: 75 100% 10%;
+    --background: 75 100% 98%;
   }
 }
 

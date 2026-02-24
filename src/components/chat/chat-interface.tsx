@@ -323,7 +323,7 @@ export function ChatInterface() {
   ];
 
   const themeLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const currentThemeLabel = activeTheme === 'auto' ? `Auto (${themeLabels[(new Date().getDay() + 6) % 7]})` : themeLabels[activeTheme as number];
+  const currentThemeLabel = activeTheme === 'auto' ? `Auto Sync` : `${themeLabels[Number(activeTheme)]} Logic`;
 
   if (!session) {
     return (
@@ -412,9 +412,9 @@ export function ChatInterface() {
               <Button 
                 variant="outline" 
                 size="icon" 
-                onClick={cycleTheme}
+                onClick={() => cycleTheme()}
                 title={`Cycle Diurnal Theme: ${currentThemeLabel}`}
-                className="h-7 w-7 rounded-lg border-2 border-border text-foreground hover:bg-primary hover:text-white transition-all"
+                className="h-7 w-7 rounded-lg border-2 border-border text-foreground hover:bg-primary hover:text-white transition-all shadow-sm active:scale-90"
               >
                 <Palette size={14} />
               </Button>

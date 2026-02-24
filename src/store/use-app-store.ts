@@ -381,7 +381,9 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => set({ activeTheme: theme }),
       cycleTheme: () => set((state) => {
         const order: Array<'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6> = ['auto', 0, 1, 2, 3, 4, 5, 6];
-        const currentIdx = order.indexOf(state.activeTheme);
+        // Ensure robust index finding even with numeric hydration quirks
+        const currentVal = state.activeTheme === 'auto' ? 'auto' : Number(state.activeTheme);
+        const currentIdx = order.indexOf(currentVal as any);
         const nextIdx = (currentIdx + 1) % order.length;
         return { activeTheme: order[nextIdx] };
       }),
@@ -411,7 +413,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     { 
-      name: 'zerogpt-storage-v8',
+      name: 'zerogpt-storage-v10',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
