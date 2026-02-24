@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -231,11 +230,7 @@ export function ChatInterface() {
             ...session.messages,
             { role: 'user', content: textToSend }
           ],
-          settings: {
-            temperature: session.settings.temperature,
-            topP: session.settings.topP,
-            maxTokens: session.settings.maxTokens,
-          },
+          settings: session.settings, // Full settings pass-through for grounding
           apiKey: connection?.apiKey
         })
       });

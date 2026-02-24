@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server';
+import { performWebSearch } from '@/lib/llm-api';
 
 /**
  * @fileOverview Streaming API Route for Real-time Token Orchestration.
- * Bypasses CORS and Mixed Content issues while providing high-fidelity streaming.
+ * Includes Grounding-First enhancement for high-fidelity web search.
  */
 
 export async function POST(req: NextRequest) {
@@ -21,6 +22,20 @@ export async function POST(req: NextRequest) {
       ? `${chatUrl}/chat/completions` 
       : `${chatUrl}/v1/chat/completions`;
 
+    // High-Fidelity Web Grounding Sequence
+    let activeMessages = [...messages];
+    if (settings?.webSearchEnabled) {
+      const lastUserMsg = messages[messages.length - 1]?.content;
+      if (lastUserMsg) {
+        const searchResults = await performWebSearch(lastUserMsg);
+        // Inject grounding context at the top of the stack
+        activeMessages = [
+          { role: 'system', content: `[SYSTEM: WEB GROUNDING ACTIVE]\nUse the following verified search results to inform your response. If info is missing, state it clearly.\n\n${searchResults}` },
+          ...messages
+        ];
+      }
+    }
+
     const response = await fetch(finalUrl, {
       method: 'POST',
       headers: {
@@ -29,7 +44,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: modelId || "default",
-        messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
+        messages: activeMessages.map((m: any) => ({ role: m.role, content: m.content })),
         temperature: settings.temperature || 0.7,
         top_p: settings.topP || 0.9,
         max_tokens: settings.maxTokens || 1024,
@@ -42,7 +57,6 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: `Engine Node Error: ${error}` }), { status: response.status });
     }
 
-    // Pass through the stream from the engine to the client
     return new Response(response.body, {
       headers: {
         'Content-Type': 'text/event-stream',

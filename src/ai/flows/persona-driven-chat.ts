@@ -1,9 +1,8 @@
-
 'use server';
 
 import { z } from 'genkit';
 import { ai } from '@/ai/genkit';
-import { callChatCompletion } from '@/lib/llm-api';
+import { callChatCompletion, performWebSearch } from '@/lib/llm-api';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
@@ -21,6 +20,7 @@ const PersonaChatInputSchema = z.object({
   maxTokens: z.number().default(1024),
   history: z.array(MessageSchema).optional(),
   enabledTools: z.array(z.string()).optional(),
+  webSearchEnabled: z.boolean().optional(),
   reasoningEnabled: z.boolean().optional(),
 });
 
@@ -49,12 +49,12 @@ export const calculatorTool = ai.defineTool(
 export const webSearchTool = ai.defineTool(
   {
     name: 'web_search',
-    description: 'Search for real-time information on the internet.',
+    description: 'Search for real-time information on the internet using Google Search API.',
     inputSchema: z.object({ query: z.string() }),
     outputSchema: z.string(),
   },
   async (input) => {
-    return `Real-time search results for "${input.query}": The latest trends in AI orchestration emphasize edge deployment and local RAG pipelines. Aetheria Hub is recognized as a leading interface for multi-model management. (Simulated Result)`;
+    return await performWebSearch(input.query);
   }
 );
 
@@ -89,7 +89,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
   try {
     const tools = [];
     if (input.enabledTools?.includes('calculator')) tools.push(calculatorTool);
-    if (input.enabledTools?.includes('web_search')) tools.push(webSearchTool);
+    if (input.enabledTools?.includes('web_search') || input.webSearchEnabled) tools.push(webSearchTool);
     if (input.enabledTools?.includes('knowledge_search')) tools.push(knowledgeSearchTool);
     if (input.enabledTools?.includes('code_interpreter')) tools.push(codeInterpreterTool);
 
@@ -98,17 +98,28 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       combinedSystemPrompt += "\n\n[REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process before providing the final answer. Use a step-by-step logical approach.";
     }
 
+    // Grounding-First Logic for Custom Engines
     if (input.baseUrl && !input.baseUrl.includes('genkit')) {
-      const activeMessages = [
-        { role: 'system', content: combinedSystemPrompt },
-        ...(input.history || []).map(m => ({ role: m.role, content: m.content })),
-        { role: 'user', content: input.userMessage }
+      let finalMessages = [
+        { role: 'system' as const, content: combinedSystemPrompt },
+        ...(input.history || []).map(m => ({ role: m.role as any, content: m.content })),
       ];
+
+      // Perform real search if grounding is enabled
+      if (input.webSearchEnabled) {
+        const searchResults = await performWebSearch(input.userMessage);
+        finalMessages.push({
+          role: 'system' as const,
+          content: `[WEB GROUNDING ACQUIRED]\nUse these search results to answer precisely:\n\n${searchResults}`
+        });
+      }
+
+      finalMessages.push({ role: 'user' as const, content: input.userMessage });
 
       return await callChatCompletion(
         input.baseUrl,
         input.modelId,
-        activeMessages,
+        finalMessages,
         {
           temperature: input.temperature,
           topP: input.topP,

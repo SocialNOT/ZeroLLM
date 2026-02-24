@@ -48,6 +48,41 @@ function getHeaders(apiKey?: string) {
   return headers;
 }
 
+/**
+ * Performs a real Google Web Search using Custom Search JSON API.
+ */
+export async function performWebSearch(query: string): Promise<string> {
+  const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
+  const cx = process.env.GOOGLE_SEARCH_CX;
+
+  if (!apiKey || !cx) {
+    return "[DIAGNOSTIC ERROR]: Google Search Node not configured in environment. Please add GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CX.";
+  }
+
+  try {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const err = await response.json();
+      return `[SEARCH FAILURE]: ${err.error?.message || response.statusText}`;
+    }
+
+    const data = await response.json();
+    const items = data.items || [];
+
+    if (items.length === 0) {
+      return "Zero search results acquired for this signal.";
+    }
+
+    return items.slice(0, 5).map((item: any, idx: number) => (
+      `[Source ${idx + 1}]\nTitle: ${item.title}\nLink: ${item.link}\nSnippet: ${item.snippet}`
+    )).join('\n\n');
+  } catch (error: any) {
+    return `[SEARCH EXCEPTION]: ${error.message}`;
+  }
+}
+
 export async function testConnection(baseUrl: string, apiKey?: string): Promise<boolean> {
   if (!baseUrl || baseUrl.length < 5) return false;
   const normalizedBase = normalizeUrl(baseUrl);
@@ -105,7 +140,6 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
       signal: AbortSignal.timeout(5000)
     });
     
-    // If 404, the endpoint doesn't support management protocols, but the selection is valid.
     if (response.status === 404) return true;
     
     return response.ok;
@@ -135,10 +169,7 @@ export async function callChatCompletion(baseUrl: string, modelId: string, messa
 
     if (!response.ok) {
       if (response.status === 504) {
-        throw new Error("Node Gateway Timeout (504). The engine is unreachable or taking too long. Consider using streaming for long responses.");
-      }
-      if (response.status === 400) {
-        throw new Error("Bad Request (400). Engine node rejected the command structure.");
+        throw new Error("Node Gateway Timeout (504). The engine is unreachable or taking too long.");
       }
       const errorData = await safeJsonParse(response);
       throw new Error(errorData?.error?.message || `Engine error (${response.status})`);
