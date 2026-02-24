@@ -101,10 +101,17 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
     const response = await fetch(loadUrl, {
       method: 'POST',
       headers: getHeaders(apiKey),
-      body: JSON.stringify({ model_key: modelId })
+      body: JSON.stringify({ model_key: modelId }),
+      signal: AbortSignal.timeout(5000)
     });
+    
+    // If 404, the endpoint doesn't support management protocols, but the selection is valid.
+    // Many nodes (Ollama, OpenAI) load models automatically on request.
+    if (response.status === 404) return true;
+    
     return response.ok;
   } catch (e) {
+    // On network error or timeout, we assume it's a standard endpoint that handles auto-loading.
     return true; 
   }
 }

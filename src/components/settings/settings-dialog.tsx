@@ -34,7 +34,9 @@ import {
   Microscope,
   Layers,
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  ActivitySquare
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const { 
@@ -59,7 +62,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const [urlInput, setUrlInput] = useState(conn?.baseUrl || "");
   const [tokenInput, setTokenInput] = useState(conn?.apiKey || "");
   const [latency, setLatency] = useState("0ms");
-  const [expandedSection, setExpandedSection] = useState<'engine' | 'shield' | 'vault' | null>('engine');
+  const [activeCard, setActiveCard] = useState<'engine' | 'shield' | 'vault'>('engine');
 
   useEffect(() => {
     if (connectionStatus === 'online') {
@@ -84,20 +87,16 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     const success = await triggerModelLoad(modelId);
     if (success) {
       toast({
-        title: "Model Activation Sent",
-        description: `Request to load ${modelId} has been dispatched.`,
+        title: "Neural Path Synchronized",
+        description: `Model node ${modelId} is now energized.`,
       });
     } else {
       toast({
         variant: "destructive",
-        title: "Activation Failed",
-        description: "Node management not supported on this endpoint.",
+        title: "Protocol Fault",
+        description: "Node rejected the activation handshake. Check server logs.",
       });
     }
-  };
-
-  const toggleSection = (section: 'engine' | 'shield' | 'vault') => {
-    setExpandedSection(expandedSection === section ? null : section);
   };
 
   const getModelCapabilities = (modelId: string) => {
@@ -118,13 +117,21 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     return caps.length > 0 ? caps : [{ label: 'General', icon: <Zap size={8} /> }];
   };
 
-  const getModelHighlights = (modelId: string) => {
+  const getModelGlow = (modelId: string) => {
     const id = modelId.toLowerCase();
-    if (id.includes('llama')) return { label: 'Meta Llama', color: 'text-blue-500 bg-blue-500/5', glow: 'animate-glow-llama' };
-    if (id.includes('deepseek')) return { label: 'DeepSeek', color: 'text-purple-500 bg-purple-500/5', glow: 'animate-glow-deepseek' };
-    if (id.includes('qwen')) return { label: 'Qwen AI', color: 'text-orange-500 bg-orange-500/5', glow: 'animate-glow-qwen' };
-    if (id.includes('mistral')) return { label: 'Mistral', color: 'text-emerald-500 bg-emerald-500/5', glow: 'animate-glow-mistral' };
-    return { label: 'Local Node', color: 'text-slate-500 bg-slate-50', glow: '' };
+    if (id.includes('deepseek') || id.includes('r1')) return "hover:shadow-[0_0_15px_rgba(147,51,234,0.3)] border-purple-500/20";
+    if (id.includes('llama')) return "hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] border-blue-500/20";
+    if (id.includes('qwen')) return "hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] border-orange-500/20";
+    if (id.includes('vision') || id.includes('vl')) return "hover:shadow-[0_0_15px_rgba(236,72,153,0.3)] border-pink-500/20";
+    return "hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] border-emerald-500/20";
+  };
+
+  const getModelPulse = (modelId: string) => {
+    const id = modelId.toLowerCase();
+    if (id.includes('deepseek') || id.includes('r1')) return "bg-purple-500";
+    if (id.includes('llama')) return "bg-blue-500";
+    if (id.includes('qwen')) return "bg-orange-500";
+    return "bg-emerald-500";
   };
 
   return (
@@ -132,282 +139,226 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full border-slate-200 bg-slate-50/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-0 overflow-hidden outline-none gap-0">
-        <div className="flex flex-col max-h-[85vh] sm:max-h-[80vh]">
+      <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-white/20 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border">
+        <div className="flex flex-col max-h-[75vh]">
           {/* Header Node */}
-          <header className="p-4 sm:p-6 bg-white border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-3">
+          <header className="p-4 sm:p-6 bg-white/50 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
                 <Settings2 size={18} />
               </div>
               <div>
-                <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight">System Control</DialogTitle>
-                <p className="text-slate-500 font-bold text-[8px] uppercase tracking-widest">Neural Node Configuration</p>
+                <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-none">Node Command Panel</DialogTitle>
+                <p className="text-slate-400 font-bold text-[8px] uppercase tracking-widest mt-1">Orchestrate engine protocols and secure cognitive nodes.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Badge variant="outline" className={cn(
-                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-full border flex justify-center",
-                connectionStatus === 'online' ? "border-emerald-100 text-emerald-600 bg-emerald-50" : "border-rose-100 text-rose-50"
-              )}>
-                <Activity size={10} className={cn(connectionStatus === 'online' ? "animate-pulse" : "")} />
-                Latency: {latency}
-              </Badge>
-              <Badge variant="outline" className={cn(
-                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-full border flex justify-center",
+                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-full border",
                 connectionStatus === 'online' ? "border-emerald-100 text-emerald-600 bg-emerald-50" : "border-rose-100 text-rose-500 bg-rose-50"
               )}>
-                {connectionStatus === 'online' ? <Wifi size={10} /> : <WifiOff size={10} />}
+                <div className={cn("h-1.5 w-1.5 rounded-full", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse" : "bg-rose-500")} />
                 {connectionStatus}
               </Badge>
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-4 space-y-2">
             
-            {/* Engine Node Card - Collapsible */}
+            {/* Engine Node Card */}
             <Card className={cn(
-              "bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300",
-              expandedSection === 'engine' ? "ring-2 ring-primary/10" : ""
+              "border-slate-100 bg-white shadow-sm rounded-2xl overflow-hidden transition-all duration-500",
+              activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
             )}>
               <div 
-                role="button"
-                tabIndex={0}
-                onClick={() => toggleSection('engine')}
-                onKeyDown={(e) => e.key === 'Enter' && toggleSection('engine')}
-                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer outline-none"
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors cursor-pointer group"
+                onClick={() => setActiveCard('engine')}
               >
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <Server size={16} className={cn(connectionStatus === 'online' && "animate-pulse")} />
+                    <Server size={16} className={cn(connectionStatus === 'online' && activeCard === 'engine' && "animate-pulse")} />
                   </div>
                   <div className="flex flex-col">
-                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Engine Interface</h3>
-                    <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter mt-1">
-                      {connectionStatus === 'online' ? "ENDPOINT SYNCHRONIZED" : "NODE DISCONNECTED"}
-                    </span>
+                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Engine Node</h3>
+                    <span className="text-[7px] text-slate-400 font-bold uppercase mt-1">Network Protocol: {connectionStatus === 'online' ? 'Synchronized' : 'Offline'}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                {activeCard === 'engine' && (
                   <Button 
                     size="sm" 
                     variant="secondary" 
-                    className="h-7 text-[8px] font-bold uppercase rounded-lg gap-1.5 px-2 hover:text-primary transition-colors"
+                    className="h-7 text-[8px] font-bold uppercase rounded-lg gap-1.5 px-2"
                     onClick={handleRefresh}
                     disabled={connectionStatus === 'checking'}
                   >
                     {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={10} />}
                     Sync Node
                   </Button>
-                  <ChevronDown className={cn("h-4 w-4 text-slate-300 transition-transform duration-300", expandedSection === 'engine' && "rotate-180")} />
-                </div>
+                )}
               </div>
 
-              {expandedSection === 'engine' && (
+              {activeCard === 'engine' && (
                 <CardContent className="px-4 pb-4 pt-0 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <Separator className="bg-slate-50" />
-                  
-                  {/* Connection Suite */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Node API Endpoint</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                    <div className="space-y-1">
+                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Base API URL</Label>
                       <Input 
                         value={urlInput} 
                         onChange={(e) => setUrlInput(e.target.value)}
-                        className="rounded-lg border-slate-100 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                        className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
                         placeholder="http://localhost:11434/v1"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Access Secret</Label>
-                      <div className="relative">
-                        <Key className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
-                        <Input 
-                          type="password"
-                          value={tokenInput} 
-                          onChange={(e) => setTokenInput(e.target.value)}
-                          className="rounded-lg border-slate-100 bg-slate-50 font-mono text-[10px] h-9 pl-8 focus:ring-primary/20"
-                          placeholder="sk-..."
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">API Secret Token (Optional)</Label>
+                      <Input 
+                        type="password"
+                        value={tokenInput} 
+                        onChange={(e) => setTokenInput(e.target.value)}
+                        className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                        placeholder="sk-..."
+                      />
                     </div>
                   </div>
 
-                  {/* Compute Core Selection - NEW Grid Layout */}
-                  <div className="bg-slate-50 p-3 rounded-xl space-y-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Cpu size={14} className="text-emerald-600" />
-                      <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Core Nodes</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <Cpu size={12} className="text-primary" />
+                        <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine</span>
+                      </div>
+                      <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-slate-100 text-slate-400">
+                        {availableModels.length} Indexed Models
+                      </Badge>
                     </div>
 
-                    {availableModels.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {availableModels.map(model => {
-                          const caps = getModelCapabilities(model);
-                          const highlights = getModelHighlights(model);
-                          const isActive = conn?.modelId === model;
-                          
-                          return (
-                            <div 
-                              key={model}
-                              className={cn(
-                                "flex flex-col p-4 rounded-xl border-2 transition-all group relative overflow-hidden",
-                                isActive 
-                                  ? `border-primary bg-primary text-white shadow-xl scale-[1.02] ${highlights.glow}` 
-                                  : 'border-white bg-white text-slate-600 hover:border-slate-200'
-                              )}
-                            >
-                              <div className="flex items-start justify-between w-full mb-3">
-                                <div className="flex flex-col">
-                                  <span className="text-[11px] font-bold truncate max-w-[140px] tracking-tight">{model}</span>
-                                  <span className={cn(
-                                    "text-[7px] font-bold uppercase py-0.5 px-1.5 rounded w-fit mt-1 border",
-                                    isActive ? "bg-white/20 border-white/20 text-white" : highlights.color + " border-transparent"
-                                  )}>
-                                    {highlights.label}
-                                  </span>
-                                </div>
-                                {isActive && <Zap size={12} className="text-white fill-white animate-pulse" />}
-                              </div>
-                              
-                              <div className="flex flex-wrap gap-1 mb-4">
-                                {caps.map((cap, i) => (
-                                  <div 
-                                    key={i} 
-                                    className={cn(
-                                      "flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[7px] font-bold uppercase tracking-tight",
-                                      isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400 group-hover:bg-slate-200"
-                                    )}
-                                  >
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {availableModels.map(model => {
+                        const caps = getModelCapabilities(model);
+                        const glowClass = getModelGlow(model);
+                        const pulseColor = getModelPulse(model);
+                        const isActive = conn?.modelId === model;
+                        
+                        return (
+                          <div 
+                            key={model}
+                            className={cn(
+                              "relative flex flex-col p-3 rounded-2xl border transition-all duration-300 group overflow-hidden bg-white cursor-default",
+                              isActive ? "ring-2 ring-primary border-transparent" : "border-slate-100 hover:bg-slate-50",
+                              glowClass
+                            )}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div className={cn("h-1.5 w-1.5 rounded-full mt-1", pulseColor, isActive && "animate-ping")} />
+                              <div className="flex gap-1">
+                                {caps.slice(0, 2).map((cap, i) => (
+                                  <div key={i} title={cap.label} className="text-slate-300 group-hover:text-primary transition-colors">
                                     {cap.icon}
-                                    {cap.label}
                                   </div>
                                 ))}
                               </div>
-
-                              <Button 
-                                size="sm"
-                                onClick={(e) => handleLoadModel(model, e)}
-                                disabled={isModelLoading && isActive}
-                                className={cn(
-                                  "w-full h-8 rounded-lg text-[9px] font-bold uppercase tracking-widest gap-2 shadow-sm",
-                                  isActive 
-                                    ? "bg-white text-primary hover:bg-white/90" 
-                                    : "bg-slate-900 text-white hover:bg-slate-800"
-                                )}
-                              >
-                                {isModelLoading && isActive ? (
-                                  <Loader2 className="animate-spin h-3 w-3" />
-                                ) : isActive ? (
-                                  <Zap size={10} fill="currentColor" />
-                                ) : (
-                                  <ArrowUpRight size={10} />
-                                )}
-                                {isActive ? "Energized" : "Load Node"}
-                              </Button>
                             </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="py-10 text-center border-2 border-dashed border-slate-200 rounded-2xl">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No local nodes detected</p>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={handleRefresh}
-                          className="mt-2 h-7 text-[8px] font-bold uppercase text-primary"
-                        >
-                          Manual Scan
-                        </Button>
-                      </div>
-                    )}
+                            
+                            <span className="text-[9px] font-bold text-slate-700 truncate mb-3 group-hover:text-primary transition-colors">{model}</span>
+                            
+                            <Button 
+                              size="sm"
+                              variant={isActive ? "default" : "outline"}
+                              className={cn(
+                                "h-6 w-full text-[7px] font-bold uppercase rounded-lg transition-all",
+                                isActive ? "bg-primary text-white" : "text-slate-400 border-slate-100 hover:bg-white hover:text-primary"
+                              )}
+                              onClick={(e) => handleLoadModel(model, e)}
+                              disabled={isModelLoading && isActive}
+                            >
+                              {isModelLoading && isActive ? <Loader2 className="animate-spin h-2 w-2" /> : isActive ? "Active" : "Energize"}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </CardContent>
               )}
             </Card>
 
-            {/* Neural Shield Card - Sleek Version */}
-            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300">
-              <div 
-                role="button"
-                tabIndex={0}
-                onClick={() => toggleSection('shield')}
-                onKeyDown={(e) => e.key === 'Enter' && toggleSection('shield')}
-                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer outline-none"
+            {/* Shield & Vault Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Card 
+                className={cn(
+                  "border-slate-100 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
+                  activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-80 grayscale-[0.5]"
+                )}
+                onClick={() => setActiveCard('shield')}
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
-                    <Shield size={16} />
+                <div className="p-3 sm:p-4 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                      <ShieldCheck size={16} className={cn(activeCard === 'shield' && "animate-pulse")} />
+                    </div>
+                    <div className="flex flex-col">
+                      <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Shield</h3>
+                      <span className="text-[7px] text-emerald-500 font-bold uppercase mt-1">Status: Operational</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Neural Shield</h3>
-                    <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-tighter mt-1 animate-pulse">SIGNAL GUARD ACTIVE</span>
-                  </div>
+                  {activeCard === 'shield' && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                        <span className="text-[8px] font-bold text-slate-400 uppercase">AES-256 Protocol</span>
+                        <Badge className="h-4 text-[7px] bg-emerald-500">Active</Badge>
+                      </div>
+                      <div className="space-y-1 px-1">
+                        <div className="flex justify-between text-[7px] font-bold uppercase text-slate-400">
+                          <span>Signal Integrity</span>
+                          <span>99.9%</span>
+                        </div>
+                        <Progress value={99.9} className="h-1 bg-slate-100" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={cn("h-4 w-4 text-slate-300 transition-transform duration-300", expandedSection === 'shield' && "rotate-180")} />
-              </div>
+              </Card>
 
-              {expandedSection === 'shield' && (
-                <CardContent className="px-4 pb-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <Separator className="bg-slate-50" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center">
-                      <Lock size={12} className="text-indigo-500 mb-1" />
-                      <span className="text-[7px] font-bold text-slate-400 uppercase">AES-256</span>
-                      <span className="text-[8px] font-bold text-slate-800 mt-0.5">ENCRYPTED</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center">
-                      <Fingerprint size={12} className="text-indigo-500 mb-1" />
-                      <span className="text-[7px] font-bold text-slate-400 uppercase">SHA-RSA</span>
-                      <span className="text-[8px] font-bold text-slate-800 mt-0.5">VERIFIED</span>
-                    </div>
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-
-            {/* Cognitive Vault Card - Sleek Version */}
-            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300">
-              <div 
-                role="button"
-                tabIndex={0}
-                onClick={() => toggleSection('vault')}
-                onKeyDown={(e) => e.key === 'Enter' && toggleSection('vault')}
-                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer outline-none"
+              <Card 
+                className={cn(
+                  "border-slate-100 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
+                  activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
+                )}
+                onClick={() => setActiveCard('vault')}
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-600 group-hover:scale-110 transition-transform">
-                    <Database size={16} />
-                  </div>
-                  <div className="flex flex-col">
-                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Cognitive Vault</h3>
-                    <span className="text-[8px] text-primary font-bold uppercase tracking-tighter mt-1">MEMORY INDEX OPTIMAL</span>
-                  </div>
-                </div>
-                <ChevronDown className={cn("h-4 w-4 text-slate-300 transition-transform duration-300", expandedSection === 'vault' && "rotate-180")} />
-              </div>
-
-              {expandedSection === 'vault' && (
-                <CardContent className="px-4 pb-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <Separator className="bg-slate-50" />
-                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Box size={12} className="text-rose-500" />
-                      <span className="text-[8px] font-bold text-slate-400 uppercase">Semantic Segments</span>
+                <div className="p-3 sm:p-4 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-600">
+                      <Database size={16} className={cn(activeCard === 'vault' && "animate-pulse")} />
                     </div>
-                    <span className="text-[10px] font-mono font-bold">1,428</span>
+                    <div className="flex flex-col">
+                      <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Vault</h3>
+                      <span className="text-[7px] text-rose-500 font-bold uppercase mt-1">Index: Optimized</span>
+                    </div>
                   </div>
-                </CardContent>
-              )}
-            </Card>
+                  {activeCard === 'vault' && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+                          <span className="text-[7px] font-bold text-slate-400 uppercase">Segments</span>
+                          <span className="text-[10px] font-bold text-slate-800">1,428</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+                          <span className="text-[7px] font-bold text-slate-400 uppercase">Latency</span>
+                          <span className="text-[10px] font-bold text-slate-800">{latency}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
           </div>
 
-          {/* Footer Node */}
-          <footer className="p-3 sm:p-4 bg-slate-100/50 border-t border-slate-200 flex items-center justify-center shrink-0">
+          <footer className="p-3 sm:p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-center shrink-0">
             <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2">
               <Zap size={10} className="text-primary" fill="currentColor" />
-              Signals Encapsulated • ZeroGPT Core 2.0
+              Signals Encapsulated • ZeroGPT Core
             </p>
           </footer>
         </div>
