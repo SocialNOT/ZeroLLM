@@ -18,7 +18,6 @@ import {
   Shield, 
   Database, 
   Cpu, 
-  CheckCircle2, 
   RefreshCw, 
   Loader2, 
   Wifi, 
@@ -28,7 +27,8 @@ import {
   Activity,
   Lock,
   Box,
-  Fingerprint
+  Fingerprint,
+  ChevronDown
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const [urlInput, setUrlInput] = useState(conn?.baseUrl || "");
   const [tokenInput, setTokenInput] = useState(conn?.apiKey || "");
   const [latency, setLatency] = useState("0ms");
+  const [isEngineExpanded, setIsEngineExpanded] = useState(false);
 
   useEffect(() => {
     if (connectionStatus === 'online') {
@@ -62,7 +63,8 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     }
   }, [connectionStatus]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (conn) {
       updateConnection(conn.id, { baseUrl: urlInput, apiKey: tokenInput });
       await checkConnection();
@@ -124,111 +126,133 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
           <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 max-h-[75vh] sm:max-h-[70vh] overflow-y-auto custom-scrollbar">
             
-            {/* Engine Node Card (Main) */}
+            {/* Engine Node Card (Main) - Collapsible */}
             <Card className="md:col-span-8 bg-white border-slate-200 shadow-sm rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden">
-              <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-50 pb-4">
+              <CardContent className="p-0">
+                <button 
+                  onClick={() => setIsEngineExpanded(!isEngineExpanded)}
+                  className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 transition-colors group text-left"
+                >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                       <Server size={18} />
                     </div>
-                    <h3 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-widest">Engine Interface</h3>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    className="h-8 text-[9px] sm:text-[10px] font-bold uppercase rounded-xl gap-2 px-3"
-                    onClick={handleRefresh}
-                    disabled={connectionStatus === 'checking'}
-                  >
-                    {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={12} />}
-                    <span className="hidden xs:inline">Sync Node</span>
-                    <span className="xs:hidden">Sync</span>
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">API Endpoint</Label>
-                    <Input 
-                      value={urlInput} 
-                      onChange={(e) => setUrlInput(e.target.value)}
-                      className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] sm:text-[11px] h-10 focus:ring-primary/20"
-                      placeholder="http://localhost:11434/v1"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Access Secret</Label>
-                    <div className="relative">
-                      <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
-                      <Input 
-                        type="password"
-                        value={tokenInput} 
-                        onChange={(e) => setTokenInput(e.target.value)}
-                        className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] sm:text-[11px] h-10 pl-9 focus:ring-primary/20"
-                        placeholder="sk-..."
-                      />
+                    <div className="flex flex-col">
+                      <h3 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-widest">Engine Interface</h3>
+                      {!isEngineExpanded && (
+                        <p className="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px] sm:max-w-none">
+                          {conn?.baseUrl || "unconfigured"}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </div>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      size="sm" 
+                      variant="secondary" 
+                      className="h-8 text-[9px] sm:text-[10px] font-bold uppercase rounded-xl gap-2 px-3"
+                      onClick={handleRefresh}
+                      disabled={connectionStatus === 'checking'}
+                    >
+                      {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={12} />}
+                      <span className="hidden xs:inline">Sync Node</span>
+                      <span className="xs:hidden">Sync</span>
+                    </Button>
+                    <ChevronDown className={cn(
+                      "h-4 w-4 text-slate-300 transition-transform duration-300",
+                      isEngineExpanded ? "rotate-180" : ""
+                    )} />
+                  </div>
+                </button>
 
-                <Separator className="bg-slate-50" />
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                        <Cpu size={18} />
+                {isEngineExpanded && (
+                  <div className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-5 sm:space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <Separator className="bg-slate-50" />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">API Endpoint</Label>
+                        <Input 
+                          value={urlInput} 
+                          onChange={(e) => setUrlInput(e.target.value)}
+                          className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] sm:text-[11px] h-10 focus:ring-primary/20"
+                          placeholder="http://localhost:11434/v1"
+                        />
                       </div>
-                      <h3 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-widest">Compute Core</h3>
-                    </div>
-                    {conn?.modelId && (
-                      <Button 
-                        size="sm" 
-                        onClick={handleLoadModel}
-                        disabled={isModelLoading}
-                        className="h-8 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 gap-2 px-3"
-                      >
-                        {isModelLoading ? <Loader2 className="animate-spin h-3 w-3" /> : <Zap size={12} />}
-                        Energize
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Active Model Identifier</Label>
-                      <Input 
-                        value={conn?.modelId || ""} 
-                        onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
-                        className="rounded-xl border-white bg-white font-mono text-[10px] sm:text-[11px] h-10 shadow-sm"
-                        placeholder="e.g. llama3:8b"
-                      />
-                    </div>
-
-                    {availableModels.length > 0 && (
-                      <div className="space-y-3 pt-2">
-                        <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Detected Local Nodes</Label>
-                        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">
-                          {availableModels.map(model => (
-                            <button 
-                              key={model}
-                              onClick={() => conn && updateConnection(conn.id, { modelId: model })}
-                              className={cn(
-                                "text-[8px] sm:text-[9px] font-bold py-1.5 px-3 rounded-lg border-2 transition-all",
-                                conn?.modelId === model 
-                                  ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20' 
-                                  : 'border-white bg-white text-slate-400 hover:border-slate-200'
-                              )}
-                            >
-                              {model}
-                            </button>
-                          ))}
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Access Secret</Label>
+                        <div className="relative">
+                          <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
+                          <Input 
+                            type="password"
+                            value={tokenInput} 
+                            onChange={(e) => setTokenInput(e.target.value)}
+                            className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] sm:text-[11px] h-10 pl-9 focus:ring-primary/20"
+                            placeholder="sk-..."
+                          />
                         </div>
                       </div>
-                    )}
+                    </div>
+
+                    <Separator className="bg-slate-50" />
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                            <Cpu size={18} />
+                          </div>
+                          <h3 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-widest">Compute Core</h3>
+                        </div>
+                        {conn?.modelId && (
+                          <Button 
+                            size="sm" 
+                            onClick={handleLoadModel}
+                            disabled={isModelLoading}
+                            className="h-8 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 gap-2 px-3"
+                          >
+                            {isModelLoading ? <Loader2 className="animate-spin h-3 w-3" /> : <Zap size={12} />}
+                            Energize
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Active Model Identifier</Label>
+                          <Input 
+                            value={conn?.modelId || ""} 
+                            onChange={(e) => conn && updateConnection(conn.id, { modelId: e.target.value })}
+                            className="rounded-xl border-white bg-white font-mono text-[10px] sm:text-[11px] h-10 shadow-sm"
+                            placeholder="e.g. llama3:8b"
+                          />
+                        </div>
+
+                        {availableModels.length > 0 && (
+                          <div className="space-y-3 pt-2">
+                            <Label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Detected Local Nodes</Label>
+                            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                              {availableModels.map(model => (
+                                <button 
+                                  key={model}
+                                  onClick={() => conn && updateConnection(conn.id, { modelId: model })}
+                                  className={cn(
+                                    "text-[8px] sm:text-[9px] font-bold py-1.5 px-3 rounded-lg border-2 transition-all",
+                                    conn?.modelId === model 
+                                      ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20' 
+                                      : 'border-white bg-white text-slate-400 hover:border-slate-200'
+                                  )}
+                                >
+                                  {model}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
