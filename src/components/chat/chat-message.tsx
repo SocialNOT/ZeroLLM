@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -35,6 +36,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   const isAssistant = message.role === "assistant";
+  const isError = isAssistant && message.content.includes("ERROR:");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -96,7 +98,9 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         <div className="flex-shrink-0 pt-1">
           <div className={cn(
             "h-8 w-8 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center shadow-md border transition-transform group-hover:scale-105",
-            isAssistant ? "bg-accent/10 text-accent border-accent/20" : "bg-primary text-primary-foreground border-primary/20"
+            isAssistant 
+              ? isError ? "bg-rose-50 text-rose-500 border-rose-200" : "bg-accent/10 text-accent border-accent/20" 
+              : "bg-primary text-primary-foreground border-primary/20"
           )}>
             {isAssistant ? <Bot size={16} /> : <User size={16} />}
           </div>
@@ -107,8 +111,11 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           isAssistant ? "items-start" : "items-end"
         )}>
           <div className="flex items-center gap-2 px-1">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">
-              {isAssistant ? "Neural Node" : "Human Identity"}
+            <span className={cn(
+              "text-[8px] font-bold uppercase tracking-widest",
+              isError ? "text-rose-500" : "text-muted-foreground/50"
+            )}>
+              {isAssistant ? isError ? "Node Error" : "Neural Node" : "Human Identity"}
             </span>
             {message.content.includes("[TRANSLATION:") && (
               <Badge variant="outline" className="text-[7px] font-bold uppercase py-0 px-1 border-emerald-500/20 bg-emerald-500/5 text-emerald-500">
@@ -120,31 +127,29 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           <div className={cn(
             "p-4 sm:p-5 rounded-2xl shadow-sm transition-all relative overflow-hidden",
             isAssistant 
-              ? "bg-white border border-border text-slate-900 rounded-tl-none" 
+              ? isError 
+                ? "bg-rose-50/50 border border-rose-100 text-rose-900 rounded-tl-none" 
+                : "bg-white border border-border text-slate-900 rounded-tl-none" 
               : "bg-primary text-primary-foreground rounded-tr-none"
           )}>
-            <div className="text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap relative z-10">
+            <div className={cn(
+              "text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap relative z-10",
+              isError && "font-mono text-[11px] text-rose-700"
+            )}>
               {message.content}
             </div>
-            {isAssistant && (
+            {isAssistant && !isError && (
               <div className="absolute top-0 right-0 p-2 opacity-10">
                 <Sparkles size={40} className="text-primary" />
               </div>
             )}
           </div>
-          
-          {isAssistant && message.content.includes("ERROR:") && (
-            <div className="mt-2 p-2 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[8px] font-bold uppercase tracking-widest flex items-center gap-2">
-              <Cpu size={10} className="animate-pulse" />
-              Protocol Integrity Failure
-            </div>
-          )}
 
           <div className={cn(
             "flex items-center gap-1 mt-1 transition-all duration-300 opacity-0 group-hover:opacity-100",
             !isAssistant && "flex-row-reverse"
           )}>
-            {isAssistant && (
+            {isAssistant && !isError && (
               <>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={14} />}
