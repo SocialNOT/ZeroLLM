@@ -281,18 +281,18 @@ export function ChatInterface() {
               </button>
             </SettingsDialog>
 
-            {/* Indian Flag Colored Clock - Center Aligned */}
-            <div className="flex flex-col items-center justify-center flex-1">
-              <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-[#FF9933] leading-none">
-                {currentTime?.toLocaleDateString('en-IN', { weekday: 'long' }) || "DAY"}
+            {/* Indian Flag Colored Clock - Center Aligned Single Row */}
+            <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden">
+              <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
+                {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}
               </span>
-              <div className="my-0.5 bg-white px-2 py-0.5 rounded-md shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-slate-100 flex items-center justify-center">
-                <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900">
+              <div className="bg-white px-1.5 py-0.5 rounded border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
+                <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900 leading-none">
                   {currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00"}
                 </span>
               </div>
-              <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-[#138808] leading-none">
-                {currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) || "DATE"}
+              <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#138808] whitespace-nowrap">
+                {currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) || "DATE"}
               </span>
             </div>
             
