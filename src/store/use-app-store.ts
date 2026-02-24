@@ -35,15 +35,15 @@ interface AppState {
   
   addPersona: (p: Persona) => void;
   updatePersona: (id: string, updates: Partial<Persona>) => void;
-  duplicatePersona: (id: string) => string | undefined;
+  deletePersona: (id: string) => void;
   
   addFramework: (f: Framework) => void;
   updateFramework: (id: string, updates: Partial<Framework>) => void;
-  duplicateFramework: (id: string) => string | undefined;
+  deleteFramework: (id: string) => void;
   
   addLinguisticControl: (l: LinguisticControl) => void;
   updateLinguisticControl: (id: string, updates: Partial<LinguisticControl>) => void;
-  duplicateLinguisticControl: (id: string) => string | undefined;
+  deleteLinguisticControl: (id: string) => void;
 
   createSession: (workspaceId: string) => string;
   deleteSession: (id: string) => void;
@@ -119,55 +119,25 @@ export const useAppStore = create<AppState>()(
       updatePersona: (id, updates) => set((state) => ({
         personas: state.personas.map(p => p.id === id ? { ...p, ...updates } : p)
       })),
-      duplicatePersona: (id) => {
-        const original = get().personas.find(p => p.id === id);
-        if (!original) return;
-        const newId = `custom-p-${Date.now()}`;
-        const copy: Persona = {
-          ...original,
-          id: newId,
-          name: `Copy of ${original.name}`,
-          isCustom: true
-        };
-        set(state => ({ personas: [...state.personas, copy] }));
-        return newId;
-      },
+      deletePersona: (id) => set((state) => ({
+        personas: state.personas.filter(p => p.id !== id || !p.isCustom)
+      })),
 
       addFramework: (f) => set((state) => ({ frameworks: [...state.frameworks, { ...f, id: `f-${Date.now()}`, isCustom: true }] })),
       updateFramework: (id, updates) => set((state) => ({
         frameworks: state.frameworks.map(f => f.id === id ? { ...f, ...updates } : f)
       })),
-      duplicateFramework: (id) => {
-        const original = get().frameworks.find(f => f.id === id);
-        if (!original) return;
-        const newId = `custom-f-${Date.now()}`;
-        const copy: Framework = {
-          ...original,
-          id: newId,
-          name: `Copy of ${original.name}`,
-          isCustom: true
-        };
-        set(state => ({ frameworks: [...state.frameworks, copy] }));
-        return newId;
-      },
+      deleteFramework: (id) => set((state) => ({
+        frameworks: state.frameworks.filter(f => f.id !== id || !f.isCustom)
+      })),
 
       addLinguisticControl: (l) => set((state) => ({ linguisticControls: [...state.linguisticControls, { ...l, id: `l-${Date.now()}`, isCustom: true }] })),
       updateLinguisticControl: (id, updates) => set((state) => ({
         linguisticControls: state.linguisticControls.map(l => l.id === id ? { ...l, ...updates } : l)
       })),
-      duplicateLinguisticControl: (id) => {
-        const original = get().linguisticControls.find(l => l.id === id);
-        if (!original) return;
-        const newId = `custom-l-${Date.now()}`;
-        const copy: LinguisticControl = {
-          ...original,
-          id: newId,
-          name: `Copy of ${original.name}`,
-          isCustom: true
-        };
-        set(state => ({ linguisticControls: [...state.linguisticControls, copy] }));
-        return newId;
-      },
+      deleteLinguisticControl: (id) => set((state) => ({
+        linguisticControls: state.linguisticControls.filter(l => l.id !== id || !l.isCustom)
+      })),
 
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
@@ -200,7 +170,11 @@ export const useAppStore = create<AppState>()(
         if (!activeConn) return false;
         set({ isModelLoading: true });
         try {
-          return await loadModelAction(activeConn.baseUrl, modelId, activeConn.apiKey);
+          const success = await loadModelAction(activeConn.baseUrl, modelId, activeConn.apiKey);
+          if (success) {
+            get().updateConnection(activeConn.id, { modelId });
+          }
+          return success;
         } finally {
           set({ isModelLoading: false });
         }
@@ -377,11 +351,11 @@ export const useAppStore = create<AppState>()(
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar }))
     }),
     { 
-      name: 'zerogpt-storage-v4',
+      name: 'zerogpt-storage-v5',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Merge custom items with built-ins on rehydration
+          // Re-merge built-ins with custom items stored in persistence
           const customPersonas = state.personas?.filter(p => p.isCustom) || [];
           state.personas = [...PERSONAS, ...customPersonas];
           

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -65,6 +66,7 @@ export function ChatInterface() {
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [latency, setLatency] = useState("---");
+  const [isMounted, setIsMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   
@@ -75,6 +77,7 @@ export function ChatInterface() {
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
   useEffect(() => {
+    setIsMounted(true);
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -186,8 +189,8 @@ export function ChatInterface() {
       ].filter(Boolean).join('\n\n').trim();
       
       const responseContent = await personaDrivenChat({
-        baseUrl: connection.baseUrl,
-        modelId: connection.modelId,
+        baseUrl: connection?.baseUrl || '',
+        modelId: connection?.modelId || '',
         systemPrompt: combinedSystemPrompt,
         userMessage: textToSend,
         temperature: session.settings.temperature,
@@ -275,19 +278,19 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
-        {/* Interactive System Status Header - Streamlined for single-screen view */}
+        {/* Interactive System Status Header */}
         <div className="flex-shrink-0 flex flex-col border-b border-border px-4 py-2 sm:px-8 sm:py-3 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
-              <button className="flex items-center gap-2 sm:gap-2.5 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-1.5 py-1 sm:px-2 sm:py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95 max-w-[140px] sm:max-w-none">
+              <button className="flex items-center gap-2 sm:gap-2.5 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-1.5 py-1 sm:px-2 sm:py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95 min-w-[120px] sm:min-w-[160px]">
                 <div className={cn(
                   "h-7 w-7 sm:h-8 sm:w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border shrink-0",
                   connectionStatus === 'online' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-rose-50 text-rose-500 border-rose-100"
                 )}>
                   {connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
                 </div>
-                <div className="flex flex-col items-start text-left pr-1 overflow-hidden min-w-0">
-                  <div className="flex items-center gap-1 leading-none">
+                <div className="flex flex-col items-start text-left pr-1 overflow-hidden min-w-0 flex-1">
+                  <div className="flex items-center gap-1 leading-none w-full justify-between">
                     <span className={cn(
                       "text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em] whitespace-nowrap",
                       connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600"
@@ -295,32 +298,34 @@ export function ChatInterface() {
                       {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
                     </span>
                     {connectionStatus === 'online' && (
-                      <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-400 ml-0.5">
+                      <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-400">
                         {latency}
                       </span>
                     )}
                   </div>
                   <span className="text-[6px] sm:text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate w-full">
-                    {connection.modelId || "Primary Engine"}
+                    {connection?.modelId || "Primary Engine"}
                   </span>
                 </div>
               </button>
             </SettingsDialog>
 
-            {/* Indian Flag Colored Clock - Center Aligned Single Row */}
-            <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden px-2">
-              <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
-                {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}
-              </span>
-              <div className="bg-white px-1.5 py-0.5 rounded border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
-                <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900 leading-none">
-                  {currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00"}
+            {/* Indian Flag Colored Clock - Center Aligned One Row */}
+            {isMounted && (
+              <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden px-2">
+                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
+                  {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}
+                </span>
+                <div className="bg-white px-1.5 py-0.5 rounded border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
+                  <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900 leading-none">
+                    {currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00"}
+                  </span>
+                </div>
+                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#138808] whitespace-nowrap">
+                  {currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) || "DATE"}
                 </span>
               </div>
-              <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#138808] whitespace-nowrap">
-                {currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) || "DATE"}
-              </span>
-            </div>
+            )}
             
             <div className="flex items-center gap-1 shrink-0">
               <SheetTrigger asChild>
@@ -332,7 +337,7 @@ export function ChatInterface() {
             </div>
           </div>
 
-          {/* Quick Fine-Tuning Grid Module - Compact Status Bar Style */}
+          {/* Quick Fine-Tuning Grid Module */}
           <div className="grid grid-cols-3 mt-2 border border-border rounded-lg overflow-hidden bg-muted/5 divide-x divide-border shadow-inner">
             <SheetTrigger asChild>
               <button 
@@ -376,7 +381,7 @@ export function ChatInterface() {
           </div>
         </div>
 
-        {/* Main Orchestration Scroll Area - Optimized for viewport constraints */}
+        {/* Main Orchestration Scroll Area */}
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-4xl flex-col py-4 px-4 sm:px-8">
             {session.messages.length === 0 ? (
@@ -440,11 +445,11 @@ export function ChatInterface() {
           </div>
         </ScrollArea>
 
-        {/* Blazing Fast Command Module - Anchored for Single Screen */}
+        {/* Command Module */}
         <div className="flex-shrink-0 p-3 sm:p-6 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
           <div className="mx-auto max-w-3xl space-y-3">
             
-            {/* Neural Tool Strip - Single Line Icon Set (2/3 width) */}
+            {/* Neural Tool Strip */}
             <div className="flex items-center justify-center gap-2 mx-auto w-full sm:w-[66%] overflow-x-auto no-scrollbar">
               <button 
                 onClick={() => toggleTool(session.id, 'webSearch')}

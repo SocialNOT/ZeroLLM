@@ -28,7 +28,15 @@ interface LibraryEditorProps {
 }
 
 export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps) {
-  const { addPersona, updatePersona, addFramework, updateFramework, addLinguisticControl, updateLinguisticControl } = useAppStore();
+  const { 
+    addPersona, 
+    updatePersona, 
+    addFramework, 
+    updateFramework, 
+    addLinguisticControl, 
+    updateLinguisticControl 
+  } = useAppStore();
+  
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -37,15 +45,25 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
     category: "Custom"
   });
 
-  // Re-populate form whenever the dialog opens or the item changes
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        name: item ? (mode === 'create' ? `Copy of ${item.name}` : item.name) : "",
-        description: item?.description || "",
-        content: item ? (item.system_prompt || item.content || item.system_instruction || "") : "",
-        category: item?.category || "Custom"
-      });
+      // If editing or cloning, pre-populate the form
+      if (item) {
+        setFormData({
+          name: mode === 'create' ? `Copy of ${item.name}` : item.name,
+          description: item.description || "",
+          content: item.system_prompt || item.content || item.system_instruction || "",
+          category: item.category || "Custom"
+        });
+      } else {
+        // Reset form for clean creation
+        setFormData({
+          name: "",
+          description: "",
+          content: "",
+          category: "Custom"
+        });
+      }
     }
   }, [isOpen, item, mode]);
 
@@ -68,7 +86,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         isCustom: true
       };
       if (mode === 'create') addPersona(data as Persona);
-      else updatePersona(item.id, data);
+      else if (item?.id) updatePersona(item.id, data);
     } else if (type === 'framework') {
       const data: Partial<Framework> = {
         name: formData.name,
@@ -78,8 +96,8 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         isCustom: true
       };
       if (mode === 'create') addFramework(data as Framework);
-      else updateFramework(item.id, data);
-    } else {
+      else if (item?.id) updateFramework(item.id, data);
+    } else if (type === 'linguistic') {
       const data: Partial<LinguisticControl> = {
         name: formData.name,
         description: formData.description,
@@ -88,7 +106,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         isCustom: true
       };
       if (mode === 'create') addLinguisticControl(data as LinguisticControl);
-      else updateLinguisticControl(item.id, data);
+      else if (item?.id) updateLinguisticControl(item.id, data);
     }
 
     toast({
