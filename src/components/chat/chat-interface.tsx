@@ -24,7 +24,9 @@ import {
   Command,
   Sparkles,
   Layers,
-  UserCircle
+  UserCircle,
+  Clock,
+  LogIn
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,6 +43,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
 import { toast } from "@/hooks/use-toast";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
+import Link from "next/link";
 
 export function ChatInterface() {
   const { 
@@ -57,13 +60,15 @@ export function ChatInterface() {
     currentUserRole,
     connectionStatus,
     setActiveParameterTab,
-    toggleTool
+    toggleTool,
+    sessionStartTime
   } = useAppStore();
   
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [timeLeft, setTimeLeft] = useState<string>("30:00");
   const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -78,9 +83,21 @@ export function ChatInterface() {
   useEffect(() => {
     setMounted(true);
     setCurrentTime(new Date());
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+      
+      // Update session timer
+      if (sessionStartTime) {
+        const elapsed = Date.now() - sessionStartTime;
+        const remaining = Math.max(0, (30 * 60 * 1000) - elapsed);
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+      }
+    }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [sessionStartTime]);
 
   // Latency Simulation
   useEffect(() => {
@@ -348,6 +365,21 @@ export function ChatInterface() {
                 </div>
               </button>
             </SettingsDialog>
+
+            {/* Neural Session Timer Capsule */}
+            <Link href="/auth/login" className="flex-1 max-w-[120px] sm:max-w-[160px]">
+              <div className="group flex items-center justify-center gap-2 bg-white/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-100 shadow-sm transition-all hover:shadow-md hover:scale-105 active:scale-95 animate-multi-color-pulse">
+                <Clock size={12} className="text-slate-400 group-hover:text-primary transition-colors" />
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tight text-slate-900 leading-none">
+                    {timeLeft}
+                  </span>
+                  <span className="text-[5px] font-black uppercase tracking-widest text-primary leading-none mt-0.5 group-hover:underline">
+                    Energize
+                  </span>
+                </div>
+              </div>
+            </Link>
 
             {/* Indian Flag Colored Clock - Center Aligned One Row */}
             {mounted && (

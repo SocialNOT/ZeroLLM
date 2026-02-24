@@ -120,6 +120,29 @@
   animation: pulse-glow 3s ease-in-out infinite;
 }
 
+@keyframes multi-color-pulse {
+  0% { 
+    box-shadow: 0 0 2px hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+  33% { 
+    box-shadow: 0 0 12px hsl(var(--accent) / 0.4);
+    border-color: hsl(var(--accent) / 0.4);
+  }
+  66% { 
+    box-shadow: 0 0 12px hsl(var(--destructive) / 0.4);
+    border-color: hsl(var(--destructive) / 0.4);
+  }
+  100% { 
+    box-shadow: 0 0 2px hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+}
+
+.animate-multi-color-pulse {
+  animation: multi-color-pulse 6s linear infinite;
+}
+
 /* Neural Model Specific Glows */
 @keyframes glow-llama {
   0%, 100% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.2); }
