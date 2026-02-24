@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
@@ -25,6 +24,9 @@ interface AppState {
   isModelLoading: boolean;
   activeParameterTab: string;
   showInfoSidebar: boolean;
+  
+  // Theme Engine
+  activeTheme: 'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6;
   
   // Session Security
   sessionStartTime: number | null;
@@ -70,6 +72,10 @@ interface AppState {
   toggleInfoSidebar: () => void;
   toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge') => void;
   checkSessionExpiry: () => void;
+  
+  // Theme Actions
+  setTheme: (theme: 'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6) => void;
+  cycleTheme: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -102,6 +108,8 @@ export const useAppStore = create<AppState>()(
       isModelLoading: false,
       activeParameterTab: 'frameworks',
       showInfoSidebar: false,
+      
+      activeTheme: 'auto',
       
       sessionStartTime: null,
       isSessionLocked: false,
@@ -370,11 +378,18 @@ export const useAppStore = create<AppState>()(
       setActiveParameterTab: (tab) => set({ activeParameterTab: tab }),
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar })),
       
+      setTheme: (theme) => set({ activeTheme: theme }),
+      cycleTheme: () => set((state) => {
+        const order: Array<'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6> = ['auto', 0, 1, 2, 3, 4, 5, 6];
+        const currentIdx = order.indexOf(state.activeTheme);
+        const nextIdx = (currentIdx + 1) % order.length;
+        return { activeTheme: order[nextIdx] };
+      }),
+
       checkSessionExpiry: () => {
         const { sessionStartTime, currentUserRole, isSessionLocked } = get();
         if (!sessionStartTime) return;
         
-        // Identity Gate: Only Guest/Viewer roles are subject to session limits.
         if (currentUserRole !== 'Viewer') {
           if (isSessionLocked) set({ isSessionLocked: false });
           return;
@@ -385,24 +400,21 @@ export const useAppStore = create<AppState>()(
         const startDate = new Date(sessionStartTime).toDateString();
         const currentDate = new Date(now).toDateString();
         
-        // Diurnal Reset Protocol: If date changes, reset the 1-hour counter for the guest.
         if (startDate !== currentDate) {
           set({ sessionStartTime: now, isSessionLocked: false });
           return;
         }
 
-        // 1-Hour Constraint: If same day and hour expired, lock session.
         if (now - sessionStartTime > ONE_HOUR) {
           set({ isSessionLocked: true });
         }
       }
     }),
     { 
-      name: 'zerogpt-storage-v7',
+      name: 'zerogpt-storage-v8',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Re-merge built-ins with custom items stored in persistence
           const customPersonas = state.personas?.filter(p => p.isCustom) || [];
           state.personas = [...PERSONAS, ...customPersonas];
           
@@ -412,7 +424,6 @@ export const useAppStore = create<AppState>()(
           const customLinguistic = state.linguisticControls?.filter(l => l.isCustom) || [];
           state.linguisticControls = [...LINGUISTICS, ...customLinguistic];
           
-          // Execute security check on re-energization
           state.checkSessionExpiry();
         }
       }

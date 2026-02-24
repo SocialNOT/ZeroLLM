@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -8,6 +7,7 @@ import { useAppStore } from "@/store/use-app-store";
 import { useEffect, useState } from "react";
 import { SetupOverlay } from "@/components/setup/setup-overlay";
 import { SessionGuard } from "@/components/setup/session-guard";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { 
@@ -17,7 +17,8 @@ export default function Home() {
     setActiveSession, 
     activeSessionId,
     isConfigured,
-    checkConnection 
+    checkConnection,
+    activeTheme
   } = useAppStore();
   
   const [mounted, setMounted] = useState(false);
@@ -39,33 +40,46 @@ export default function Home() {
 
   if (!mounted) return null;
 
+  // Determine actual theme class
+  let themeClass = "";
+  if (activeTheme === 'auto') {
+    // 0 is Sunday, 1 is Monday in JS getDay()
+    // We want Monday to be index 0
+    const day = (new Date().getDay() + 6) % 7; 
+    themeClass = `theme-${day}`;
+  } else {
+    themeClass = `theme-${activeTheme}`;
+  }
+
   return (
-    <SidebarProvider>
-      <SessionGuard />
-      {!isConfigured && <SetupOverlay />}
-      <div className="flex h-svh w-full overflow-hidden bg-background">
-        <div className="relative flex h-full w-full overflow-hidden sleek-animated-border rounded-none bg-card">
-          <AppSidebar />
-          <SidebarInset className="flex flex-col h-full overflow-hidden bg-transparent">
-            <main className="flex-1 overflow-hidden relative">
-              <ChatInterface />
-            </main>
-            <footer className="flex-shrink-0 w-full py-2 bg-card/50 backdrop-blur-md border-t border-border/10 text-center z-40 select-none">
-              <p className="text-[9px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-                <span className="text-muted-foreground/40">Made with ❤️ by</span>
-                <a 
-                  href="https://www.eastindiaautomation.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="animate-color-shift hover:scale-105 transition-transform inline-block"
-                >
-                  Rajib Singh
-                </a>
-              </p>
-            </footer>
-          </SidebarInset>
+    <div className={cn("h-svh w-full overflow-hidden", themeClass)}>
+      <SidebarProvider>
+        <SessionGuard />
+        {!isConfigured && <SetupOverlay />}
+        <div className="flex h-svh w-full overflow-hidden bg-background">
+          <div className="relative flex h-full w-full overflow-hidden sleek-animated-border rounded-none bg-card">
+            <AppSidebar />
+            <SidebarInset className="flex flex-col h-full overflow-hidden bg-transparent">
+              <main className="flex-1 overflow-hidden relative">
+                <ChatInterface />
+              </main>
+              <footer className="flex-shrink-0 w-full py-2 bg-card/50 backdrop-blur-md border-t border-border text-center z-40 select-none">
+                <p className="text-[9px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+                  <span className="text-foreground/60">Made with ❤️ by</span>
+                  <a 
+                    href="https://www.eastindiaautomation.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="logo-shimmer hover:scale-105 transition-transform inline-block"
+                  >
+                    Rajib Singh
+                  </a>
+                </p>
+              </footer>
+            </SidebarInset>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </div>
   );
 }

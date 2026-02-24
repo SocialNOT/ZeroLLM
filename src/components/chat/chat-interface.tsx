@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -27,7 +26,8 @@ import {
   Layers,
   UserCircle,
   Clock,
-  LogIn
+  LogIn,
+  Palette
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -62,7 +62,9 @@ export function ChatInterface() {
     connectionStatus,
     setActiveParameterTab,
     toggleTool,
-    sessionStartTime
+    sessionStartTime,
+    cycleTheme,
+    activeTheme
   } = useAppStore();
   
   const [input, setInput] = useState("");
@@ -320,11 +322,14 @@ export function ChatInterface() {
     }
   ];
 
+  const themeLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const currentThemeLabel = activeTheme === 'auto' ? `Auto (${themeLabels[(new Date().getDay() + 6) % 7]})` : themeLabels[activeTheme as number];
+
   if (!session) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-transparent">
         <Zap className="text-primary mb-4 animate-pulse" size={48} />
-        <p className="max-w-xs text-muted-foreground font-bold text-[10px] uppercase tracking-widest">
+        <p className="max-w-xs text-foreground font-black text-[10px] uppercase tracking-widest">
           Initialize a cognitive sequence to begin.
         </p>
       </div>
@@ -333,20 +338,20 @@ export function ChatInterface() {
 
   return (
     <Sheet>
-      <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
+      <div className="flex h-full w-full flex-col overflow-hidden bg-card relative">
         
         {isGuest && (
-          <div className="flex-shrink-0 flex items-center justify-center gap-3 py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
-            <div className="flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none animate-multi-color-pulse">
-              <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none mr-1">Session TTL:</span>
-              <Clock size={10} className="text-slate-400" />
-              <span className="text-[10px] font-black font-mono tracking-tight text-slate-900 leading-none">
+          <div className="flex-shrink-0 flex items-center justify-center gap-3 py-1 border-b border-border bg-primary/5 z-30">
+            <div className="flex items-center justify-center gap-2 bg-white px-3 py-0.5 rounded-full border-2 border-primary shadow-none animate-multi-color-pulse">
+              <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none mr-1">Session TTL:</span>
+              <Clock size={10} className="text-primary" />
+              <span className="text-[10px] font-black font-mono tracking-tight text-foreground leading-none">
                 {timeLeft}
               </span>
             </div>
             
             <Link href="/auth/login">
-              <div className="group flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-primary/5 transition-all active:scale-95 cursor-pointer">
+              <div className="group flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-all active:scale-95 cursor-pointer">
                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary leading-none group-hover:underline">
                   Sign In / Sign Up
                 </span>
@@ -356,13 +361,13 @@ export function ChatInterface() {
           </div>
         )}
 
-        <div className="flex-shrink-0 flex flex-col border-b border-border px-3 py-2 sm:px-6 sm:py-2.5 bg-card/90 backdrop-blur-xl z-20">
+        <div className="flex-shrink-0 flex flex-col border-b border-border px-3 py-2 sm:px-6 sm:py-3 bg-card z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
-              <button className="flex items-center gap-2 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-1.5 py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95 min-w-[120px] sm:min-w-[160px]">
+              <button className="flex items-center gap-2 group transition-all hover:opacity-80 text-left bg-white px-1.5 py-1 rounded-xl border-2 border-border shadow-sm hover:shadow-md hover:border-primary active:scale-95 min-w-[120px] sm:min-w-[160px]">
                 <div className={cn(
-                  "h-7 w-7 sm:h-8 sm:w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border shrink-0",
-                  connectionStatus === 'online' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-rose-50 text-rose-500 border-rose-100"
+                  "h-7 w-7 sm:h-8 sm:w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border-2 shrink-0",
+                  connectionStatus === 'online' ? "bg-primary text-white border-primary" : "bg-destructive text-white border-destructive"
                 )}>
                   {connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
                 </div>
@@ -370,17 +375,17 @@ export function ChatInterface() {
                   <div className="flex items-center gap-1 leading-none w-full justify-between">
                     <span className={cn(
                       "text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em] whitespace-nowrap",
-                      connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600"
+                      connectionStatus === 'online' ? "text-primary" : "text-destructive"
                     )}>
                       {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
                     </span>
                     {mounted && connectionStatus === 'online' && (
-                      <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-400">
+                      <span className="text-[6px] sm:text-[7px] font-mono font-black text-foreground">
                         {latency}
                       </span>
                     )}
                   </div>
-                  <span className="text-[6px] sm:text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate w-full">
+                  <span className="text-[6px] sm:text-[7px] font-black text-foreground uppercase tracking-wider mt-0.5 truncate w-full">
                     {connection?.modelId || "Primary Engine"}
                   </span>
                 </div>
@@ -389,38 +394,47 @@ export function ChatInterface() {
 
             {mounted && (
               <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden px-2">
-                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
+                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-primary whitespace-nowrap">
                   {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}
                 </span>
-                <div className="bg-white px-1.5 py-0.5 rounded border border-slate-100 shadow-[0_2px_100px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
-                  <span className="text-[10px] sm:text-[12px] font-black font-mono tracking-tighter text-slate-900 leading-none">
+                <div className="bg-white px-2 py-1 rounded border-2 border-border shadow-sm flex items-center justify-center shrink-0">
+                  <span className="text-[10px] sm:text-[14px] font-black font-mono tracking-tighter text-foreground leading-none">
                     {currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00"}
                   </span>
                 </div>
-                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#138808] whitespace-nowrap">
+                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-accent whitespace-nowrap">
                   {currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) || "DATE"}
                 </span>
               </div>
             )}
             
             <div className="flex items-center gap-1 shrink-0">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={cycleTheme}
+                title={`Cycle Diurnal Theme: ${currentThemeLabel}`}
+                className="h-7 w-7 rounded-lg border-2 border-border text-foreground hover:bg-primary hover:text-white transition-all"
+              >
+                <Palette size={14} />
+              </Button>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
+                <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg border-2 border-border text-foreground hover:bg-primary hover:text-white transition-colors">
                   <Settings2 size={14} />
                 </Button>
               </SheetTrigger>
-              <SidebarTrigger className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary transition-colors" />
+              <SidebarTrigger className="h-7 w-7 border-2 border-border text-foreground hover:bg-primary hover:text-white transition-colors" />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 mt-2 border border-border rounded-lg overflow-hidden bg-muted/5 divide-x divide-border shadow-inner">
+          <div className="grid grid-cols-3 mt-2 border-2 border-border rounded-lg overflow-hidden bg-primary/5 divide-x-2 divide-border shadow-inner">
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('personas')}
-                className="flex flex-col items-center justify-center py-1 px-1 hover:bg-accent/10 transition-all group text-center active:scale-95"
+                className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-accent hover:text-white transition-all group text-center active:scale-95"
               >
-                <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-accent">Identity</span>
-                <span className="text-[8px] font-bold text-accent uppercase truncate w-full mt-0.5 animate-pulse-glow">
+                <span className="text-[6px] font-black uppercase tracking-widest text-foreground group-hover:text-white">Identity</span>
+                <span className="text-[8px] font-black uppercase truncate w-full mt-0.5">
                   {persona.name}
                 </span>
               </button>
@@ -428,12 +442,12 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('frameworks')}
-                className="flex flex-col items-center justify-center py-1 px-1 hover:bg-primary/10 transition-all group text-center active:scale-95"
+                className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-primary hover:text-white transition-all group text-center active:scale-95"
               >
-                <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-primary">Arch</span>
+                <span className="text-[6px] font-black uppercase tracking-widest text-foreground group-hover:text-white">Arch</span>
                 <span className={cn(
-                  "text-[8px] font-bold uppercase truncate w-full mt-0.5",
-                  session.frameworkId ? "text-primary animate-pulse-glow" : "text-muted-foreground/40"
+                  "text-[8px] font-black uppercase truncate w-full mt-0.5",
+                  session.frameworkId ? "animate-pulse" : ""
                 )}>
                   {framework?.name || "None"}
                 </span>
@@ -442,12 +456,12 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('linguistic')}
-                className="flex flex-col items-center justify-center py-1 px-1 hover:bg-destructive/10 transition-all group text-center active:scale-95"
+                className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-destructive hover:text-white transition-all group text-center active:scale-95"
               >
-                <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-destructive">Logic</span>
+                <span className="text-[6px] font-black uppercase tracking-widest text-foreground group-hover:text-white">Logic</span>
                 <span className={cn(
-                  "text-[8px] font-bold uppercase truncate w-full mt-0.5",
-                  session.linguisticId ? "text-destructive animate-pulse-glow" : "text-muted-foreground/40"
+                  "text-[8px] font-black uppercase truncate w-full mt-0.5",
+                  session.linguisticId ? "animate-pulse" : ""
                 )}>
                   {linguistic?.name || "Default"}
                 </span>
@@ -461,8 +475,8 @@ export function ChatInterface() {
             {session.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-2 sm:py-4 px-4 sm:px-0 animate-in fade-in zoom-in duration-700">
                 <div className="text-center mb-4 space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-headline font-bold text-slate-900 tracking-tight">Neural Node Ready</h2>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-400">Select Cognitive Starter</p>
+                  <h2 className="text-xl sm:text-2xl font-headline font-black text-foreground tracking-tight">Neural Node Ready</h2>
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-primary">Select Cognitive Starter</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2 w-full max-w-lg">
@@ -470,22 +484,22 @@ export function ChatInterface() {
                     <button 
                       key={idx}
                       onClick={() => setInput(starter.prompt)}
-                      className="group flex items-center gap-3 p-2 sm:p-2.5 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all text-left animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+                      className="group flex items-center gap-3 p-3 rounded-xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
                       style={{ animationDelay: `${idx * 100}ms` }}
                     >
-                      <div className="p-2 rounded-lg bg-slate-50 group-hover:bg-primary/5 transition-colors shrink-0">
+                      <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
                         {starter.icon}
                       </div>
-                      <span className="text-[11px] sm:text-[12px] font-bold text-slate-700 tracking-tight truncate">{starter.title}</span>
-                      <ArrowRight size={12} className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                      <span className="text-[11px] sm:text-[13px] font-black text-foreground tracking-tight truncate">{starter.title}</span>
+                      <ArrowRight size={14} className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                     </button>
                   ))}
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 sm:gap-4">
+                <div className="mt-6 flex items-center gap-4">
                   <SettingsDialog>
-                    <Button variant="outline" className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all">
-                      <Cpu size={12} className="text-primary" />
+                    <Button variant="outline" className="h-10 rounded-xl gap-2 px-6 text-[9px] font-black uppercase tracking-widest bg-white border-2 border-border shadow-lg hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95">
+                      <Cpu size={14} />
                       Control
                     </Button>
                   </SettingsDialog>
@@ -493,9 +507,9 @@ export function ChatInterface() {
                     <Button 
                       variant="outline" 
                       onClick={() => setActiveParameterTab('frameworks')}
-                      className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:bg-slate-50 hover:text-accent hover:border-accent/30 transition-all"
+                      className="h-10 rounded-xl gap-2 px-6 text-[9px] font-black uppercase tracking-widest bg-white border-2 border-border shadow-lg hover:bg-accent hover:text-white hover:border-accent transition-all active:scale-95"
                     >
-                      <Command size={12} className="text-accent" />
+                      <Command size={14} />
                       Hub
                     </Button>
                   </SheetTrigger>
@@ -511,15 +525,15 @@ export function ChatInterface() {
               ))
             )}
             {isTyping && !session.messages[session.messages.length - 1]?.content && (
-              <div className="flex items-center gap-2 px-4 py-4 text-[8px] text-primary font-bold uppercase tracking-[0.2em] animate-pulse">
-                <Brain size={10} className="animate-bounce" />
-                Processing...
+              <div className="flex items-center gap-2 px-4 py-4 text-[9px] text-primary font-black uppercase tracking-[0.2em] animate-pulse">
+                <Brain size={12} className="animate-bounce" />
+                Orchestrating...
               </div>
             )}
           </div>
         </ScrollArea>
 
-        <div className="flex-shrink-0 p-3 sm:p-4 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
+        <div className="flex-shrink-0 p-3 sm:p-4 bg-card border-t-2 border-border z-30">
           <div className="mx-auto max-w-4xl space-y-3">
             
             <div className="flex items-center justify-center gap-2 mx-auto w-full sm:w-[66%] overflow-x-auto no-scrollbar">
@@ -527,10 +541,10 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'webSearch')}
                 title="Web Grounding"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-lg border transition-all shrink-0 hover:scale-110 active:scale-95",
+                  "h-8 w-8 flex items-center justify-center rounded-lg border-2 transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.webSearchEnabled 
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110" 
-                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-primary text-white border-primary shadow-lg scale-110" 
+                    : "bg-white text-foreground border-border hover:border-primary"
                 )}
               >
                 <Search size={14} />
@@ -540,10 +554,10 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'reasoning')}
                 title="Deep Thinking"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-lg border transition-all shrink-0 hover:scale-110 active:scale-95",
+                  "h-8 w-8 flex items-center justify-center rounded-lg border-2 transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.reasoningEnabled 
-                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20 scale-110" 
-                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-accent text-white border-accent shadow-lg scale-110" 
+                    : "bg-white text-foreground border-border hover:border-accent"
                 )}
               >
                 <Brain size={14} />
@@ -553,10 +567,10 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'voice')}
                 title="Voice Synthesis"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-lg border transition-all shrink-0 hover:scale-110 active:scale-95",
+                  "h-8 w-8 flex items-center justify-center rounded-lg border-2 transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.voiceResponseEnabled 
-                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20 scale-110" 
-                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-destructive text-white border-destructive shadow-lg scale-110" 
+                    : "bg-white text-foreground border-border hover:border-destructive"
                 )}
               >
                 {session.settings.voiceResponseEnabled ? <Mic size={14} /> : <MicOff size={14} />}
@@ -566,10 +580,10 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'calculator')}
                 title="Mathematical Logic"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-lg border transition-all shrink-0 hover:scale-110 active:scale-95",
+                  "h-8 w-8 flex items-center justify-center rounded-lg border-2 transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.calculatorEnabled 
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110" 
-                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-primary text-white border-primary shadow-lg scale-110" 
+                    : "bg-white text-foreground border-border hover:border-primary"
                 )}
               >
                 <Calculator size={14} />
@@ -579,10 +593,10 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'code')}
                 title="Code Interpreter"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-lg border transition-all shrink-0 hover:scale-110 active:scale-95",
+                  "h-8 w-8 flex items-center justify-center rounded-lg border-2 transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.codeEnabled 
-                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20 scale-110" 
-                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-accent text-white border-accent shadow-lg scale-110" 
+                    : "bg-white text-foreground border-border hover:border-accent"
                 )}
               >
                 <Terminal size={14} />
@@ -592,10 +606,10 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'knowledge')}
                 title="Knowledge Vault"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-lg border transition-all shrink-0 hover:scale-110 active:scale-95",
+                  "h-8 w-8 flex items-center justify-center rounded-lg border-2 transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.knowledgeEnabled 
-                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20 scale-110" 
-                    : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-destructive text-white border-destructive shadow-lg scale-110" 
+                    : "bg-white text-foreground border-border hover:border-destructive"
                 )}
               >
                 <Database size={14} />
@@ -604,7 +618,7 @@ export function ChatInterface() {
 
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
-              className="relative flex items-center bg-muted/50 hover:bg-muted transition-all rounded-xl sm:rounded-2xl p-1 border border-border shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
+              className="relative flex items-center bg-white hover:bg-primary/5 transition-all rounded-xl sm:rounded-2xl p-1.5 border-2 border-border shadow-xl focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10"
             >
               <div className="flex shrink-0">
                 <Button 
@@ -613,35 +627,35 @@ export function ChatInterface() {
                   size="icon" 
                   onClick={handleMicToggle}
                   className={cn(
-                    "h-9 w-9 sm:h-10 sm:w-10 transition-all rounded-lg sm:rounded-xl",
-                    isListening ? "text-rose-500 bg-rose-500/10 animate-pulse" : "text-muted-foreground hover:bg-card hover:text-primary"
+                    "h-9 w-9 sm:h-11 sm:w-11 transition-all rounded-lg sm:rounded-xl",
+                    isListening ? "text-white bg-destructive animate-pulse" : "text-foreground hover:bg-primary hover:text-white"
                   )}
                 >
-                  {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                  {isListening ? <MicOff size={18} /> : <Mic size={18} />}
                 </Button>
               </div>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
-                placeholder={isListening ? "Sampling Audio..." : "Input command..."}
-                className="h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-3 text-[13px] font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/40"
+                placeholder={isListening ? "Sampling Audio Node..." : "Input orchestration command..."}
+                className="h-9 sm:h-11 w-full border-none bg-transparent px-3 sm:px-4 text-[14px] font-black focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-foreground/40"
               />
               <Button 
                 type="submit" 
                 disabled={!input.trim() || isTyping}
-                className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all shrink-0"
+                className="h-9 w-9 sm:h-11 sm:w-11 rounded-lg sm:rounded-xl bg-primary text-white shadow-lg hover:scale-105 active:scale-95 transition-all shrink-0 border-2 border-black/5"
               >
-                <Send size={16} />
+                <Send size={18} />
               </Button>
             </form>
           </div>
         </div>
 
-        <SheetContent side="right" className="w-full sm:min-w-[450px] border-l border-border p-0 overflow-hidden bg-card shadow-2xl">
-          <SheetHeader className="p-6 border-b border-border bg-card/50 backdrop-blur-xl">
-            <SheetTitle className="text-xl font-headline font-bold text-slate-900">Cognitive Hub</SheetTitle>
-            <p className="text-[8px] text-primary font-bold uppercase tracking-[0.2em] mt-0.5">Advanced Parameters</p>
+        <SheetContent side="right" className="w-full sm:min-w-[450px] border-l-2 border-border p-0 overflow-hidden bg-card shadow-2xl">
+          <SheetHeader className="p-6 border-b-2 border-border bg-primary/5">
+            <SheetTitle className="text-xl font-headline font-black text-foreground">Cognitive Hub</SheetTitle>
+            <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mt-1">Advanced Neural Parameters</p>
           </SheetHeader>
           <ParameterControls />
         </SheetContent>
