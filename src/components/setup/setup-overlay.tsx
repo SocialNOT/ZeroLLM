@@ -60,23 +60,19 @@ export function SetupOverlay() {
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-3xl p-4 overflow-hidden">
-      {/* Animated Text Logo */}
-      <div className="mb-6 text-center animate-in fade-in slide-in-from-top-4 duration-1000 shrink-0">
-        <h1 className="logo-shimmer font-headline text-5xl sm:text-7xl font-black tracking-tighter leading-none select-none">
-          ZEROGPT
-        </h1>
-        <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-slate-400 mt-2 animate-pulse">
-          Neural Command Hub
-        </p>
-      </div>
-
       <div className="w-full max-w-sm animate-in fade-in zoom-in duration-500">
         <Card className="border-none bg-white shadow-[0_40px_120px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden">
           <CardHeader className="text-center pt-8 pb-4">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
-              <Zap size={28} fill="currentColor" className={isTesting ? "animate-pulse" : ""} />
+            <div className="mb-4">
+              <h1 className="logo-shimmer font-headline text-4xl font-black tracking-tighter leading-none select-none">
+                ZEROGPT
+              </h1>
+              <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-slate-400 mt-2 animate-pulse">
+                Neural Command Hub
+              </p>
             </div>
-            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900">Energize Node</CardTitle>
+            
+            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900 mt-2">Energize Node</CardTitle>
             <CardDescription className="text-[9px] uppercase font-black tracking-widest text-primary mt-1">HANDSHAKE REQUIRED</CardDescription>
             
             <div className="flex items-center justify-center gap-1.5 mt-4">
