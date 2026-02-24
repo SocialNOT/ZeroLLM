@@ -96,15 +96,15 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white/50 backdrop-blur-xl">
-      <SidebarHeader className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 group">
+      <SidebarHeader className="p-6 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pt-6">
+        <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
+          <div className="flex items-center gap-3 group group-data-[collapsible=icon]:gap-0">
             <div className="flex h-11 w-11 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-primary to-indigo-600 shadow-xl shadow-primary/20 text-white shrink-0 group-hover:scale-105 transition-transform">
               <Zap size={24} fill="currentColor" className="animate-pulse" />
             </div>
-            <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:hidden">
-              <span className="logo-shimmer font-headline text-2xl font-bold tracking-tighter leading-none">ZEROGPT</span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-60">Engine Node</span>
+            <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
+              <span className="logo-shimmer font-headline text-2xl font-bold tracking-tighter leading-none whitespace-nowrap">ZEROGPT</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-60 whitespace-nowrap">Engine Node</span>
             </div>
           </div>
           {isMobile && (
@@ -115,12 +115,12 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-4">
+      <SidebarContent className="px-4 group-data-[collapsible=icon]:px-2">
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Library</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {user?.email === 'admin@worldoftexts.com' && (
+              {user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                 <SidebarMenuItem>
                   <Link href="/admin">
                     <SidebarMenuButton tooltip="Admin Panel" className="bg-primary/5 text-primary">
@@ -138,11 +138,11 @@ export function AppSidebar() {
                     <SidebarMenuButton tooltip="My Personas">
                       <UserCircle size={18} className="text-slate-400" />
                       <span className="font-bold text-sm">Personas</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <LibraryEditor mode="create" type="persona">
-                    <SidebarMenuAction className="hover:bg-primary/5 text-primary">
+                    <SidebarMenuAction className="hover:bg-primary/5 text-primary group-data-[collapsible=icon]:hidden">
                       <Plus size={14} />
                     </SidebarMenuAction>
                   </LibraryEditor>
@@ -183,11 +183,11 @@ export function AppSidebar() {
                     <SidebarMenuButton tooltip="My Frameworks">
                       <Layers size={18} className="text-slate-400" />
                       <span className="font-bold text-sm">Frameworks</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <LibraryEditor mode="create" type="framework">
-                    <SidebarMenuAction className="hover:bg-primary/5 text-primary">
+                    <SidebarMenuAction className="hover:bg-primary/5 text-primary group-data-[collapsible=icon]:hidden">
                       <Plus size={14} />
                     </SidebarMenuAction>
                   </LibraryEditor>
@@ -228,11 +228,11 @@ export function AppSidebar() {
                     <SidebarMenuButton tooltip="My Controls">
                       <Type size={18} className="text-slate-400" />
                       <span className="font-bold text-sm">Controls</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <LibraryEditor mode="create" type="linguistic">
-                    <SidebarMenuAction className="hover:bg-primary/5 text-primary">
+                    <SidebarMenuAction className="hover:bg-primary/5 text-primary group-data-[collapsible=icon]:hidden">
                       <Plus size={14} />
                     </SidebarMenuAction>
                   </LibraryEditor>
@@ -270,7 +270,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-8">
-          <div className="mb-4 flex items-center justify-between px-3">
+          <div className="mb-4 flex items-center justify-between px-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center">
             <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Chronicle</SidebarGroupLabel>
             <Button 
               variant="ghost" 
@@ -289,6 +289,7 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       isActive={activeSessionId === session.id}
                       onClick={() => handleSessionClick(session.id)}
+                      tooltip={session.title}
                       className={cn(
                         "group/btn relative h-10 rounded-xl px-3 mb-1 transition-all",
                         activeSessionId === session.id 
@@ -297,11 +298,11 @@ export function AppSidebar() {
                       )}
                     >
                       <MessageSquare size={16} className={activeSessionId === session.id ? "text-primary" : "text-slate-400"} />
-                      <span className="ml-3 truncate font-bold text-[11px] uppercase tracking-wider pr-6">{session.title}</span>
+                      <span className="ml-3 truncate font-bold text-[11px] uppercase tracking-wider pr-6 group-data-[collapsible=icon]:hidden">{session.title}</span>
                     </SidebarMenuButton>
                     <SidebarMenuAction
                       onClick={(e) => handleDeleteSession(e, session.id)}
-                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg z-50 transition-colors"
+                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg z-50 transition-colors group-data-[collapsible=icon]:hidden"
                     >
                       <Trash2 size={12} />
                     </SidebarMenuAction>
@@ -317,11 +318,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-6">
+      <SidebarFooter className="p-6 group-data-[collapsible=icon]:p-2">
         <SettingsDialog>
           <Button 
             variant="outline"
-            className="w-full h-12 bg-white border-slate-100 text-slate-700 shadow-xl shadow-slate-200/50 hover:bg-slate-50 hover:text-primary hover:border-primary/30 rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full"
+            tooltip="System Control"
+            className="w-full h-12 bg-white border-slate-100 text-slate-700 shadow-xl shadow-slate-200/50 hover:bg-slate-50 hover:text-primary hover:border-primary/30 rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto"
           >
             <Settings2 size={18} className="shrink-0" />
             <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
