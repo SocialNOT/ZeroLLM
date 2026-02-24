@@ -342,13 +342,6 @@ export function ChatInterface() {
           <div className="mx-auto flex w-full max-w-4xl flex-col py-4 px-4 sm:px-8">
             {session.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 sm:py-12 px-4 sm:px-0 animate-in fade-in zoom-in duration-700">
-                <div className="relative mb-6 sm:mb-8">
-                  <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-125 animate-pulse" />
-                  <div className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-white border border-slate-100 shadow-xl flex items-center justify-center text-primary group transition-transform hover:scale-110">
-                    <Zap size={24} fill="currentColor" className="animate-pulse" />
-                  </div>
-                </div>
-                
                 <div className="text-center mb-6 sm:mb-8 space-y-1">
                   <h2 className="text-xl sm:text-2xl font-headline font-bold text-slate-900 tracking-tight">Neural Node Ready</h2>
                   <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-400">Select Cognitive Starter</p>
@@ -373,7 +366,7 @@ export function ChatInterface() {
 
                 <div className="mt-8 flex items-center gap-2 sm:gap-4">
                   <SettingsDialog>
-                    <Button variant="outline" className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:text-primary transition-all">
+                    <Button variant="outline" className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all">
                       <Cpu size={12} className="text-primary" />
                       Control
                     </Button>
@@ -382,7 +375,7 @@ export function ChatInterface() {
                     <Button 
                       variant="outline" 
                       onClick={() => setActiveParameterTab('frameworks')}
-                      className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:text-accent transition-all"
+                      className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:bg-slate-50 hover:text-accent hover:border-accent/30 transition-all"
                     >
                       <Command size={12} className="text-accent" />
                       Hub
