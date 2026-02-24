@@ -33,7 +33,8 @@ import {
   Eye,
   Microscope,
   Layers,
-  ArrowUpRight
+  ArrowUpRight,
+  Sparkles
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -119,16 +120,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
   const getModelHighlights = (modelId: string) => {
     const id = modelId.toLowerCase();
-    const h = [];
-    if (id.includes('llama')) h.push({ label: 'Meta Llama', color: 'text-blue-500 bg-blue-500/5 border-blue-500/10' });
-    if (id.includes('deepseek')) h.push({ label: 'DeepSeek', color: 'text-purple-500 bg-purple-500/5 border-purple-500/10' });
-    if (id.includes('qwen')) h.push({ label: 'Qwen AI', color: 'text-orange-500 bg-orange-500/5 border-orange-500/10' });
-    if (id.includes('mistral')) h.push({ label: 'Mistral', color: 'text-pink-500 bg-pink-500/5 border-pink-500/10' });
-    
-    if (id.includes('7b') || id.includes('8b')) h.push({ label: 'Compact', color: 'text-emerald-500 bg-emerald-500/5 border-emerald-500/10' });
-    if (id.includes('70b') || id.includes('r1')) h.push({ label: 'Ultra', color: 'text-amber-500 bg-amber-500/5 border-amber-500/10' });
-    
-    return h;
+    if (id.includes('llama')) return { label: 'Meta Llama', color: 'text-blue-500 bg-blue-500/5', glow: 'animate-glow-llama' };
+    if (id.includes('deepseek')) return { label: 'DeepSeek', color: 'text-purple-500 bg-purple-500/5', glow: 'animate-glow-deepseek' };
+    if (id.includes('qwen')) return { label: 'Qwen AI', color: 'text-orange-500 bg-orange-500/5', glow: 'animate-glow-qwen' };
+    if (id.includes('mistral')) return { label: 'Mistral', color: 'text-emerald-500 bg-emerald-500/5', glow: 'animate-glow-mistral' };
+    return { label: 'Local Node', color: 'text-slate-500 bg-slate-50', glow: '' };
   };
 
   return (
@@ -169,7 +165,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3">
             
-            {/* Engine Node Card */}
+            {/* Engine Node Card - Collapsible */}
             <Card className={cn(
               "bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300",
               expandedSection === 'engine' ? "ring-2 ring-primary/10" : ""
@@ -237,7 +233,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
 
-                  {/* Compute Core Selection */}
+                  {/* Compute Core Selection - NEW Grid Layout */}
                   <div className="bg-slate-50 p-3 rounded-xl space-y-4">
                     <div className="flex items-center gap-2 mb-1">
                       <Cpu size={14} className="text-emerald-600" />
@@ -257,20 +253,19 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                               className={cn(
                                 "flex flex-col p-4 rounded-xl border-2 transition-all group relative overflow-hidden",
                                 isActive 
-                                  ? 'border-primary bg-primary text-white shadow-xl scale-[1.02]' 
+                                  ? `border-primary bg-primary text-white shadow-xl scale-[1.02] ${highlights.glow}` 
                                   : 'border-white bg-white text-slate-600 hover:border-slate-200'
                               )}
                             >
                               <div className="flex items-start justify-between w-full mb-3">
                                 <div className="flex flex-col">
                                   <span className="text-[11px] font-bold truncate max-w-[140px] tracking-tight">{model}</span>
-                                  <div className="flex flex-wrap gap-1 mt-1.5">
-                                    {highlights.map((h, i) => (
-                                      <span key={i} className={cn("text-[7px] font-bold uppercase py-0.5 px-1.5 rounded border", h.color)}>
-                                        {h.label}
-                                      </span>
-                                    ))}
-                                  </div>
+                                  <span className={cn(
+                                    "text-[7px] font-bold uppercase py-0.5 px-1.5 rounded w-fit mt-1 border",
+                                    isActive ? "bg-white/20 border-white/20 text-white" : highlights.color + " border-transparent"
+                                  )}>
+                                    {highlights.label}
+                                  </span>
                                 </div>
                                 {isActive && <Zap size={12} className="text-white fill-white animate-pulse" />}
                               </div>
@@ -332,7 +327,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               )}
             </Card>
 
-            {/* Neural Shield Card */}
+            {/* Neural Shield Card - Sleek Version */}
             <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300">
               <div 
                 role="button"
@@ -368,20 +363,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                       <span className="text-[8px] font-bold text-slate-800 mt-0.5">VERIFIED</span>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[7px] font-bold text-slate-400 uppercase">
-                      <span>Integrity Level</span>
-                      <span className="text-emerald-500">94%</span>
-                    </div>
-                    <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 w-[94%]" />
-                    </div>
-                  </div>
                 </CardContent>
               )}
             </Card>
 
-            {/* Cognitive Vault Card */}
+            {/* Cognitive Vault Card - Sleek Version */}
             <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300">
               <div 
                 role="button"
@@ -411,15 +397,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                       <span className="text-[8px] font-bold text-slate-400 uppercase">Semantic Segments</span>
                     </div>
                     <span className="text-[10px] font-mono font-bold">1,428</span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[7px] font-bold text-slate-400 uppercase">
-                      <span>Index Fidelity</span>
-                      <span className="text-primary">72%</span>
-                    </div>
-                    <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-[72%]" />
-                    </div>
                   </div>
                 </CardContent>
               )}
