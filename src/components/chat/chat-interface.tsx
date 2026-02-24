@@ -89,15 +89,31 @@ export function ChatInterface() {
       setCurrentTime(now);
       
       if (sessionStartTime) {
-        const elapsed = Date.now() - sessionStartTime;
-        const remaining = Math.max(0, (30 * 60 * 1000) - elapsed);
-        const mins = Math.floor(remaining / 60000);
-        const secs = Math.floor((remaining % 60000) / 1000);
-        setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        let remaining = 0;
+        if (currentUserRole === 'Viewer') {
+          // Calculate TTL until Diurnal Reset (Midnight)
+          const midnight = new Date();
+          midnight.setHours(24, 0, 0, 0);
+          remaining = Math.max(0, midnight.getTime() - now.getTime());
+        } else {
+          // Standard Security Window (30 mins)
+          const elapsed = now.getTime() - sessionStartTime;
+          remaining = Math.max(0, (30 * 60 * 1000) - elapsed);
+        }
+
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        
+        if (h > 0) {
+          setTimeLeft(`${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+        } else {
+          setTimeLeft(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+        }
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [sessionStartTime]);
+  }, [sessionStartTime, currentUserRole]);
 
   useEffect(() => {
     if (mounted && connectionStatus === 'online') {

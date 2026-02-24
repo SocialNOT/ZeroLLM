@@ -26,7 +26,7 @@ export default function LoginPage() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
-  const { startSession } = useAppStore();
+  const { startSession, setRole } = useAppStore();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,8 +37,10 @@ export default function LoginPage() {
     const userRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userRef);
     
+    // Determine target role node
+    const role = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL ? "Admin" : (isGuest ? "Viewer" : "User");
+    
     if (!userDoc.exists()) {
-      const role = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL ? "Admin" : (isGuest ? "Viewer" : "User");
       const userData = {
         uid: user.uid,
         email: user.email || `guest_${user.uid.slice(0, 5)}@anonymous.node`,
@@ -58,6 +60,8 @@ export default function LoginPage() {
         });
     }
     
+    // Energize store telemetry
+    setRole(role);
     startSession();
   };
 

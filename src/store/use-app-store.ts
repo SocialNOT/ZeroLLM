@@ -92,7 +92,7 @@ export const useAppStore = create<AppState>()(
       sessions: [],
       activeSessionId: null,
       isConfigured: false,
-      currentUserRole: 'Admin',
+      currentUserRole: 'User',
       availableTools: [
         { id: 'calculator', name: 'Calculator', description: 'Perform mathematical operations', icon: 'calculator' },
         { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'globe' },
@@ -374,24 +374,27 @@ export const useAppStore = create<AppState>()(
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       lockSession: () => set({ isSessionLocked: true }),
       checkSessionExpiry: () => {
-        const { sessionStartTime } = get();
+        const { sessionStartTime, currentUserRole } = get();
         if (!sessionStartTime) return;
         
         const now = Date.now();
-        const duration = now - sessionStartTime;
-        const thirtyMinutes = 30 * 60 * 1000;
+        const startDate = new Date(sessionStartTime).toDateString();
+        const currentDate = new Date(now).toDateString();
         
-        // 1. Check 30 minute limit
-        if (duration > thirtyMinutes) {
+        // 1. Midnight Reset Protocol (Applies to ALL identities, primary lock for Guests)
+        if (startDate !== currentDate) {
           set({ isSessionLocked: true });
           return;
         }
         
-        // 2. Check Midnight Reset
-        const startDate = new Date(sessionStartTime).toDateString();
-        const currentDate = new Date(now).toDateString();
-        if (startDate !== currentDate) {
-          set({ isSessionLocked: true });
+        // 2. 30 Minute Security Gate (Bypassed for Guest/Viewer identities as per protocol)
+        if (currentUserRole !== 'Viewer') {
+          const duration = now - sessionStartTime;
+          const thirtyMinutes = 30 * 60 * 1000;
+          
+          if (duration > thirtyMinutes) {
+            set({ isSessionLocked: true });
+          }
         }
       }
     }),
@@ -410,7 +413,7 @@ export const useAppStore = create<AppState>()(
           const customLinguistic = state.linguisticControls?.filter(l => l.isCustom) || [];
           state.linguisticControls = [...LINGUISTICS, ...customLinguistic];
           
-          // Initial check on load
+          // Execute security check on re-energization
           state.checkSessionExpiry();
         }
       }
