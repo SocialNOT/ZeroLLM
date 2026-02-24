@@ -341,8 +341,8 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-4xl flex-col py-4 px-4 sm:px-8">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 sm:py-12 px-4 sm:px-0 animate-in fade-in zoom-in duration-700">
-                <div className="text-center mb-6 sm:mb-8 space-y-1">
+              <div className="flex flex-col items-center justify-center py-2 sm:py-4 px-4 sm:px-0 animate-in fade-in zoom-in duration-700">
+                <div className="text-center mb-4 space-y-1">
                   <h2 className="text-xl sm:text-2xl font-headline font-bold text-slate-900 tracking-tight">Neural Node Ready</h2>
                   <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-400">Select Cognitive Starter</p>
                 </div>
@@ -352,7 +352,7 @@ export function ChatInterface() {
                     <button 
                       key={idx}
                       onClick={() => setInput(starter.prompt)}
-                      className="group flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all text-left animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+                      className="group flex items-center gap-3 p-2 sm:p-2.5 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all text-left animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
                       style={{ animationDelay: `${idx * 100}ms` }}
                     >
                       <div className="p-2 rounded-lg bg-slate-50 group-hover:bg-primary/5 transition-colors shrink-0">
@@ -364,7 +364,7 @@ export function ChatInterface() {
                   ))}
                 </div>
 
-                <div className="mt-8 flex items-center gap-2 sm:gap-4">
+                <div className="mt-4 flex items-center gap-2 sm:gap-4">
                   <SettingsDialog>
                     <Button variant="outline" className="h-9 rounded-xl gap-2 px-4 text-[8px] font-bold uppercase tracking-widest bg-white border-slate-100 shadow-md hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all">
                       <Cpu size={12} className="text-primary" />
