@@ -135,7 +135,7 @@ export async function callChatCompletion(baseUrl: string, modelId: string, messa
 
     if (!response.ok) {
       if (response.status === 504) {
-        throw new Error("Node Gateway Timeout (504). The engine is unreachable or taking too long.");
+        throw new Error("Node Gateway Timeout (504). The engine is unreachable or taking too long. Consider using streaming for long responses.");
       }
       if (response.status === 400) {
         throw new Error("Bad Request (400). Engine node rejected the command structure.");

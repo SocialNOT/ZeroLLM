@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
@@ -49,6 +48,7 @@ interface AppState {
   deleteSession: (id: string) => void;
   setActiveSession: (id: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
+  updateMessage: (sessionId: string, messageId: string, updates: Partial<Message>) => void;
   updateSession: (sessionId: string, updates: Partial<ChatSession>) => void;
   updateSessionSettings: (sessionId: string, settings: Partial<ChatSession['settings']>) => void;
   applyFramework: (sessionId: string, frameworkId: string) => void;
@@ -257,6 +257,15 @@ export const useAppStore = create<AppState>()(
       addMessage: (sessionId, message) => set((state) => ({
         sessions: state.sessions.map(s => 
           s.id === sessionId ? { ...s, messages: [...s.messages, message] } : s
+        )
+      })),
+
+      updateMessage: (sessionId, messageId, updates) => set((state) => ({
+        sessions: state.sessions.map(s => 
+          s.id === sessionId ? {
+            ...s,
+            messages: s.messages.map(m => m.id === messageId ? { ...m, ...updates } : m)
+          } : s
         )
       })),
 

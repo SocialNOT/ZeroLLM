@@ -26,7 +26,6 @@ import {
   Layers,
   UserCircle
 } from "lucide-react";
-import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -49,6 +48,7 @@ export function ChatInterface() {
     sessions, 
     addMessage, 
     updateSession,
+    updateMessage,
     personas, 
     frameworks,
     linguisticControls,
@@ -135,7 +135,7 @@ export function ChatInterface() {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     }
-  }, [session?.messages?.length, isTyping]);
+  }, [session?.messages?.length, isTyping, session?.messages[session?.messages.length - 1]?.content]);
 
   const handleMicToggle = () => {
     if (!recognitionRef.current) {
@@ -180,38 +180,81 @@ export function ChatInterface() {
     setInput("");
     setIsTyping(true);
 
+    const assistantMsgId = (Date.now() + 1).toString();
+    const assistantMsg = {
+      id: assistantMsgId,
+      role: "assistant" as const,
+      content: "",
+      timestamp: Date.now()
+    };
+    addMessage(session.id, assistantMsg);
+
     try {
       const combinedSystemPrompt = [
         `You are acting as: ${persona.name}. ${persona.system_prompt}`,
         framework ? `\n\n[STRUCTURAL FRAMEWORK: ${framework.name}]\n${framework.content}` : '',
         linguistic ? `\n\n[LINGUISTIC CONSTRAINTS: ${linguistic.name}]\n${linguistic.system_instruction}` : ''
       ].filter(Boolean).join('\n\n').trim();
-      
-      const responseContent = await personaDrivenChat({
-        baseUrl: connection?.baseUrl || '',
-        modelId: connection?.modelId || '',
-        systemPrompt: combinedSystemPrompt,
-        userMessage: textToSend,
-        temperature: session.settings.temperature,
-        topP: session.settings.topP,
-        maxTokens: session.settings.maxTokens,
-        history: session.messages,
-        enabledTools: session.settings.enabledTools,
-        reasoningEnabled: session.settings.reasoningEnabled
+
+      const response = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          baseUrl: connection?.baseUrl || '',
+          modelId: connection?.modelId || '',
+          messages: [
+            { role: 'system', content: combinedSystemPrompt },
+            ...session.messages,
+            { role: 'user', content: textToSend }
+          ],
+          settings: {
+            temperature: session.settings.temperature,
+            topP: session.settings.topP,
+            maxTokens: session.settings.maxTokens,
+          },
+          apiKey: connection?.apiKey
+        })
       });
 
-      const assistantMsg = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant" as const,
-        content: responseContent,
-        timestamp: Date.now()
-      };
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Stream Initialization Failed");
+      }
 
-      addMessage(session.id, assistantMsg);
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
 
-      if (session.settings.voiceResponseEnabled) {
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content || "";
+                if (delta) {
+                  accumulatedContent += delta;
+                  updateMessage(session.id, assistantMsgId, { content: accumulatedContent });
+                }
+              } catch (e) {
+                // Ignore parsing errors for empty or malformed chunks
+              }
+            }
+          }
+        }
+      }
+
+      if (session.settings.voiceResponseEnabled && accumulatedContent) {
         try {
-          const { audioUri } = await generateSpeech({ text: responseContent });
+          const { audioUri } = await generateSpeech({ text: accumulatedContent });
           const audio = new Audio(audioUri);
           audio.play();
         } catch (vErr) {
@@ -220,11 +263,8 @@ export function ChatInterface() {
       }
 
     } catch (error: any) {
-      addMessage(session.id, {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `ERROR: ${error.message || 'Node connection failure.'}`,
-        timestamp: Date.now()
+      updateMessage(session.id, assistantMsgId, {
+        content: `ERROR: ${error.message || 'Node connection failure.'}`
       });
     } finally {
       setIsTyping(false);
@@ -435,7 +475,7 @@ export function ChatInterface() {
                 />
               ))
             )}
-            {isTyping && (
+            {isTyping && !session.messages[session.messages.length - 1]?.content && (
               <div className="flex items-center gap-2 px-4 py-4 text-[8px] text-primary font-bold uppercase tracking-[0.2em] animate-pulse">
                 <Brain size={10} className="animate-bounce" />
                 Processing...
