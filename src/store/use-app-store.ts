@@ -374,28 +374,34 @@ export const useAppStore = create<AppState>()(
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       lockSession: () => set({ isSessionLocked: true }),
       checkSessionExpiry: () => {
-        const { sessionStartTime, currentUserRole } = get();
+        const { sessionStartTime, currentUserRole, isSessionLocked } = get();
         if (!sessionStartTime) return;
         
         // Identity Gate: Only Guest/Viewer roles are subject to session expiry locks.
-        // Standard User and Admin roles operate with infinite session duration as per protocol.
         if (currentUserRole !== 'Viewer') {
-          if (get().isSessionLocked) set({ isSessionLocked: false });
+          if (isSessionLocked) set({ isSessionLocked: false });
           return;
         }
         
         const now = Date.now();
+        const ONE_HOUR = 3600000;
         const startDate = new Date(sessionStartTime).toDateString();
         const currentDate = new Date(now).toDateString();
         
-        // Diurnal Reset Protocol: Guest sessions are strictly terminated at midnight (24:00).
+        // Diurnal Reset Protocol: If date changes, reset the 1-hour counter for the guest.
         if (startDate !== currentDate) {
+          set({ sessionStartTime: now, isSessionLocked: false });
+          return;
+        }
+
+        // 1-Hour Constraint: If same day and hour expired, lock session.
+        if (now - sessionStartTime > ONE_HOUR) {
           set({ isSessionLocked: true });
         }
       }
     }),
     { 
-      name: 'zerogpt-storage-v6',
+      name: 'zerogpt-storage-v7',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {

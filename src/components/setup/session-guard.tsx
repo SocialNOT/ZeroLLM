@@ -57,7 +57,7 @@ export function SessionGuard() {
             </DialogTitle>
             <DialogDescription className="text-xs font-medium text-slate-400 max-w-[280px] mx-auto leading-relaxed">
               {currentUserRole === 'Viewer' 
-                ? "Your Guest identity node has reached the Diurnal Reset limit (24:00). Please re-energize your session to continue."
+                ? "Your Guest identity node has reached its daily 1-hour limit. Please re-energize your session or wait for the Diurnal Reset at midnight."
                 : "Your security node requires re-authentication to maintain signal integrity."}
             </DialogDescription>
           </div>
@@ -69,7 +69,7 @@ export function SessionGuard() {
             </div>
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center">
               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-1">Constraint</span>
-              <span className="text-[10px] font-black text-slate-700 uppercase">Diurnal Reset</span>
+              <span className="text-[10px] font-black text-slate-700 uppercase">1-Hour Daily</span>
             </div>
           </div>
 

@@ -68,7 +68,7 @@ export function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [timeLeft, setTimeLeft] = useState<string>("24:00:00");
+  const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
   const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -90,10 +90,10 @@ export function ChatInterface() {
       setCurrentTime(now);
       
       if (isGuest && sessionStartTime) {
-        // Calculate TTL until Diurnal Reset (Midnight)
-        const midnight = new Date();
-        midnight.setHours(24, 0, 0, 0);
-        const remaining = Math.max(0, midnight.getTime() - now.getTime());
+        // Calculate daily 1-hour allocation TTL
+        const ONE_HOUR = 3600000;
+        const expiryTime = sessionStartTime + ONE_HOUR;
+        const remaining = Math.max(0, expiryTime - now.getTime());
 
         const h = Math.floor(remaining / 3600000);
         const m = Math.floor((remaining % 3600000) / 60000);
@@ -336,7 +336,7 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
-        {/* Sleek Neural Session Timer Row - Hidden for Authenticated Identities */}
+        {/* Sleek Neural Session Timer Row - Restricted to Guest Identity */}
         {isGuest && (
           <div className="flex-shrink-0 flex items-center justify-center gap-3 py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
             <div className="flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none animate-multi-color-pulse">
