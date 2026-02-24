@@ -27,6 +27,8 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessageProps {
   message: Message;
@@ -132,10 +134,40 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               : "bg-primary text-primary-foreground rounded-tr-none"
           )}>
             <div className={cn(
-              "text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap relative z-10",
+              "text-[14px] sm:text-[15px] leading-relaxed relative z-10",
               isError && "font-mono text-[11px] text-rose-700"
             )}>
-              {message.content}
+              {isAssistant && !isError ? (
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                    h1: ({...props}) => <h1 className="text-lg font-bold mb-2 mt-4 first:mt-0 text-primary" {...props} />,
+                    h2: ({...props}) => <h2 className="text-md font-bold mb-2 mt-3 first:mt-0 text-primary" {...props} />,
+                    h3: ({...props}) => <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0 text-primary" {...props} />,
+                    ul: ({...props}) => <ul className="list-disc pl-6 mb-3 space-y-1" {...props} />,
+                    ol: ({...props}) => <ol className="list-decimal pl-6 mb-3 space-y-1" {...props} />,
+                    li: ({...props}) => <li className="marker:text-primary/50" {...props} />,
+                    strong: ({...props}) => <strong className="font-bold text-primary" {...props} />,
+                    code: ({node, inline, className, children, ...props}: any) => {
+                      if (inline) return <code className="bg-muted px-1.5 py-0.5 rounded text-[12px] font-mono text-primary" {...props}>{children}</code>;
+                      return (
+                        <div className="my-4 rounded-xl border border-border bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-inner">
+                          <code className="text-[12px] font-mono text-slate-300 leading-normal block" {...props}>{children}</code>
+                        </div>
+                      );
+                    },
+                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary/20 pl-4 italic my-3 text-muted-foreground" {...props} />,
+                    table: ({...props}) => <div className="overflow-x-auto my-4 rounded-lg border border-border"><table className="w-full text-left border-collapse" {...props} /></div>,
+                    th: ({...props}) => <th className="bg-muted/50 p-2 border-b border-border font-bold text-[12px] uppercase tracking-wider" {...props} />,
+                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px]" {...props} />,
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              ) : (
+                <div className="whitespace-pre-wrap">{message.content}</div>
+              )}
             </div>
             {isAssistant && !isError && (
               <div className="absolute top-0 right-0 p-2 opacity-10">
