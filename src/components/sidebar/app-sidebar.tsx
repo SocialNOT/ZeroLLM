@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -29,7 +30,8 @@ import {
   Type,
   ChevronRight,
   Trash2,
-  ShieldAlert
+  ShieldAlert,
+  Edit2
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { useUser } from "@/firebase";
@@ -42,6 +44,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import Link from "next/link";
+import { LibraryEditor } from "@/components/library/library-editor";
 
 export function AppSidebar() {
   const { 
@@ -53,7 +56,10 @@ export function AppSidebar() {
     deleteSession,
     personas,
     frameworks,
-    linguisticControls
+    linguisticControls,
+    applyPersona,
+    applyFramework,
+    applyLinguisticControl
   } = useAppStore();
 
   const { isMobile, setOpenMobile } = useSidebar();
@@ -79,6 +85,13 @@ export function AppSidebar() {
     e.preventDefault();
     e.stopPropagation();
     deleteSession(id);
+  };
+
+  const handleApplyItem = (type: 'persona' | 'framework' | 'linguistic', itemId: string) => {
+    if (!activeSessionId) return;
+    if (type === 'persona') applyPersona(activeSessionId, itemId);
+    if (type === 'framework') applyFramework(activeSessionId, itemId);
+    if (type === 'linguistic') applyLinguisticControl(activeSessionId, itemId);
   };
 
   return (
@@ -118,6 +131,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               )}
               
+              {/* Personas Group */}
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -127,12 +141,29 @@ export function AppSidebar() {
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
+                  <LibraryEditor mode="create" type="persona">
+                    <SidebarMenuAction className="hover:bg-primary/5 text-primary">
+                      <Plus size={14} />
+                    </SidebarMenuAction>
+                  </LibraryEditor>
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {customPersonas.length > 0 ? (
                         customPersonas.map(p => (
-                          <SidebarMenuSubItem key={p.id}>
-                            <SidebarMenuSubButton className="text-[11px] font-medium uppercase tracking-wider">{p.name}</SidebarMenuSubButton>
+                          <SidebarMenuSubItem key={p.id} className="group/subitem">
+                            <div className="flex items-center justify-between">
+                              <SidebarMenuSubButton 
+                                onClick={() => handleApplyItem('persona', p.id)}
+                                className="text-[11px] font-medium uppercase tracking-wider"
+                              >
+                                {p.name}
+                              </SidebarMenuSubButton>
+                              <LibraryEditor mode="edit" type="persona" item={p}>
+                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-slate-400 hover:text-primary transition-opacity">
+                                  <Edit2 size={10} />
+                                </button>
+                              </LibraryEditor>
+                            </div>
                           </SidebarMenuSubItem>
                         ))
                       ) : (
@@ -145,6 +176,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
+              {/* Frameworks Group */}
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -154,12 +186,29 @@ export function AppSidebar() {
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
+                  <LibraryEditor mode="create" type="framework">
+                    <SidebarMenuAction className="hover:bg-primary/5 text-primary">
+                      <Plus size={14} />
+                    </SidebarMenuAction>
+                  </LibraryEditor>
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {customFrameworks.length > 0 ? (
                         customFrameworks.map(f => (
-                          <SidebarMenuSubItem key={f.id}>
-                            <SidebarMenuSubButton className="text-[11px] font-medium uppercase tracking-wider">{f.name}</SidebarMenuSubButton>
+                          <SidebarMenuSubItem key={f.id} className="group/subitem">
+                            <div className="flex items-center justify-between">
+                              <SidebarMenuSubButton 
+                                onClick={() => handleApplyItem('framework', f.id)}
+                                className="text-[11px] font-medium uppercase tracking-wider"
+                              >
+                                {f.name}
+                              </SidebarMenuSubButton>
+                              <LibraryEditor mode="edit" type="framework" item={f}>
+                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-slate-400 hover:text-primary transition-opacity">
+                                  <Edit2 size={10} />
+                                </button>
+                              </LibraryEditor>
+                            </div>
                           </SidebarMenuSubItem>
                         ))
                       ) : (
@@ -172,6 +221,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
+              {/* Controls Group */}
               <Collapsible asChild className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -181,12 +231,29 @@ export function AppSidebar() {
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
+                  <LibraryEditor mode="create" type="linguistic">
+                    <SidebarMenuAction className="hover:bg-primary/5 text-primary">
+                      <Plus size={14} />
+                    </SidebarMenuAction>
+                  </LibraryEditor>
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {customControls.length > 0 ? (
                         customControls.map(c => (
-                          <SidebarMenuSubItem key={c.id}>
-                            <SidebarMenuSubButton className="text-[11px] font-medium uppercase tracking-wider">{c.name}</SidebarMenuSubButton>
+                          <SidebarMenuSubItem key={c.id} className="group/subitem">
+                            <div className="flex items-center justify-between">
+                              <SidebarMenuSubButton 
+                                onClick={() => handleApplyItem('linguistic', c.id)}
+                                className="text-[11px] font-medium uppercase tracking-wider"
+                              >
+                                {c.name}
+                              </SidebarMenuSubButton>
+                              <LibraryEditor mode="edit" type="linguistic" item={c}>
+                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-slate-400 hover:text-primary transition-opacity">
+                                  <Edit2 size={10} />
+                                </button>
+                              </LibraryEditor>
+                            </div>
                           </SidebarMenuSubItem>
                         ))
                       ) : (

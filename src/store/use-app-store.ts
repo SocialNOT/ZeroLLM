@@ -34,8 +34,16 @@ interface AppState {
   setActiveConnection: (id: string | null) => void;
   
   addPersona: (p: Persona) => void;
+  updatePersona: (id: string, updates: Partial<Persona>) => void;
+  duplicatePersona: (id: string) => string | undefined;
+  
   addFramework: (f: Framework) => void;
+  updateFramework: (id: string, updates: Partial<Framework>) => void;
+  duplicateFramework: (id: string) => string | undefined;
+  
   addLinguisticControl: (l: LinguisticControl) => void;
+  updateLinguisticControl: (id: string, updates: Partial<LinguisticControl>) => void;
+  duplicateLinguisticControl: (id: string) => string | undefined;
 
   createSession: (workspaceId: string) => string;
   deleteSession: (id: string) => void;
@@ -107,9 +115,59 @@ export const useAppStore = create<AppState>()(
         get().checkConnection();
       },
 
-      addPersona: (p) => set((state) => ({ personas: [...state.personas, p] })),
-      addFramework: (f) => set((state) => ({ frameworks: [...state.frameworks, f] })),
-      addLinguisticControl: (l) => set((state) => ({ linguisticControls: [...state.linguisticControls, l] })),
+      addPersona: (p) => set((state) => ({ personas: [...state.personas, { ...p, id: `p-${Date.now()}`, isCustom: true }] })),
+      updatePersona: (id, updates) => set((state) => ({
+        personas: state.personas.map(p => p.id === id ? { ...p, ...updates } : p)
+      })),
+      duplicatePersona: (id) => {
+        const original = get().personas.find(p => p.id === id);
+        if (!original) return;
+        const newId = `custom-p-${Date.now()}`;
+        const copy: Persona = {
+          ...original,
+          id: newId,
+          name: `Copy of ${original.name}`,
+          isCustom: true
+        };
+        set(state => ({ personas: [...state.personas, copy] }));
+        return newId;
+      },
+
+      addFramework: (f) => set((state) => ({ frameworks: [...state.frameworks, { ...f, id: `f-${Date.now()}`, isCustom: true }] })),
+      updateFramework: (id, updates) => set((state) => ({
+        frameworks: state.frameworks.map(f => f.id === id ? { ...f, ...updates } : f)
+      })),
+      duplicateFramework: (id) => {
+        const original = get().frameworks.find(f => f.id === id);
+        if (!original) return;
+        const newId = `custom-f-${Date.now()}`;
+        const copy: Framework = {
+          ...original,
+          id: newId,
+          name: `Copy of ${original.name}`,
+          isCustom: true
+        };
+        set(state => ({ frameworks: [...state.frameworks, copy] }));
+        return newId;
+      },
+
+      addLinguisticControl: (l) => set((state) => ({ linguisticControls: [...state.linguisticControls, { ...l, id: `l-${Date.now()}`, isCustom: true }] })),
+      updateLinguisticControl: (id, updates) => set((state) => ({
+        linguisticControls: state.linguisticControls.map(l => l.id === id ? { ...l, ...updates } : l)
+      })),
+      duplicateLinguisticControl: (id) => {
+        const original = get().linguisticControls.find(l => l.id === id);
+        if (!original) return;
+        const newId = `custom-l-${Date.now()}`;
+        const copy: LinguisticControl = {
+          ...original,
+          id: newId,
+          name: `Copy of ${original.name}`,
+          isCustom: true
+        };
+        set(state => ({ linguisticControls: [...state.linguisticControls, copy] }));
+        return newId;
+      },
 
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
@@ -319,13 +377,19 @@ export const useAppStore = create<AppState>()(
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar }))
     }),
     { 
-      name: 'zerogpt-storage-v3',
+      name: 'zerogpt-storage-v4',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          state.personas = PERSONAS;
-          state.frameworks = FRAMEWORKS;
-          state.linguisticControls = LINGUISTICS;
+          // Merge custom items with built-ins on rehydration
+          const customPersonas = state.personas?.filter(p => p.isCustom) || [];
+          state.personas = [...PERSONAS, ...customPersonas];
+          
+          const customFrameworks = state.frameworks?.filter(f => f.isCustom) || [];
+          state.frameworks = [...FRAMEWORKS, ...customFrameworks];
+          
+          const customLinguistic = state.linguisticControls?.filter(l => l.isCustom) || [];
+          state.linguisticControls = [...LINGUISTICS, ...customLinguistic];
         }
       }
     }

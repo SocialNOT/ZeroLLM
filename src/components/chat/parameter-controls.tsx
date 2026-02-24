@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -18,7 +19,8 @@ import {
   FolderOpen,
   Sparkles,
   ArrowRight,
-  Target
+  Target,
+  Edit3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,6 +31,7 @@ import {
   AccordionTrigger 
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { LibraryEditor } from "@/components/library/library-editor";
 
 export function ParameterControls() {
   const { 
@@ -42,31 +45,37 @@ export function ParameterControls() {
     applyPersona,
     applyLinguisticControl,
     activeParameterTab,
-    setActiveParameterTab
+    setActiveParameterTab,
+    duplicatePersona,
+    duplicateFramework,
+    duplicateLinguisticControl
   } = useAppStore();
 
   const session = sessions.find(s => s.id === activeSessionId);
 
   const groupedFrameworks = useMemo(() => {
     return frameworks.reduce((acc, f) => {
-      if (!acc[f.category]) acc[f.category] = [];
-      acc[f.category].push(f);
+      const cat = f.isCustom ? 'Custom Protocols' : f.category;
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(f);
       return acc;
     }, {} as Record<string, typeof frameworks>);
   }, [frameworks]);
 
   const groupedPersonas = useMemo(() => {
     return personas.reduce((acc, p) => {
-      if (!acc[p.category]) acc[p.category] = [];
-      acc[p.category].push(p);
+      const cat = p.isCustom ? 'Custom Identities' : p.category;
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(p);
       return acc;
     }, {} as Record<string, typeof personas>);
   }, [personas]);
 
   const groupedLinguistic = useMemo(() => {
     return linguisticControls.reduce((acc, l) => {
-      if (!acc[l.category]) acc[l.category] = [];
-      acc[l.category].push(l);
+      const cat = l.isCustom ? 'Custom Logic' : l.category;
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(l);
       return acc;
     }, {} as Record<string, typeof linguisticControls>);
   }, [linguisticControls]);
@@ -97,9 +106,16 @@ export function ParameterControls() {
               
               {/* Architectural Protocols (ARCH) */}
               <TabsContent value="frameworks" className="mt-0 space-y-6 outline-none">
-                <div className="flex items-center gap-2 mb-4">
-                  <Layers size={14} className="text-primary" />
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Architectural Protocols</Label>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Layers size={14} className="text-primary" />
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Architectural Protocols</Label>
+                  </div>
+                  <LibraryEditor mode="create" type="framework">
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5">
+                      <Zap size={14} />
+                    </Button>
+                  </LibraryEditor>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full space-y-2">
@@ -127,30 +143,28 @@ export function ParameterControls() {
                             >
                               <div className="flex items-center justify-between mb-2">
                                 <span className="text-[12px] font-bold">{f.name}</span>
-                                {session.frameworkId === f.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
+                                <div className="flex items-center gap-2">
+                                  {f.isCustom ? (
+                                    <LibraryEditor mode="edit" type="framework" item={f}>
+                                      <button className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.frameworkId === f.id ? "text-white" : "text-slate-400")}>
+                                        <Edit3 size={12} />
+                                      </button>
+                                    </LibraryEditor>
+                                  ) : (
+                                    <button 
+                                      onClick={() => duplicateFramework(f.id)}
+                                      className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.frameworkId === f.id ? "text-white" : "text-slate-400")}
+                                      title="Modify (Create Custom Copy)"
+                                    >
+                                      <Edit3 size={12} />
+                                    </button>
+                                  )}
+                                  {session.frameworkId === f.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
+                                </div>
                               </div>
                               <p className={cn("text-[10px] leading-relaxed mb-3", session.frameworkId === f.id ? "text-white/80" : "text-muted-foreground")}>{f.description}</p>
                               
                               <div className="space-y-4">
-                                {f.usecases && f.usecases.length > 0 && (
-                                  <div>
-                                    <p className={cn("text-[7px] font-bold uppercase tracking-widest mb-1.5 opacity-50", session.frameworkId === f.id ? "text-white" : "text-primary")}>Optimized Deployment:</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {f.usecases.map((uc, i) => (
-                                        <span key={i} className={cn("text-[8px] px-1.5 py-0.5 rounded border", session.frameworkId === f.id ? "bg-white/10 border-white/20 text-white" : "bg-slate-50 border-slate-100 text-slate-500")}>{uc}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-
-                                <div className="flex flex-wrap gap-1.5">
-                                  {f.keypoints.map((kp, idx) => (
-                                    <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.frameworkId === f.id ? "bg-white/10 text-white" : "bg-primary/5 text-primary")}>
-                                      • {kp}
-                                    </span>
-                                  ))}
-                                </div>
-                                
                                 <Button 
                                   size="sm" 
                                   onClick={() => applyFramework(session.id, f.id)}
@@ -176,9 +190,16 @@ export function ParameterControls() {
 
               {/* Cognitive Identities (ID) */}
               <TabsContent value="personas" className="mt-0 space-y-6 outline-none">
-                <div className="flex items-center gap-2 mb-4">
-                  <UserCircle size={14} className="text-primary" />
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Cognitive Identities</Label>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <UserCircle size={14} className="text-primary" />
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Cognitive Identities</Label>
+                  </div>
+                  <LibraryEditor mode="create" type="persona">
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5">
+                      <Zap size={14} />
+                    </Button>
+                  </LibraryEditor>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full space-y-2">
@@ -211,29 +232,28 @@ export function ParameterControls() {
                                   </div>
                                   <span className="text-[12px] font-bold">{p.name}</span>
                                 </div>
-                                {session.personaId === p.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
+                                <div className="flex items-center gap-2">
+                                  {p.isCustom ? (
+                                    <LibraryEditor mode="edit" type="persona" item={p}>
+                                      <button className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.personaId === p.id ? "text-white" : "text-slate-400")}>
+                                        <Edit3 size={12} />
+                                      </button>
+                                    </LibraryEditor>
+                                  ) : (
+                                    <button 
+                                      onClick={() => duplicatePersona(p.id)}
+                                      className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.personaId === p.id ? "text-white" : "text-slate-400")}
+                                      title="Modify (Create Custom Copy)"
+                                    >
+                                      <Edit3 size={12} />
+                                    </button>
+                                  )}
+                                  {session.personaId === p.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
+                                </div>
                               </div>
                               <p className={cn("text-[10px] leading-relaxed mb-3", session.personaId === p.id ? "text-white/80" : "text-muted-foreground")}>{p.description}</p>
                               
                               <div className="space-y-4">
-                                {p.usecases && p.usecases.length > 0 && (
-                                  <div>
-                                    <p className={cn("text-[7px] font-bold uppercase tracking-widest mb-1.5 opacity-50", session.personaId === p.id ? "text-white" : "text-accent")}>Neural Use-Cases:</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {p.usecases.map((uc, i) => (
-                                        <span key={i} className={cn("text-[8px] px-1.5 py-0.5 rounded border", session.personaId === p.id ? "bg-white/10 border-white/20 text-white" : "bg-slate-50 border-slate-100 text-slate-500")}>{uc}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-
-                                <div className="flex flex-wrap gap-1.5">
-                                  {p.keypoints?.map((kp, idx) => (
-                                    <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.personaId === p.id ? "bg-white/10 text-white" : "bg-accent/5 text-accent")}>
-                                      • {kp}
-                                    </span>
-                                  ))}
-                                </div>
                                 <Button 
                                   size="sm" 
                                   onClick={() => applyPersona(session.id, p.id)}
@@ -260,9 +280,16 @@ export function ParameterControls() {
               {/* Linguistic Controls (LOGIC) */}
               <TabsContent value="linguistic" className="mt-0 space-y-8 outline-none">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Type size={14} className="text-primary" />
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Linguistic Presets</Label>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Type size={14} className="text-primary" />
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Linguistic Presets</Label>
+                    </div>
+                    <LibraryEditor mode="create" type="linguistic">
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5">
+                        <Zap size={14} />
+                      </Button>
+                    </LibraryEditor>
                   </div>
 
                   <Accordion type="single" collapsible className="w-full space-y-2">
@@ -290,29 +317,28 @@ export function ParameterControls() {
                               >
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="text-[12px] font-bold uppercase tracking-widest">{lc.name}</span>
-                                  {session.linguisticId === lc.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
+                                  <div className="flex items-center gap-2">
+                                    {lc.isCustom ? (
+                                      <LibraryEditor mode="edit" type="linguistic" item={lc}>
+                                        <button className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.linguisticId === lc.id ? "text-white" : "text-slate-400")}>
+                                          <Edit3 size={12} />
+                                        </button>
+                                      </LibraryEditor>
+                                    ) : (
+                                      <button 
+                                        onClick={() => duplicateLinguisticControl(lc.id)}
+                                        className={cn("p-1 rounded hover:bg-white/20 transition-colors", session.linguisticId === lc.id ? "text-white" : "text-slate-400")}
+                                        title="Modify (Create Custom Copy)"
+                                      >
+                                        <Edit3 size={12} />
+                                      </button>
+                                    )}
+                                    {session.linguisticId === lc.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
+                                  </div>
                                 </div>
                                 <p className={cn("text-[10px] leading-relaxed mb-3", session.linguisticId === lc.id ? "text-white/80" : "text-muted-foreground")}>{lc.description}</p>
                                 
                                 <div className="space-y-4">
-                                  {lc.usecases && lc.usecases.length > 0 && (
-                                    <div>
-                                      <p className={cn("text-[7px] font-bold uppercase tracking-widest mb-1.5 opacity-50", session.linguisticId === lc.id ? "text-white" : "text-destructive")}>Optimized Contexts:</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {lc.usecases.map((uc, i) => (
-                                          <span key={i} className={cn("text-[8px] px-1.5 py-0.5 rounded border", session.linguisticId === lc.id ? "bg-white/10 border-white/20 text-white" : "bg-slate-50 border-slate-100 text-slate-500")}>{uc}</span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {lc.keypoints?.map((kp, idx) => (
-                                      <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.linguisticId === lc.id ? "bg-white/10 text-white" : "bg-destructive/5 text-destructive")}>
-                                        • {kp}
-                                      </span>
-                                    ))}
-                                  </div>
                                   <Button 
                                     size="sm" 
                                     onClick={() => applyLinguisticControl(session.id, lc.id)}
