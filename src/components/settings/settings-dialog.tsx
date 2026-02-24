@@ -90,13 +90,8 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
         title: "Neural Path Synchronized",
         description: `Model node ${modelId} is now energized.`,
       });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Protocol Fault",
-        description: "Node rejected the activation handshake. Check server logs.",
-      });
     }
+    // Suppressed the 'else' block containing the "Protocol Fault" toast as requested
   };
 
   const getModelCapabilities = (modelId: string) => {
