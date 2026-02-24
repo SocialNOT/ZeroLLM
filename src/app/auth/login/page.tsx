@@ -79,7 +79,11 @@ export default function LoginPage() {
       toast({ title: "Google Identity Linked", description: "Signal synchronized." });
       router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Google Protocol Failure", description: error.message });
+      let errorMessage = error.message;
+      if (error.code === 'auth/configuration-not-found') {
+        errorMessage = "Google Auth is not enabled. Please enable Google Sign-in in your Firebase Console (Authentication > Sign-in method).";
+      }
+      toast({ variant: "destructive", title: "Google Protocol Failure", description: errorMessage });
     } finally {
       setIsLoading(false);
     }

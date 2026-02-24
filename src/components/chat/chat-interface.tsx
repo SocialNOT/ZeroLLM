@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -329,10 +330,10 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
-        {/* Dedicated Neural Session Timer Row */}
+        {/* Sleek Neural Session Timer Row */}
         <div className="flex-shrink-0 flex items-center justify-center py-1.5 border-b border-border/50 bg-slate-50/30 z-30">
-          <Link href="/auth/login" className="w-full max-w-[200px]">
-            <div className="group flex items-center justify-center gap-3 bg-white/80 backdrop-blur-md px-4 py-1 rounded-full border border-slate-100 shadow-sm transition-all hover:shadow-md hover:scale-105 active:scale-95 animate-multi-color-pulse">
+          <Link href="/auth/login">
+            <div className="group flex items-center justify-center gap-3 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-100 shadow-sm transition-all hover:shadow-md hover:scale-105 active:scale-95 animate-multi-color-pulse">
               <Clock size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-black font-mono tracking-tight text-slate-900 leading-none">
