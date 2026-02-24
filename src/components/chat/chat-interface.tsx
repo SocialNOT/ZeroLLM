@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -66,7 +65,7 @@ export function ChatInterface() {
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [latency, setLatency] = useState("---");
-  const [isMounted, setIsMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   
@@ -77,7 +76,7 @@ export function ChatInterface() {
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
   useEffect(() => {
-    setIsMounted(true);
+    setMounted(true);
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -85,7 +84,7 @@ export function ChatInterface() {
 
   // Latency Simulation
   useEffect(() => {
-    if (connectionStatus === 'online') {
+    if (mounted && connectionStatus === 'online') {
       const updateLatency = () => {
         const val = Math.floor(Math.random() * 40 + 10);
         setLatency(`${val}ms`);
@@ -96,11 +95,11 @@ export function ChatInterface() {
     } else {
       setLatency("---");
     }
-  }, [connectionStatus]);
+  }, [connectionStatus, mounted]);
 
   // Initialize Speech Recognition
   useEffect(() => {
-    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+    if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
@@ -127,7 +126,7 @@ export function ChatInterface() {
         setIsListening(false);
       };
     }
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -297,7 +296,7 @@ export function ChatInterface() {
                     )}>
                       {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
                     </span>
-                    {connectionStatus === 'online' && (
+                    {mounted && connectionStatus === 'online' && (
                       <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-400">
                         {latency}
                       </span>
@@ -311,7 +310,7 @@ export function ChatInterface() {
             </SettingsDialog>
 
             {/* Indian Flag Colored Clock - Center Aligned One Row */}
-            {isMounted && (
+            {mounted && (
               <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden px-2">
                 <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
                   {currentTime?.toLocaleDateString('en-IN', { weekday: 'short' }) || "DAY"}

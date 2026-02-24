@@ -144,7 +144,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               <div>
                 <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-none">Node Command Panel</DialogTitle>
                 <DialogDescription className="text-slate-400 font-bold text-[8px] uppercase tracking-widest mt-1">
-                  Orchestrate engine protocols and secure cognitive nodes.
+                  Orchestrate engine protocols and secure cognitive nodes. Ensure proper endpoint synchronization.
                 </DialogDescription>
               </div>
             </div>

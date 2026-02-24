@@ -142,7 +142,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
                 {dialogTitle}
               </DialogTitle>
               <DialogDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">
-                Configure your custom neural protocol and system instructions.
+                Configure your custom neural protocol and system instructions. Node will be persisted locally.
               </DialogDescription>
             </div>
           </div>
