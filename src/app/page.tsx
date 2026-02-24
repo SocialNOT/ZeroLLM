@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -6,6 +7,7 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { useAppStore } from "@/store/use-app-store";
 import { useEffect, useState } from "react";
 import { SetupOverlay } from "@/components/setup/setup-overlay";
+import { SessionGuard } from "@/components/setup/session-guard";
 
 export default function Home() {
   const { 
@@ -39,6 +41,7 @@ export default function Home() {
 
   return (
     <SidebarProvider>
+      <SessionGuard />
       {!isConfigured && <SetupOverlay />}
       <div className="flex h-svh w-full overflow-hidden bg-background">
         <div className="relative flex h-full w-full overflow-hidden sleek-animated-border rounded-none bg-card">

@@ -25,6 +25,10 @@ interface AppState {
   activeParameterTab: string;
   showInfoSidebar: boolean;
   
+  // Session Security
+  sessionStartTime: number | null;
+  isSessionLocked: boolean;
+  
   // Actions
   addWorkspace: (w: Workspace) => void;
   setActiveWorkspace: (id: string) => void;
@@ -63,6 +67,11 @@ interface AppState {
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
   toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge') => void;
+  
+  // Security Actions
+  startSession: () => void;
+  lockSession: () => void;
+  checkSessionExpiry: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -95,6 +104,9 @@ export const useAppStore = create<AppState>()(
       isModelLoading: false,
       activeParameterTab: 'frameworks',
       showInfoSidebar: false,
+      
+      sessionStartTime: null,
+      isSessionLocked: false,
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -357,7 +369,31 @@ export const useAppStore = create<AppState>()(
       },
 
       setActiveParameterTab: (tab) => set({ activeParameterTab: tab }),
-      toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar }))
+      toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar })),
+      
+      startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
+      lockSession: () => set({ isSessionLocked: true }),
+      checkSessionExpiry: () => {
+        const { sessionStartTime } = get();
+        if (!sessionStartTime) return;
+        
+        const now = Date.now();
+        const duration = now - sessionStartTime;
+        const thirtyMinutes = 30 * 60 * 1000;
+        
+        // 1. Check 30 minute limit
+        if (duration > thirtyMinutes) {
+          set({ isSessionLocked: true });
+          return;
+        }
+        
+        // 2. Check Midnight Reset
+        const startDate = new Date(sessionStartTime).toDateString();
+        const currentDate = new Date(now).toDateString();
+        if (startDate !== currentDate) {
+          set({ isSessionLocked: true });
+        }
+      }
     }),
     { 
       name: 'zerogpt-storage-v5',
@@ -373,6 +409,9 @@ export const useAppStore = create<AppState>()(
           
           const customLinguistic = state.linguisticControls?.filter(l => l.isCustom) || [];
           state.linguisticControls = [...LINGUISTICS, ...customLinguistic];
+          
+          // Initial check on load
+          state.checkSessionExpiry();
         }
       }
     }

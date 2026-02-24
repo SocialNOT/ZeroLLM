@@ -17,11 +17,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Zap, Mail, Lock, LogIn, Github, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAppStore } from "@/store/use-app-store";
 
 export default function LoginPage() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+  const { startSession } = useAppStore();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,6 +44,9 @@ export default function LoginPage() {
         createdAt: Date.now()
       });
     }
+    
+    // Energize security session
+    startSession();
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
