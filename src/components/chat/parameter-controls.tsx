@@ -17,14 +17,15 @@ import {
   Sliders,
   FolderOpen,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Accordion, 
-  AccordionContent, 
   AccordionItem, 
+  AccordionContent, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -128,9 +129,20 @@ export function ParameterControls() {
                                 <span className="text-[12px] font-bold">{f.name}</span>
                                 {session.frameworkId === f.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                               </div>
-                              <p className={cn("text-[10px] leading-relaxed mb-4", session.frameworkId === f.id ? "text-white/80" : "text-muted-foreground")}>{f.description}</p>
+                              <p className={cn("text-[10px] leading-relaxed mb-3", session.frameworkId === f.id ? "text-white/80" : "text-muted-foreground")}>{f.description}</p>
                               
-                              <div className="space-y-3">
+                              <div className="space-y-4">
+                                {f.usecases && f.usecases.length > 0 && (
+                                  <div>
+                                    <p className={cn("text-[7px] font-bold uppercase tracking-widest mb-1.5 opacity-50", session.frameworkId === f.id ? "text-white" : "text-primary")}>Optimized Deployment:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {f.usecases.map((uc, i) => (
+                                        <span key={i} className={cn("text-[8px] px-1.5 py-0.5 rounded border", session.frameworkId === f.id ? "bg-white/10 border-white/20 text-white" : "bg-slate-50 border-slate-100 text-slate-500")}>{uc}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
                                 <div className="flex flex-wrap gap-1.5">
                                   {f.keypoints.map((kp, idx) => (
                                     <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.frameworkId === f.id ? "bg-white/10 text-white" : "bg-primary/5 text-primary")}>
@@ -138,6 +150,7 @@ export function ParameterControls() {
                                     </span>
                                   ))}
                                 </div>
+                                
                                 <Button 
                                   size="sm" 
                                   onClick={() => applyFramework(session.id, f.id)}
@@ -200,9 +213,20 @@ export function ParameterControls() {
                                 </div>
                                 {session.personaId === p.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                               </div>
-                              <p className={cn("text-[10px] leading-relaxed mb-4", session.personaId === p.id ? "text-white/80" : "text-muted-foreground")}>{p.description}</p>
+                              <p className={cn("text-[10px] leading-relaxed mb-3", session.personaId === p.id ? "text-white/80" : "text-muted-foreground")}>{p.description}</p>
                               
-                              <div className="space-y-3">
+                              <div className="space-y-4">
+                                {p.usecases && p.usecases.length > 0 && (
+                                  <div>
+                                    <p className={cn("text-[7px] font-bold uppercase tracking-widest mb-1.5 opacity-50", session.personaId === p.id ? "text-white" : "text-accent")}>Neural Use-Cases:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {p.usecases.map((uc, i) => (
+                                        <span key={i} className={cn("text-[8px] px-1.5 py-0.5 rounded border", session.personaId === p.id ? "bg-white/10 border-white/20 text-white" : "bg-slate-50 border-slate-100 text-slate-500")}>{uc}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
                                 <div className="flex flex-wrap gap-1.5">
                                   {p.keypoints?.map((kp, idx) => (
                                     <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.personaId === p.id ? "bg-white/10 text-white" : "bg-accent/5 text-accent")}>
@@ -268,9 +292,20 @@ export function ParameterControls() {
                                   <span className="text-[12px] font-bold uppercase tracking-widest">{lc.name}</span>
                                   {session.linguisticId === lc.id && <Badge variant="outline" className="text-[8px] uppercase bg-white/20 border-white/30 text-white">Active</Badge>}
                                 </div>
-                                <p className={cn("text-[10px] leading-relaxed mb-4", session.linguisticId === lc.id ? "text-white/80" : "text-muted-foreground")}>{lc.description}</p>
+                                <p className={cn("text-[10px] leading-relaxed mb-3", session.linguisticId === lc.id ? "text-white/80" : "text-muted-foreground")}>{lc.description}</p>
                                 
-                                <div className="space-y-3">
+                                <div className="space-y-4">
+                                  {lc.usecases && lc.usecases.length > 0 && (
+                                    <div>
+                                      <p className={cn("text-[7px] font-bold uppercase tracking-widest mb-1.5 opacity-50", session.linguisticId === lc.id ? "text-white" : "text-destructive")}>Optimized Contexts:</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {lc.usecases.map((uc, i) => (
+                                          <span key={i} className={cn("text-[8px] px-1.5 py-0.5 rounded border", session.linguisticId === lc.id ? "bg-white/10 border-white/20 text-white" : "bg-slate-50 border-slate-100 text-slate-500")}>{uc}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
                                   <div className="flex flex-wrap gap-1.5">
                                     {lc.keypoints?.map((kp, idx) => (
                                       <span key={idx} className={cn("text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md", session.linguisticId === lc.id ? "bg-white/10 text-white" : "bg-destructive/5 text-destructive")}>
@@ -339,19 +374,21 @@ export function ParameterControls() {
 
                   <div className="space-y-3">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Semantic Memory</Label>
-                    <Select
-                      value={session.settings.memoryType}
-                      onValueChange={(val: any) => updateSessionSettings(session.id, { memoryType: val })}
-                    >
-                      <SelectTrigger className="h-11 rounded-xl border-border bg-white text-[10px] font-bold uppercase px-4 shadow-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl border-border shadow-2xl">
-                        <SelectItem value="buffer" className="text-[10px] font-bold py-2 uppercase">Active Buffer</SelectItem>
-                        <SelectItem value="summary" className="text-[10px] font-bold py-2 uppercase">Recursive Summary</SelectItem>
-                        <SelectItem value="knowledge-graph" className="text-[10px] font-bold py-2 uppercase">Knowledge Graph</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="relative">
+                      <Select
+                        value={session.settings.memoryType}
+                        onValueChange={(val: any) => updateSessionSettings(session.id, { memoryType: val })}
+                      >
+                        <SelectTrigger className="h-11 rounded-xl border-border bg-white text-[10px] font-bold uppercase px-4 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-border shadow-2xl">
+                          <SelectItem value="buffer" className="text-[10px] font-bold py-2 uppercase">Active Buffer</SelectItem>
+                          <SelectItem value="summary" className="text-[10px] font-bold py-2 uppercase">Recursive Summary</SelectItem>
+                          <SelectItem value="knowledge-graph" className="text-[10px] font-bold py-2 uppercase">Knowledge Graph</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
