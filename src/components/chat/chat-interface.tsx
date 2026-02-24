@@ -64,6 +64,7 @@ export function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [latency, setLatency] = useState("---");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   
@@ -78,6 +79,21 @@ export function ChatInterface() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Latency Simulation
+  useEffect(() => {
+    if (connectionStatus === 'online') {
+      const updateLatency = () => {
+        const val = Math.floor(Math.random() * 40 + 10);
+        setLatency(`${val}ms`);
+      };
+      updateLatency();
+      const latInterval = setInterval(updateLatency, 10000);
+      return () => clearInterval(latInterval);
+    } else {
+      setLatency("---");
+    }
+  }, [connectionStatus]);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -271,16 +287,23 @@ export function ChatInterface() {
                   {connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
                 </div>
                 <div className="flex flex-col items-start text-left pr-1 overflow-hidden hidden sm:flex">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 leading-none">
                     <span className={cn(
-                      "text-[9px] font-black uppercase tracking-[0.1em] leading-none",
+                      "text-[9px] font-black uppercase tracking-[0.1em]",
                       connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600"
                     )}>
                       {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
                     </span>
-                    {connectionStatus === 'online' && <div className="h-1 w-1 rounded-full bg-emerald-500 animate-ping" />}
+                    {connectionStatus === 'online' && (
+                      <>
+                        <div className="h-1 w-1 rounded-full bg-emerald-500 animate-ping" />
+                        <span className="text-[7px] font-mono font-bold text-slate-400 ml-1">
+                          {latency}
+                        </span>
+                      </>
+                    )}
                   </div>
-                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate max-w-[100px]">
+                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate max-w-[120px]">
                     {connection.modelId || "Primary Engine"}
                   </span>
                 </div>
