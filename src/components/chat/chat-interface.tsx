@@ -263,19 +263,25 @@ export function ChatInterface() {
         <div className="flex-shrink-0 flex flex-col border-b border-border px-4 py-2 sm:px-8 sm:py-3 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
-              <button className="flex items-center gap-2 group transition-all hover:opacity-80 text-left">
+              <button className="flex items-center gap-2.5 group transition-all hover:opacity-80 text-left bg-white/50 backdrop-blur-md px-2 py-1 rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 active:scale-95">
                 <div className={cn(
-                  "h-7 w-7 rounded-lg flex items-center justify-center transition-all shadow-md",
-                  connectionStatus === 'online' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                  "h-8 w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border",
+                  connectionStatus === 'online' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-rose-50 text-rose-500 border-rose-100"
                 )}>
-                  {connectionStatus === 'online' ? <Wifi size={12} className="animate-pulse" /> : <WifiOff size={12} />}
+                  {connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
                 </div>
-                <div className="flex flex-col items-start text-left hidden sm:flex">
-                  <span className="text-[8px] font-bold text-slate-900 uppercase tracking-widest leading-none">
-                    {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
-                  </span>
-                  <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-tight mt-0.5">
-                    {connection.modelId || "unspecified"}
+                <div className="flex flex-col items-start text-left pr-1 overflow-hidden hidden sm:flex">
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn(
+                      "text-[9px] font-black uppercase tracking-[0.1em] leading-none",
+                      connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600"
+                    )}>
+                      {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
+                    </span>
+                    {connectionStatus === 'online' && <div className="h-1 w-1 rounded-full bg-emerald-500 animate-ping" />}
+                  </div>
+                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 truncate max-w-[100px]">
+                    {connection.modelId || "Primary Engine"}
                   </span>
                 </div>
               </button>
