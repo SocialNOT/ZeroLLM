@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -256,7 +255,7 @@ export function ChatInterface() {
             
             <div className="flex items-center gap-1">
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
                   <Settings2 size={16} />
                 </Button>
               </SheetTrigger>
@@ -264,15 +263,15 @@ export function ChatInterface() {
             </div>
           </div>
 
-          {/* Quick Fine-Tuning Grid Module */}
-          <div className="grid grid-cols-3 mt-4 border border-border rounded-xl overflow-hidden bg-muted/5 divide-x divide-border">
+          {/* Quick Fine-Tuning Grid Module - Animated with Pulse Glow */}
+          <div className="grid grid-cols-3 mt-4 border border-border rounded-xl overflow-hidden bg-muted/5 divide-x divide-border shadow-inner">
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('personas')}
-                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-accent/5 transition-all group text-center"
+                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-accent/10 transition-all group text-center active:scale-95"
               >
                 <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-accent transition-colors">Identity</span>
-                <span className="text-[9px] font-bold text-accent uppercase truncate w-full mt-0.5">
+                <span className="text-[9px] font-bold text-accent uppercase truncate w-full mt-0.5 animate-pulse-glow">
                   {persona.name}
                 </span>
               </button>
@@ -280,12 +279,12 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('frameworks')}
-                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-primary/5 transition-all group text-center"
+                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-primary/10 transition-all group text-center active:scale-95"
               >
                 <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-primary transition-colors">Architecture</span>
                 <span className={cn(
                   "text-[9px] font-bold uppercase truncate w-full mt-0.5",
-                  session.frameworkId ? "text-primary" : "text-muted-foreground/40"
+                  session.frameworkId ? "text-primary animate-pulse-glow" : "text-muted-foreground/40"
                 )}>
                   {framework?.name || "None"}
                 </span>
@@ -294,12 +293,12 @@ export function ChatInterface() {
             <SheetTrigger asChild>
               <button 
                 onClick={() => setActiveParameterTab('linguistic')}
-                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-destructive/5 transition-all group text-center"
+                className="flex flex-col items-center justify-center py-2.5 px-2 hover:bg-destructive/10 transition-all group text-center active:scale-95"
               >
                 <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-destructive transition-colors">Logic</span>
                 <span className={cn(
                   "text-[9px] font-bold uppercase truncate w-full mt-0.5",
-                  session.linguisticId ? "text-destructive" : "text-muted-foreground/40"
+                  session.linguisticId ? "text-destructive animate-pulse-glow" : "text-muted-foreground/40"
                 )}>
                   {linguistic?.name || "Default"}
                 </span>
@@ -344,7 +343,7 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'webSearch')}
                 title="Web Grounding"
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.webSearchEnabled 
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
@@ -357,7 +356,7 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'reasoning')}
                 title="Deep Thinking"
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.reasoningEnabled 
                     ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
@@ -370,7 +369,7 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'voice')}
                 title="Voice Synthesis"
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.voiceResponseEnabled 
                     ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
@@ -383,7 +382,7 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'calculator')}
                 title="Mathematical Logic"
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.calculatorEnabled 
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
@@ -396,7 +395,7 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'code')}
                 title="Code Interpreter"
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.codeEnabled 
                     ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
@@ -409,7 +408,7 @@ export function ChatInterface() {
                 onClick={() => toggleTool(session.id, 'knowledge')}
                 title="Knowledge Vault"
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0 hover:scale-110 active:scale-95",
                   session.settings.knowledgeEnabled 
                     ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
