@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -36,7 +37,6 @@ export default function LoginPage() {
     const userRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userRef);
     
-    // Determine target role node: Only standard users/admins get infinite sessions.
     const role = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL ? "Admin" : (isGuest ? "Viewer" : "User");
     
     if (!userDoc.exists()) {
@@ -59,7 +59,6 @@ export default function LoginPage() {
         });
     }
     
-    // Energize store telemetry
     setRole(role);
     startSession();
   };
@@ -128,7 +127,6 @@ export default function LoginPage() {
         
         <Card className="border-none bg-white shadow-[0_30px_90px_rgba(0,0,0,0.08)] rounded-[2.5rem] overflow-hidden">
           <CardHeader className="pb-2 pt-10 text-center">
-            {/* Command Center Animated Logo */}
             <div className="mb-6">
               <h1 className="logo-shimmer font-headline text-4xl font-black tracking-tighter leading-none select-none">
                 ZEROGPT
@@ -139,10 +137,10 @@ export default function LoginPage() {
             </div>
 
             <CardTitle className="text-lg font-bold text-slate-900 mt-4">
-              {isRegistering ? "Initialize Node" : "Energize Identity"}
+              {isRegistering ? "Establish Identity" : "Energize Session"}
             </CardTitle>
             <CardDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-              Secure <span className="text-primary font-black">Cloud Protocol</span> Active
+              Synchronize your <span className="text-primary font-black">Cognitive Core</span> and knowledge vault.
             </CardDescription>
           </CardHeader>
           

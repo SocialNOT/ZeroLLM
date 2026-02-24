@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -73,6 +74,7 @@ export function ChatInterface() {
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const lastProcessedIndexRef = useRef<number>(0);
   
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
@@ -90,7 +92,6 @@ export function ChatInterface() {
       setCurrentTime(now);
       
       if (isGuest && sessionStartTime) {
-        // Calculate daily 1-hour allocation TTL
         const ONE_HOUR = 3600000;
         const expiryTime = sessionStartTime + ONE_HOUR;
         const remaining = Math.max(0, expiryTime - now.getTime());
@@ -128,9 +129,10 @@ export function ChatInterface() {
 
       recognitionRef.current.onresult = (event: any) => {
         let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        for (let i = Math.max(event.resultIndex, lastProcessedIndexRef.current); i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
+            lastProcessedIndexRef.current = i + 1;
           }
         }
         if (finalTranscript) {
@@ -172,6 +174,7 @@ export function ChatInterface() {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
+      lastProcessedIndexRef.current = 0;
       recognitionRef.current.start();
       setIsListening(true);
     }
@@ -336,7 +339,6 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
-        {/* Sleek Neural Session Timer Row - Restricted to Guest Identity */}
         {isGuest && (
           <div className="flex-shrink-0 flex items-center justify-center gap-3 py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
             <div className="flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none animate-multi-color-pulse">
@@ -358,7 +360,6 @@ export function ChatInterface() {
           </div>
         )}
 
-        {/* Interactive System Status Header */}
         <div className="flex-shrink-0 flex flex-col border-b border-border px-3 py-2 sm:px-6 sm:py-2.5 bg-card/90 backdrop-blur-xl z-20">
           <div className="flex items-center justify-between gap-4">
             <SettingsDialog>
@@ -390,7 +391,6 @@ export function ChatInterface() {
               </button>
             </SettingsDialog>
 
-            {/* Indian Flag Colored Clock - Center Aligned One Row */}
             {mounted && (
               <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 overflow-hidden px-2">
                 <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-wider text-[#FF9933] whitespace-nowrap">
@@ -417,7 +417,6 @@ export function ChatInterface() {
             </div>
           </div>
 
-          {/* Quick Fine-Tuning Grid Module */}
           <div className="grid grid-cols-3 mt-2 border border-border rounded-lg overflow-hidden bg-muted/5 divide-x divide-border shadow-inner">
             <SheetTrigger asChild>
               <button 
@@ -461,7 +460,6 @@ export function ChatInterface() {
           </div>
         </div>
 
-        {/* Main Orchestration Scroll Area */}
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-2 sm:px-4">
             {session.messages.length === 0 ? (
@@ -525,7 +523,6 @@ export function ChatInterface() {
           </div>
         </ScrollArea>
 
-        {/* Command Module */}
         <div className="flex-shrink-0 p-3 sm:p-4 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
           <div className="mx-auto max-w-4xl space-y-3">
             
