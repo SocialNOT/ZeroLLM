@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -15,7 +14,8 @@ export default function Home() {
     sessions, 
     setActiveSession, 
     activeSessionId,
-    isConfigured 
+    isConfigured,
+    checkConnection 
   } = useAppStore();
   
   const [mounted, setMounted] = useState(false);
@@ -26,13 +26,14 @@ export default function Home() {
 
   useEffect(() => {
     if (isConfigured && mounted) {
+      checkConnection();
       if (!sessions || sessions.length === 0) {
         createSession(activeWorkspaceId || 'ws-1');
       } else if (!activeSessionId) {
         setActiveSession(sessions[0].id);
       }
     }
-  }, [isConfigured, sessions.length, activeWorkspaceId, mounted, activeSessionId, createSession, setActiveSession]);
+  }, [isConfigured, sessions.length, activeWorkspaceId, mounted, activeSessionId, createSession, setActiveSession, checkConnection]);
 
   if (!mounted) return null;
 

@@ -5,7 +5,8 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogTrigger 
+  DialogTrigger,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -61,7 +62,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const conn = connections.find(c => c.id === activeConnectionId);
   const [urlInput, setUrlInput] = useState(conn?.baseUrl || "");
   const [tokenInput, setTokenInput] = useState(conn?.apiKey || "");
-  const [latency, setLatency] = useState("0ms");
+  const [latency, setLatency] = useState("---");
   const [activeCard, setActiveCard] = useState<'engine' | 'shield' | 'vault'>('engine');
 
   useEffect(() => {
@@ -91,7 +92,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
         description: `Model node ${modelId} is now energized.`,
       });
     }
-    // Suppressed the 'else' block containing the "Protocol Fault" toast as requested
   };
 
   const getModelCapabilities = (modelId: string) => {
@@ -136,7 +136,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
       </DialogTrigger>
       <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-white/20 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border">
         <div className="flex flex-col max-h-[75vh]">
-          {/* Header Node */}
           <header className="p-4 sm:p-6 bg-white/50 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
@@ -144,7 +143,9 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               </div>
               <div>
                 <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-none">Node Command Panel</DialogTitle>
-                <p className="text-slate-400 font-bold text-[8px] uppercase tracking-widest mt-1">Orchestrate engine protocols and secure cognitive nodes.</p>
+                <DialogDescription className="text-slate-400 font-bold text-[8px] uppercase tracking-widest mt-1">
+                  Orchestrate engine protocols and secure cognitive nodes.
+                </DialogDescription>
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-2">
@@ -160,7 +161,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-4 space-y-2">
             
-            {/* Engine Node Card */}
             <Card className={cn(
               "border-slate-100 bg-white shadow-sm rounded-2xl overflow-hidden transition-all duration-500",
               activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
@@ -277,7 +277,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               )}
             </Card>
 
-            {/* Shield & Vault Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Card 
                 className={cn(

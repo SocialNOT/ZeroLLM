@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +7,8 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,16 +47,14 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
 
   useEffect(() => {
     if (isOpen) {
-      // If editing or cloning, pre-populate the form
       if (item) {
         setFormData({
-          name: mode === 'create' ? `Copy of ${item.name}` : item.name,
+          name: mode === 'create' && !item.isCustom ? `Copy of ${item.name}` : item.name,
           description: item.description || "",
           content: item.system_prompt || item.content || item.system_instruction || "",
           category: item.category || "Custom"
         });
       } else {
-        // Reset form for clean creation
         setFormData({
           name: "",
           description: "",
@@ -85,8 +83,8 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         category: formData.category,
         isCustom: true
       };
-      if (mode === 'create') addPersona(data as Persona);
-      else if (item?.id) updatePersona(item.id, data);
+      if (mode === 'create' || !item?.id) addPersona(data as Persona);
+      else updatePersona(item.id, data);
     } else if (type === 'framework') {
       const data: Partial<Framework> = {
         name: formData.name,
@@ -95,8 +93,8 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         category: formData.category,
         isCustom: true
       };
-      if (mode === 'create') addFramework(data as Framework);
-      else if (item?.id) updateFramework(item.id, data);
+      if (mode === 'create' || !item?.id) addFramework(data as Framework);
+      else updateFramework(item.id, data);
     } else if (type === 'linguistic') {
       const data: Partial<LinguisticControl> = {
         name: formData.name,
@@ -105,8 +103,8 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         category: formData.category,
         isCustom: true
       };
-      if (mode === 'create') addLinguisticControl(data as LinguisticControl);
-      else if (item?.id) updateLinguisticControl(item.id, data);
+      if (mode === 'create' || !item?.id) addLinguisticControl(data as LinguisticControl);
+      else updateLinguisticControl(item.id, data);
     }
 
     toast({
@@ -143,7 +141,9 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
               <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
                 {dialogTitle}
               </DialogTitle>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">Configure your custom neural protocol.</p>
+              <DialogDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                Configure your custom neural protocol and system instructions.
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>

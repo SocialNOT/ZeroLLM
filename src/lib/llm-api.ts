@@ -106,12 +106,10 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
     });
     
     // If 404, the endpoint doesn't support management protocols, but the selection is valid.
-    // Many nodes (Ollama, OpenAI) load models automatically on request.
     if (response.status === 404) return true;
     
     return response.ok;
   } catch (e) {
-    // On network error or timeout, we assume it's a standard endpoint that handles auto-loading.
     return true; 
   }
 }
@@ -121,26 +119,37 @@ export async function callChatCompletion(baseUrl: string, modelId: string, messa
   const normalizedBase = normalizeUrl(baseUrl);
   const chatUrl = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
   
-  const response = await fetch(chatUrl, {
-    method: 'POST',
-    headers: getHeaders(apiKey),
-    body: JSON.stringify({
-      model: modelId || "default",
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
-      temperature: settings.temperature,
-      top_p: settings.topP,
-      max_tokens: settings.maxTokens,
-      stream: false
-    })
-  });
+  try {
+    const response = await fetch(chatUrl, {
+      method: 'POST',
+      headers: getHeaders(apiKey),
+      body: JSON.stringify({
+        model: modelId || "default",
+        messages: messages.map(m => ({ role: m.role, content: m.content })),
+        temperature: settings.temperature,
+        top_p: settings.topP,
+        max_tokens: settings.maxTokens,
+        stream: false
+      })
+    });
 
-  if (!response.ok) {
-    const errorData = await safeJsonParse(response);
-    throw new Error(errorData?.error?.message || `Engine error (${response.status})`);
+    if (!response.ok) {
+      if (response.status === 504) {
+        throw new Error("Node Gateway Timeout (504). The engine is unreachable or taking too long.");
+      }
+      if (response.status === 400) {
+        throw new Error("Bad Request (400). Engine node rejected the command structure.");
+      }
+      const errorData = await safeJsonParse(response);
+      throw new Error(errorData?.error?.message || `Engine error (${response.status})`);
+    }
+
+    const data = await safeJsonParse(response);
+    if (!data) throw new Error('Received an incompatible non-JSON response from the server.');
+    
+    return data.choices?.[0]?.message?.content || "No response produced.";
+  } catch (err: any) {
+    if (err.name === 'AbortError') throw new Error("Node connection timed out.");
+    throw err;
   }
-
-  const data = await safeJsonParse(response);
-  if (!data) throw new Error('Received an incompatible non-JSON response from the server.');
-  
-  return data.choices?.[0]?.message?.content || "No response produced.";
 }
