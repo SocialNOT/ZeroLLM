@@ -331,92 +331,86 @@ export function ChatInterface() {
 
         {/* Blazing Fast Command Module */}
         <div className="flex-shrink-0 p-4 sm:p-8 bg-card/90 backdrop-blur-2xl border-t border-border/50 z-30">
-          <div className="mx-auto max-w-3xl space-y-6">
+          <div className="mx-auto max-w-3xl space-y-4">
             
-            {/* Neural Tool Grid - Square Pad Design */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-lg mx-auto">
+            {/* Neural Tool Strip - Single Line Icon Set (2/3 width) */}
+            <div className="flex items-center justify-center gap-3 mx-auto w-full sm:w-[66%] overflow-x-auto no-scrollbar">
               <button 
                 onClick={() => toggleTool(session.id, 'webSearch')}
                 title="Web Grounding"
                 className={cn(
-                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
                   session.settings.webSearchEnabled 
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Search size={18} />
-                <span className="text-[7px] font-bold uppercase tracking-tighter">Search</span>
+                <Search size={16} />
               </button>
               
               <button 
                 onClick={() => toggleTool(session.id, 'reasoning')}
                 title="Deep Thinking"
                 className={cn(
-                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
                   session.settings.reasoningEnabled 
-                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20" 
+                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Brain size={18} />
-                <span className="text-[7px] font-bold uppercase tracking-tighter">Think</span>
+                <Brain size={16} />
               </button>
 
               <button 
                 onClick={() => toggleTool(session.id, 'voice')}
                 title="Voice Synthesis"
                 className={cn(
-                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
                   session.settings.voiceResponseEnabled 
-                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20" 
+                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                {session.settings.voiceResponseEnabled ? <Mic size={18} /> : <MicOff size={18} />}
-                <span className="text-[7px] font-bold uppercase tracking-tighter">Voice</span>
+                {session.settings.voiceResponseEnabled ? <Mic size={16} /> : <MicOff size={16} />}
               </button>
 
               <button 
                 onClick={() => toggleTool(session.id, 'calculator')}
                 title="Mathematical Logic"
                 className={cn(
-                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
                   session.settings.calculatorEnabled 
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Calculator size={18} />
-                <span className="text-[7px] font-bold uppercase tracking-tighter">Math</span>
+                <Calculator size={16} />
               </button>
 
               <button 
                 onClick={() => toggleTool(session.id, 'code')}
                 title="Code Interpreter"
                 className={cn(
-                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
                   session.settings.codeEnabled 
-                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20" 
+                    ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Terminal size={18} />
-                <span className="text-[7px] font-bold uppercase tracking-tighter">Code</span>
+                <Terminal size={16} />
               </button>
 
               <button 
                 onClick={() => toggleTool(session.id, 'knowledge')}
                 title="Knowledge Vault"
                 className={cn(
-                  "aspect-square flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all",
+                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all shrink-0",
                   session.settings.knowledgeEnabled 
-                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20" 
+                    ? "bg-destructive text-destructive-foreground border-destructive shadow-lg shadow-destructive/20 scale-110" 
                     : "bg-background/50 text-muted-foreground border-border hover:bg-muted"
                 )}
               >
-                <Database size={18} />
-                <span className="text-[7px] font-bold uppercase tracking-tighter">Vault</span>
+                <Database size={16} />
               </button>
             </div>
 
