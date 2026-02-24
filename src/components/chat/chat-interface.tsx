@@ -7,25 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Send, 
-  Paperclip, 
   Settings2, 
   Zap, 
-  Globe, 
-  Cpu, 
-  Activity, 
-  Database, 
-  Terminal, 
-  Moon, 
-  Sun, 
-  Clock, 
-  Layers, 
-  UserCircle, 
-  PanelRight, 
-  PanelRightClose, 
   Brain, 
   Mic, 
   MicOff, 
-  Sparkles, 
   Search,
   Wifi,
   WifiOff
@@ -42,9 +28,7 @@ import {
 } from "@/components/ui/sheet";
 import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useTheme } from "next-themes";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
 import { toast } from "@/hooks/use-toast";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
@@ -63,18 +47,14 @@ export function ChatInterface() {
     currentUserRole,
     connectionStatus,
     setActiveParameterTab,
-    showInfoSidebar,
-    toggleInfoSidebar,
     toggleTool
   } = useAppStore();
   
-  const { theme, setTheme } = useTheme();
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
@@ -271,14 +251,6 @@ export function ChatInterface() {
             </SettingsDialog>
             
             <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-lg text-muted-foreground"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              </Button>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground">
                   <Settings2 size={16} />

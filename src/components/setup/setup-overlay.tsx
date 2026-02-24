@@ -33,38 +33,38 @@ export function SetupOverlay() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-2xl p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/90 backdrop-blur-2xl p-4">
       <div className="w-full max-w-md flex flex-col items-center gap-8">
-        <Card className="w-full border-white/10 bg-slate-900 shadow-3xl overflow-hidden rounded-[3rem]">
+        <Card className="w-full border-slate-200 bg-white shadow-3xl overflow-hidden rounded-[3rem]">
           <CardHeader className="text-center pt-12 pb-2">
             <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary shadow-2xl shadow-primary/20">
               <Zap className="text-white" size={36} fill="currentColor" />
             </div>
-            <CardTitle className="font-headline text-3xl font-bold text-white tracking-tight">ZeroGPT Engine</CardTitle>
-            <CardDescription className="text-slate-400 font-medium px-8 mt-2">Initialize your cognitive node by linking to a local or remote engine endpoint.</CardDescription>
+            <CardTitle className="font-headline text-3xl font-bold text-slate-900 tracking-tight">ZeroGPT Engine</CardTitle>
+            <CardDescription className="text-slate-500 font-medium px-8 mt-2">Initialize your cognitive node by linking to a local or remote engine endpoint.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-8 px-10">
             {error && (
-              <Alert variant="destructive" className="bg-rose-500/10 border-rose-500/20 text-rose-400 rounded-2xl">
+              <Alert variant="destructive" className="bg-rose-50 border-rose-100 text-rose-600 rounded-2xl">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle className="text-[10px] font-bold uppercase tracking-widest">Protocol Failure</AlertTitle>
                 <AlertDescription className="text-[11px] opacity-90">{error}</AlertDescription>
               </Alert>
             )}
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 ml-1">Node API Endpoint</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Node API Endpoint</Label>
               <div className="relative">
                 <Server className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input 
                   value={baseUrl} 
                   onChange={(e) => setBaseUrl(e.target.value)}
                   placeholder="http://localhost:11434/v1"
-                  className="pl-12 border-slate-700 bg-slate-800 text-white rounded-2xl h-12 text-sm focus:ring-primary/40"
+                  className="pl-12 border-slate-200 bg-slate-50 text-slate-900 rounded-2xl h-12 text-sm focus:ring-primary/40"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 ml-1">Access Secret (Optional)</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Access Secret (Optional)</Label>
               <div className="relative">
                 <Key className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input 
@@ -72,19 +72,19 @@ export function SetupOverlay() {
                   value={apiKey} 
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="sk-..."
-                  className="pl-12 border-slate-700 bg-slate-800 text-white rounded-2xl h-12 text-sm focus:ring-primary/40"
+                  className="pl-12 border-slate-200 bg-slate-50 text-slate-900 rounded-2xl h-12 text-sm focus:ring-primary/40"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 ml-1">Primary Model ID</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Primary Model ID</Label>
               <div className="relative">
                 <Cpu className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input 
                   value={modelId} 
                   onChange={(e) => setModelId(e.target.value)}
                   placeholder="llama3:8b"
-                  className="pl-12 border-slate-700 bg-slate-800 text-white rounded-2xl h-12 text-sm focus:ring-primary/40"
+                  className="pl-12 border-slate-200 bg-slate-50 text-slate-900 rounded-2xl h-12 text-sm focus:ring-primary/40"
                 />
               </div>
             </div>
@@ -102,7 +102,7 @@ export function SetupOverlay() {
 
         <div className="text-center opacity-60">
           <p className="text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-            <span className="text-slate-500">Node crafted by</span>
+            <span className="text-slate-400">Node crafted by</span>
             <a 
               href="https://www.eastindiaautomation.com" 
               target="_blank" 

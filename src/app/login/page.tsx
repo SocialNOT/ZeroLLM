@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 
@@ -73,18 +72,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 p-4">
-      <Card className="w-full max-w-md border-white/10 bg-slate-900 shadow-2xl rounded-[2.5rem] overflow-hidden">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <Card className="w-full max-w-md border-slate-200 bg-white shadow-2xl rounded-[2.5rem] overflow-hidden">
         <CardHeader className="text-center pt-12">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-primary shadow-xl shadow-primary/20">
             <ShieldCheck className="text-white" size={32} />
           </div>
-          <CardTitle className="text-2xl font-bold font-headline text-white tracking-tight">ZeroGPT Auth Node</CardTitle>
-          <CardDescription className="text-slate-400">Establish a secure session to manage your AI hub.</CardDescription>
+          <CardTitle className="text-2xl font-bold font-headline text-slate-900 tracking-tight">ZeroGPT Auth Node</CardTitle>
+          <CardDescription className="text-slate-500">Establish a secure session to manage your AI hub.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 px-8">
           {error && (
-            <Alert variant="destructive" className="bg-rose-500/10 border-rose-500/20 text-rose-400 rounded-2xl">
+            <Alert variant="destructive" className="bg-rose-50 border-rose-100 text-rose-600 rounded-2xl">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle className="text-[10px] font-bold uppercase tracking-widest">Protocol Failure</AlertTitle>
               <AlertDescription className="text-xs">{error}</AlertDescription>
@@ -92,22 +91,22 @@ export default function LoginPage() {
           )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Identity Node (Username/Email)</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Identity Node (Username/Email)</Label>
               <Input 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="spider or email"
-                className="rounded-2xl bg-slate-800 border-slate-700 text-white h-12 focus:ring-primary/40"
+                className="rounded-2xl bg-slate-50 border-slate-200 text-slate-900 h-12 focus:ring-primary/40"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Access Protocol (Password)</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Access Protocol (Password)</Label>
               <Input 
                 type="password"
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="rounded-2xl bg-slate-800 border-slate-700 text-white h-12 focus:ring-primary/40"
+                className="rounded-2xl bg-slate-50 border-slate-200 text-slate-900 h-12 focus:ring-primary/40"
               />
             </div>
             <Button 
@@ -120,7 +119,7 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="pb-12 pt-4 text-center">
-          <p className="w-full text-[10px] text-slate-600 uppercase tracking-widest">Encrypted Terminal • ZeroGPT Core</p>
+          <p className="w-full text-[10px] text-slate-400 uppercase tracking-widest">Encrypted Terminal • ZeroGPT Core</p>
         </CardFooter>
       </Card>
     </div>

@@ -26,6 +26,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface ChatMessageProps {
   message: Message;
@@ -119,7 +120,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           <div className={cn(
             "p-4 sm:p-5 rounded-2xl shadow-sm transition-all relative overflow-hidden",
             isAssistant 
-              ? "bg-white dark:bg-slate-900 border border-border text-slate-900 dark:text-slate-100 rounded-tl-none" 
+              ? "bg-white border border-border text-slate-900 rounded-tl-none" 
               : "bg-primary text-primary-foreground rounded-tr-none"
           )}>
             <div className="text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap relative z-10">
