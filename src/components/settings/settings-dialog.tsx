@@ -3,7 +3,6 @@
 import { 
   Dialog, 
   DialogContent, 
-  DialogDescription, 
   DialogHeader, 
   DialogTitle,
   DialogTrigger 
@@ -28,7 +27,11 @@ import {
   Lock,
   Box,
   Fingerprint,
-  ChevronDown
+  ChevronDown,
+  Terminal,
+  Brain,
+  Eye,
+  Microscope
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +96,24 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
+  const getModelCapabilities = (modelId: string) => {
+    const id = modelId.toLowerCase();
+    const caps = [];
+    if (id.includes('llama') || id.includes('qwen') || id.includes('gemma') || id.includes('liquid')) {
+      caps.push({ label: 'Tools', icon: <Terminal size={8} /> });
+    }
+    if (id.includes('deepseek') || id.includes('r1') || id.includes('o1')) {
+      caps.push({ label: 'Thinking', icon: <Brain size={8} /> });
+    }
+    if (id.includes('vision') || id.includes('vl')) {
+      caps.push({ label: 'Vision', icon: <Eye size={8} /> });
+    }
+    if (id.includes('rag') || id.includes('nomic')) {
+      caps.push({ label: 'RAG', icon: <Microscope size={8} /> });
+    }
+    return caps.length > 0 ? caps : [{ label: 'General', icon: <Zap size={8} /> }];
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -132,7 +153,10 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3">
             
             {/* Engine Node Card */}
-            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden">
+            <Card className={cn(
+              "bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300",
+              expandedSection === 'engine' ? "ring-2 ring-primary/10" : ""
+            )}>
               <div 
                 onClick={() => toggleSection('engine')}
                 className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
@@ -166,9 +190,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               {expandedSection === 'engine' && (
                 <CardContent className="px-4 pb-4 pt-0 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <Separator className="bg-slate-50" />
+                  
+                  {/* Connection Suite */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Node Endpoint</Label>
+                      <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Node API Endpoint</Label>
                       <Input 
                         value={urlInput} 
                         onChange={(e) => setUrlInput(e.target.value)}
@@ -191,6 +217,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
 
+                  {/* Compute Core Selection */}
                   <div className="bg-slate-50 p-3 rounded-xl space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -216,22 +243,45 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                         placeholder="e.g. llama3:8b"
                       />
                     </div>
+
                     {availableModels.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto custom-scrollbar pr-1 pt-1">
-                        {availableModels.map(model => (
-                          <button 
-                            key={model}
-                            onClick={() => conn && updateConnection(conn.id, { modelId: model })}
-                            className={cn(
-                              "text-[8px] font-bold py-1 px-2 rounded-md border-2 transition-all",
-                              conn?.modelId === model 
-                                ? 'border-primary bg-primary text-white shadow-sm' 
-                                : 'border-white bg-white text-slate-400 hover:border-slate-200'
-                            )}
-                          >
-                            {model}
-                          </button>
-                        ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                        {availableModels.map(model => {
+                          const caps = getModelCapabilities(model);
+                          const isActive = conn?.modelId === model;
+                          return (
+                            <button 
+                              key={model}
+                              onClick={() => conn && updateConnection(conn.id, { modelId: model })}
+                              className={cn(
+                                "flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left group relative",
+                                isActive 
+                                  ? 'border-primary bg-primary text-white shadow-md' 
+                                  : 'border-white bg-white text-slate-600 hover:border-slate-200'
+                              )}
+                            >
+                              <div className="flex items-center justify-between w-full mb-2">
+                                <span className="text-[10px] font-bold truncate max-w-[120px]">{model}</span>
+                                {isActive && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}
+                              </div>
+                              
+                              <div className="flex flex-wrap gap-1">
+                                {caps.map((cap, i) => (
+                                  <div 
+                                    key={i} 
+                                    className={cn(
+                                      "flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[7px] font-bold uppercase tracking-tight",
+                                      isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400 group-hover:bg-slate-200"
+                                    )}
+                                  >
+                                    {cap.icon}
+                                    {cap.label}
+                                  </div>
+                                ))}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -240,7 +290,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             </Card>
 
             {/* Neural Shield Card */}
-            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden">
+            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300">
               <div 
                 onClick={() => toggleSection('shield')}
                 className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
@@ -286,7 +336,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             </Card>
 
             {/* Cognitive Vault Card */}
-            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden">
+            <Card className="bg-white border-slate-200 shadow-sm rounded-[1.5rem] overflow-hidden transition-all duration-300">
               <div 
                 onClick={() => toggleSection('vault')}
                 className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
