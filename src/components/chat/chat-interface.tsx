@@ -330,17 +330,17 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-card/50 backdrop-blur-sm relative">
         
-        {/* Sleek Neural Session Timer Row */}
-        <div className="flex-shrink-0 flex items-center justify-center py-1.5 border-b border-border/50 bg-slate-50/30 z-30">
+        {/* Sleek Neural Session Timer Row - Zero Margin Industrial Bar */}
+        <div className="flex-shrink-0 flex items-center justify-center py-0.5 border-b border-border/30 bg-slate-50/10 z-30">
           <Link href="/auth/login">
-            <div className="group flex items-center justify-center gap-3 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-100 shadow-sm transition-all hover:shadow-md hover:scale-105 active:scale-95 animate-multi-color-pulse">
-              <Clock size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-black font-mono tracking-tight text-slate-900 leading-none">
+            <div className="group flex items-center justify-center gap-2 bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-slate-100/50 shadow-none transition-all hover:bg-white/80 hover:shadow-md active:scale-95 animate-multi-color-pulse">
+              <Clock size={10} className="text-slate-400 group-hover:text-primary transition-colors" />
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black font-mono tracking-tight text-slate-900 leading-none">
                   {timeLeft}
                 </span>
-                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary leading-none group-hover:underline">
-                  Energize Identity
+                <span className="text-[6px] font-black uppercase tracking-[0.1em] text-primary leading-none group-hover:underline">
+                  Energize
                 </span>
               </div>
             </div>
