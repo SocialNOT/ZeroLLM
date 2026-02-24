@@ -9,14 +9,15 @@ import {
   Bot, 
   RefreshCw, 
   Languages, 
-  Share2, 
   Volume2,
   Check,
   Loader2,
-  Cpu
+  Cpu,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useAppStore } from "@/store/use-app-store";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { translateText } from "@/ai/flows/translate-flow";
 import { 
@@ -36,11 +37,12 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const { addMessage, activeSessionId } = useAppStore();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
     setIsCopied(true);
-    toast({ title: "Copied", duration: 1000 });
+    toast({ title: "Copied to clipboard", duration: 1000 });
     setTimeout(() => setIsCopied(false), 2000);
   };
 
@@ -59,10 +61,21 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   };
 
   const handleTranslate = async (lang: string) => {
+    if (!activeSessionId) return;
     setIsTranslating(true);
     try {
       const { translatedText } = await translateText({ text: message.content, targetLanguage: lang });
-      toast({ title: `Translation (${lang})`, description: translatedText });
+      
+      // Add translation as a new chat bubble
+      const translationMsg = {
+        id: `trans-${Date.now()}`,
+        role: "assistant" as const,
+        content: `[TRANSLATION: ${lang}]\n\n${translatedText}`,
+        timestamp: Date.now()
+      };
+      
+      addMessage(activeSessionId, translationMsg);
+      toast({ title: "Neural Translation Synchronized" });
     } catch (error) {
       toast({ variant: "destructive", title: "Translation Error" });
     } finally {
@@ -72,19 +85,19 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      "group flex w-full mb-6 sm:mb-10 animate-in fade-in slide-in-from-bottom-2 duration-500",
+      "group flex w-full mb-6 animate-in fade-in slide-in-from-bottom-3 duration-500",
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
-        "flex max-w-[92%] sm:max-w-[85%] lg:max-w-[75%] gap-2 sm:gap-4",
+        "flex max-w-[95%] sm:max-w-[85%] lg:max-w-[80%] gap-3 sm:gap-4",
         isAssistant ? "flex-row" : "flex-row-reverse"
       )}>
         <div className="flex-shrink-0 pt-1">
           <div className={cn(
-            "h-8 w-8 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg",
-            isAssistant ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
+            "h-8 w-8 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center shadow-md border transition-transform group-hover:scale-105",
+            isAssistant ? "bg-accent/10 text-accent border-accent/20" : "bg-primary text-primary-foreground border-primary/20"
           )}>
-            {isAssistant ? <Bot size={16} className="sm:size-5" /> : <User size={16} className="sm:size-5" />}
+            {isAssistant ? <Bot size={16} /> : <User size={16} />}
           </div>
         </div>
 
@@ -92,48 +105,61 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           "flex flex-col gap-1.5",
           isAssistant ? "items-start" : "items-end"
         )}>
-          <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">
-            {isAssistant ? "AI Engine" : "User Node"}
-          </span>
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">
+              {isAssistant ? "Neural Node" : "Human Identity"}
+            </span>
+            {message.content.includes("[TRANSLATION:") && (
+              <Badge variant="outline" className="text-[7px] font-bold uppercase py-0 px-1 border-emerald-500/20 bg-emerald-500/5 text-emerald-500">
+                Linguistic Layer
+              </Badge>
+            )}
+          </div>
 
           <div className={cn(
-            "chat-bubble-base",
-            isAssistant ? "chat-bubble-assistant" : "chat-bubble-user"
+            "p-4 sm:p-5 rounded-2xl shadow-sm transition-all relative overflow-hidden",
+            isAssistant 
+              ? "bg-white dark:bg-slate-900 border border-border text-slate-900 dark:text-slate-100 rounded-tl-none" 
+              : "bg-primary text-primary-foreground rounded-tr-none"
           )}>
-            <div className="text-[13px] sm:text-[15px] leading-relaxed whitespace-pre-wrap">
+            <div className="text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap relative z-10">
               {message.content}
             </div>
+            {isAssistant && (
+              <div className="absolute top-0 right-0 p-2 opacity-10">
+                <Sparkles size={40} className="text-primary" />
+              </div>
+            )}
           </div>
           
           {isAssistant && message.content.includes("ERROR:") && (
-            <div className="mt-2 p-2 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[9px] font-bold uppercase tracking-widest flex items-center gap-2">
+            <div className="mt-2 p-2 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[8px] font-bold uppercase tracking-widest flex items-center gap-2">
               <Cpu size={10} className="animate-pulse" />
-              Node Protocol Failure
+              Protocol Integrity Failure
             </div>
           )}
 
           <div className={cn(
-            "flex items-center gap-1 mt-1 transition-all duration-300",
-            "sm:opacity-0 sm:group-hover:opacity-100",
+            "flex items-center gap-1 mt-1 transition-all duration-300 opacity-0 group-hover:opacity-100",
             !isAssistant && "flex-row-reverse"
           )}>
             {isAssistant && (
               <>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleSpeech}>
-                  {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={12} />}
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg" onClick={handleSpeech}>
+                  {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={14} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={onRegenerate}>
-                  <RefreshCw size={12} />
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg" onClick={onRegenerate}>
+                  <RefreshCw size={14} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full">
-                      {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={12} />}
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg">
+                      {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={14} />}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-xl">
+                  <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-2xl border-border bg-white/95 backdrop-blur-xl">
                     {['Hindi', 'Bengali (India)', 'Spanish', 'French', 'Japanese', 'German'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[9px] font-bold uppercase tracking-widest rounded-lg">
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 cursor-pointer">
                         {l}
                       </DropdownMenuItem>
                     ))}
@@ -141,7 +167,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-full" onClick={handleCopy}>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg" onClick={handleCopy}>
               {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
             </Button>
           </div>

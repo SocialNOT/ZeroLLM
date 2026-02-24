@@ -85,7 +85,7 @@ export const useAppStore = create<AppState>()(
       connectionStatus: 'offline',
       isModelLoading: false,
       activeParameterTab: 'frameworks',
-      showInfoSidebar: true,
+      showInfoSidebar: false, // Default to false for wider chat
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),

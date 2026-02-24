@@ -11,12 +11,10 @@ export default function Home() {
   const { createSession, activeWorkspaceId, sessions, setActiveSession, isConfigured } = useAppStore();
   const [mounted, setMounted] = useState(false);
 
-  // Fix hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Ensure there's always at least one session
   useEffect(() => {
     if (isConfigured && mounted) {
       if (sessions.length === 0) {
@@ -33,14 +31,14 @@ export default function Home() {
     <SidebarProvider>
       {!isConfigured && <SetupOverlay />}
       <div className="flex h-svh w-full overflow-hidden bg-background p-0 sm:p-2">
-        <div className="relative flex h-full w-full overflow-hidden sleek-animated-border rounded-none sm:rounded-[2.5rem]">
+        <div className="relative flex h-full w-full overflow-hidden sleek-animated-border rounded-none sm:rounded-[2.5rem] bg-card">
           <AppSidebar />
           <SidebarInset className="flex flex-col h-full overflow-hidden bg-transparent">
             <main className="flex-1 overflow-hidden relative">
               <ChatInterface />
             </main>
-            <footer className="flex-shrink-0 w-full py-3 bg-card/30 backdrop-blur-md border-t border-border/10 text-center z-30 select-none">
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+            <footer className="flex-shrink-0 w-full py-3 bg-card/50 backdrop-blur-md border-t border-border/10 text-center z-40 select-none">
+              <p className="text-[9px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
                 <span className="text-muted-foreground/40">Made with ❤️ by</span>
                 <a 
                   href="https://www.eastindiaautomation.com" 
@@ -48,7 +46,7 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="animate-color-shift hover:scale-105 transition-transform inline-block"
                 >
-                  Rajib Singh AKA ProfessorAI
+                  Rajib Singh
                 </a>
               </p>
             </footer>
