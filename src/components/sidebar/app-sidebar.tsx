@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -103,7 +102,7 @@ export function AppSidebar() {
             </div>
           </div>
           {isMobile && (
-            <Button variant="ghost" size="icon" className="md:hidden text-slate-400 rounded-full hover:bg-slate-100" onClick={() => setOpenMobile(false)}>
+            <Button variant="ghost" size="icon" className="md:hidden text-slate-400 rounded-full hover:bg-slate-100 hover:text-slate-900" onClick={() => setOpenMobile(false)}>
               <X size={20} />
             </Button>
           )}
@@ -242,8 +241,7 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                     <SidebarMenuAction
                       onClick={(e) => handleDeleteSession(e, session.id)}
-                      showOnHover
-                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg z-50"
+                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg z-50 transition-colors"
                     >
                       <Trash2 size={12} />
                     </SidebarMenuAction>
@@ -273,7 +271,7 @@ export function AppSidebar() {
         {user ? (
           <Button 
             variant="ghost" 
-            className="w-full h-10 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl gap-3 group-data-[collapsible=icon]:hidden"
+            className="w-full h-10 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl gap-3 px-4 transition-colors group-data-[collapsible=icon]:hidden"
             onClick={handleLogout}
           >
             <LogOut size={16} />
@@ -283,7 +281,7 @@ export function AppSidebar() {
           <Link href="/login" className="w-full">
             <Button 
               variant="ghost" 
-              className="w-full h-10 text-primary hover:bg-primary/5 hover:text-primary rounded-xl gap-3 group-data-[collapsible=icon]:hidden"
+              className="w-full h-10 text-primary hover:bg-primary/5 hover:text-primary rounded-xl gap-3 px-4 transition-colors group-data-[collapsible=icon]:hidden"
             >
               <UserCircle size={16} />
               <span className="text-[10px] font-bold uppercase tracking-widest">Neural Auth</span>

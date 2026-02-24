@@ -146,15 +146,15 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}>
             {isAssistant && (
               <>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={14} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={onRegenerate}>
                   <RefreshCw size={14} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors">
                       {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={14} />}
                     </Button>
                   </DropdownMenuTrigger>
@@ -168,7 +168,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary rounded-lg" onClick={handleCopy}>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={handleCopy}>
               {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
             </Button>
           </div>

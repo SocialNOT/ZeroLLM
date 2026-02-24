@@ -255,11 +255,11 @@ export function ChatInterface() {
             
             <div className="flex items-center gap-1">
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
                   <Settings2 size={16} />
                 </Button>
               </SheetTrigger>
-              <SidebarTrigger className="h-8 w-8 text-muted-foreground" />
+              <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-primary transition-colors" />
             </div>
           </div>
 
@@ -430,7 +430,7 @@ export function ChatInterface() {
                   onClick={handleMicToggle}
                   className={cn(
                     "h-10 w-10 sm:h-12 sm:w-12 transition-all rounded-xl sm:rounded-2xl",
-                    isListening ? "text-rose-500 bg-rose-500/10 animate-pulse" : "text-muted-foreground hover:bg-card"
+                    isListening ? "text-rose-500 bg-rose-500/10 animate-pulse" : "text-muted-foreground hover:bg-card hover:text-primary"
                   )}
                 >
                   {isListening ? <MicOff size={18} /> : <Mic size={18} />}
