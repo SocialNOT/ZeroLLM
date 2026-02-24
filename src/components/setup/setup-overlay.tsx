@@ -72,8 +72,12 @@ export function SetupOverlay() {
               </p>
             </div>
             
-            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900 mt-2">Energize Node</CardTitle>
-            <CardDescription className="text-[9px] uppercase font-black tracking-widest text-primary mt-1">HANDSHAKE REQUIRED</CardDescription>
+            <CardTitle className="font-headline text-2xl font-bold tracking-tight text-slate-900 mt-2">
+              Power Up Node
+            </CardTitle>
+            <CardDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+              Establish a high-fidelity <span className="text-primary font-black">Neural Handshake</span> to begin.
+            </CardDescription>
             
             <div className="flex items-center justify-center gap-1.5 mt-4">
               <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">

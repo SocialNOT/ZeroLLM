@@ -139,10 +139,10 @@ export default function LoginPage() {
             </div>
 
             <CardTitle className="text-lg font-bold text-slate-900 mt-4">
-              {isRegistering ? "Create Node" : "Energize Session"}
+              {isRegistering ? "Initialize Node" : "Energize Identity"}
             </CardTitle>
             <CardDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-              Secure Cloud Handshake Required
+              Secure <span className="text-primary font-black">Cloud Protocol</span> Active
             </CardDescription>
           </CardHeader>
           
