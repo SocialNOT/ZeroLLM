@@ -379,11 +379,11 @@ export function ChatInterface() {
                     </span>
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[120px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[140px]">
                     {activeModelId.replace('googleai/', '')}
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     {getModelFeatures(activeModelId)}
                   </div>
                 </div>
