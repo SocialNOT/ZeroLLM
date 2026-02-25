@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -119,7 +120,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               {isAssistant ? isError ? "Node Error" : "Neural Node" : "Human Identity"}
             </span>
             {message.content.includes("[TRANSLATION:") && (
-              <Badge variant="outline" className="text-[6px] font-bold uppercase py-0 px-1 border-emerald-500/20 bg-emerald-500/5 text-emerald-500">
+              <Badge variant="outline" className="text-[6px] font-bold uppercase py-0 px-1 border-emerald-500 bg-emerald-500/5 text-emerald-500">
                 Linguistic Layer
               </Badge>
             )}
@@ -129,13 +130,13 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
             "p-3 sm:p-4 rounded-xl shadow-sm transition-all relative overflow-hidden",
             isAssistant 
               ? isError 
-                ? "bg-rose-50/50 border border-rose-100 text-rose-900 rounded-tl-none" 
+                ? "bg-rose-50 border border-rose-200 text-rose-950 rounded-tl-none" 
                 : "bg-white border border-border text-slate-900 rounded-tl-none" 
               : "bg-primary text-primary-foreground rounded-tr-none"
           )}>
             <div className={cn(
-              "text-[14px] sm:text-[15px] leading-relaxed relative z-10",
-              isError && "font-mono text-[11px] text-rose-700"
+              "text-[14px] sm:text-[15px] leading-relaxed relative z-10 font-bold",
+              isError && "font-mono text-[11px] text-rose-800"
             )}>
               {isAssistant && !isError ? (
                 <ReactMarkdown 
@@ -147,20 +148,20 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                     h3: ({...props}) => <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0 text-primary" {...props} />,
                     ul: ({...props}) => <ul className="list-disc pl-5 mb-2 space-y-1" {...props} />,
                     ol: ({...props}) => <ol className="list-decimal pl-5 mb-2 space-y-1" {...props} />,
-                    li: ({...props}) => <li className="marker:text-primary/50" {...props} />,
-                    strong: ({...props}) => <strong className="font-bold text-primary" {...props} />,
+                    li: ({...props}) => <li className="marker:text-primary" {...props} />,
+                    strong: ({...props}) => <strong className="font-black text-primary" {...props} />,
                     code: ({node, inline, className, children, ...props}: any) => {
-                      if (inline) return <code className="bg-muted px-1.5 py-0.5 rounded text-[12px] font-mono text-primary" {...props}>{children}</code>;
+                      if (inline) return <code className="bg-muted px-1.5 py-0.5 rounded text-[12px] font-mono text-primary font-bold" {...props}>{children}</code>;
                       return (
-                        <div className="my-3 rounded-lg border border-border bg-slate-950 p-3 overflow-x-auto custom-scrollbar shadow-inner">
-                          <code className="text-[12px] font-mono text-slate-300 leading-normal block" {...props}>{children}</code>
+                        <div className="my-3 rounded-lg border-2 border-border bg-slate-950 p-3 overflow-x-auto custom-scrollbar shadow-inner">
+                          <code className="text-[12px] font-mono text-slate-100 leading-normal block" {...props}>{children}</code>
                         </div>
                       );
                     },
-                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary/20 pl-4 italic my-2 text-muted-foreground" {...props} />,
-                    table: ({...props}) => <div className="overflow-x-auto my-3 rounded-lg border border-border"><table className="w-full text-left border-collapse" {...props} /></div>,
-                    th: ({...props}) => <th className="bg-muted/50 p-2 border-b border-border font-bold text-[12px] uppercase tracking-wider" {...props} />,
-                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px]" {...props} />,
+                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-2 text-foreground font-medium" {...props} />,
+                    table: ({...props}) => <div className="overflow-x-auto my-3 rounded-lg border-2 border-border"><table className="w-full text-left border-collapse" {...props} /></div>,
+                    th: ({...props}) => <th className="bg-muted p-2 border-b-2 border-border font-bold text-[12px] uppercase tracking-wider text-foreground" {...props} />,
+                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px] text-foreground font-bold" {...props} />,
                   }}
                 >
                   {message.content}
@@ -170,7 +171,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               )}
             </div>
             {isAssistant && !isError && (
-              <div className="absolute top-0 right-0 p-2 opacity-10">
+              <div className="absolute top-0 right-0 p-2 opacity-20">
                 <Sparkles size={32} className="text-primary" />
               </div>
             )}
@@ -182,21 +183,21 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}>
             {isAssistant && !isError && (
               <>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10 rounded-lg transition-colors" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={12} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10 rounded-lg transition-colors" onClick={onRegenerate}>
                   <RefreshCw size={12} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors">
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10 rounded-lg transition-colors">
                       {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={12} />}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-2xl border-border bg-white/95 backdrop-blur-xl">
+                  <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-2xl border-2 border-border bg-white">
                     {['Hindi', 'Bengali (India)', 'Spanish', 'French', 'Japanese', 'German'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 cursor-pointer">
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-black uppercase tracking-widest rounded-lg px-3 py-2 cursor-pointer text-primary">
                         {l}
                       </DropdownMenuItem>
                     ))}
@@ -204,8 +205,8 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors" onClick={handleCopy}>
-              {isCopied ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10 rounded-lg transition-colors" onClick={handleCopy}>
+              {isCopied ? <Check size={10} className="text-emerald-600" /> : <Copy size={10} />}
             </Button>
           </div>
         </div>

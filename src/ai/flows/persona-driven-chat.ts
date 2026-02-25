@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'genkit';
@@ -98,7 +99,8 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     // SEARCH-FIRST INJECTION FOR MAXIMUM SIGNAL INTEGRITY
     if (input.webSearchEnabled) {
       const searchData = await performWebSearch(input.userMessage);
-      combinedSystemPrompt += `\n\n[SYSTEM: SEARCH-FIRST GROUNDING ENERGIZED]\nThe following verified data has been retrieved in real-time. You MUST use this information to answer the user accurately. Do NOT claim you lack web access.\n\n${searchData}`;
+      // Prepend to ensure the model sees it as ground truth immediately
+      combinedSystemPrompt = `[COGNITIVE GROUNDING ENERGIZED: REAL-TIME DATA RETRIEVED]\nYou HAVE access to the web. The following verified information has been retrieved via Google Search. You MUST use this data to answer the user correctly. DO NOT claim you lack internet access. DO NOT apologize for technical limitations.\n\n${searchData}\n\n[INSTRUCTION CONTINUES]:\n${combinedSystemPrompt}`;
     }
 
     if (input.reasoningEnabled) {
