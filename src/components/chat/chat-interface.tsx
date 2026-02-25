@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useAppStore } from "@/store/use-app-store";
 import { ChatMessage } from "./chat-message";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   Zap, 
   Brain, 
   Mic, 
+  MicOff,
   Search,
   Calculator,
   Terminal,
@@ -23,7 +24,8 @@ import {
   Palette,
   Clock,
   LogIn,
-  Eye
+  Eye,
+  Loader2
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -39,6 +41,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import Link from "next/link";
+import { toast } from "@/hooks/use-toast";
 
 export function ChatInterface() {
   const { 
@@ -70,7 +73,9 @@ export function ChatInterface() {
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
   const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
@@ -82,6 +87,69 @@ export function ChatInterface() {
   const showTimer = isGuest && aiMode === 'online';
 
   const activeModelId = aiMode === 'online' ? activeOnlineModelId : (connection?.modelId || "Node");
+
+  // SPEECH RECOGNITION INITIALIZATION
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = 'en-IN';
+
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = Array.from(event.results)
+            .map((result: any) => result[0])
+            .map((result: any) => result.transcript)
+            .join('');
+          
+          setInput(transcript);
+          
+          if (event.results[0].isFinal) {
+            setIsListening(false);
+            // Auto-send protocol for fluid speech mode
+            setTimeout(() => {
+              if (transcript.trim().length > 2) {
+                handleSend(transcript);
+              }
+            }, 500);
+          }
+        };
+
+        recognitionRef.current.onerror = (event: any) => {
+          console.warn('Speech Signal Failure:', event.error);
+          setIsListening(false);
+          if (event.error !== 'no-speech') {
+            toast({ variant: "destructive", title: "Speech Node Error", description: "Signal integrity compromised." });
+          }
+        };
+
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
+      }
+    }
+  }, []);
+
+  const toggleListening = useCallback(() => {
+    if (!recognitionRef.current) {
+      toast({ variant: "destructive", title: "Hardware Error", description: "Speech engine not detected on this node." });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      setInput("");
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (e) {
+        console.error("Mic Energization Failure", e);
+      }
+    }
+  }, [isListening]);
 
   useEffect(() => {
     setMounted(true);
@@ -189,6 +257,12 @@ export function ChatInterface() {
         try {
           const { audioUri } = await generateSpeech({ text: responseText });
           const audio = new Audio(audioUri);
+          audio.onended = () => {
+            // Re-energize mic if in continuous mode
+            if (session.settings.voiceResponseEnabled && !isTyping) {
+              toggleListening();
+            }
+          };
           audio.play();
         } catch (vErr) {
           console.warn("Voice auto-play failed", vErr);
@@ -441,15 +515,37 @@ export function ChatInterface() {
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white p-1">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                disabled={isTyping}
-                placeholder="INPUT COMMAND..."
-                className="h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[13px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[8px] sm:placeholder:text-[9px] placeholder:tracking-widest rounded-none"
-              />
+              <Button 
+                type="button" 
+                onClick={toggleListening}
+                className={cn(
+                  "h-8 w-8 sm:h-10 sm:w-10 rounded-none transition-all flex items-center justify-center",
+                  isListening 
+                    ? "bg-rose-600 text-white animate-pulse shadow-[0_0_15px_rgba(225,29,72,0.5)]" 
+                    : "bg-slate-100 text-slate-900 hover:bg-slate-200"
+                )}
+              >
+                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              </Button>
+              
+              <div className="relative flex-1">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={isTyping}
+                  placeholder={isListening ? "LISTENING FOR SIGNAL..." : "INPUT COMMAND..."}
+                  className={cn(
+                    "h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[13px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[8px] sm:placeholder:text-[9px] placeholder:tracking-widest rounded-none transition-all",
+                    isListening && "placeholder:text-rose-600 animate-pulse"
+                  )}
+                />
+                {isListening && (
+                  <div className="absolute inset-0 bg-rose-50/5 pointer-events-none border-x-2 border-rose-600/20" />
+                )}
+              </div>
+
               <Button type="submit" disabled={!input.trim() || isTyping} className="h-8 w-8 sm:h-10 sm:w-10 rounded-none bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
-                <Send size={16} className="sm:size-[18px]" />
+                {isTyping ? <Loader2 className="animate-spin size-4" /> : <Send size={16} className="sm:size-[18px]" />}
               </Button>
             </form>
           </div>
