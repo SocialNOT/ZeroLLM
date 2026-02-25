@@ -322,8 +322,12 @@ export function ChatInterface() {
       }
 
     } catch (error: any) {
+      let friendlyError = error.message || 'Node connection failure.';
+      if (friendlyError.includes('Failed to fetch')) {
+        friendlyError = "ERROR: Network protocol failure. Local engine might be unreachable or offline mode needs endpoint verification.";
+      }
       updateMessage(session.id, assistantMsgId, {
-        content: `ERROR: ${error.message || 'Node connection failure.'}`
+        content: `ERROR: ${friendlyError}`
       });
     } finally {
       setIsTyping(false);

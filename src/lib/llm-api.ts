@@ -70,12 +70,12 @@ export async function performWebSearch(query: string): Promise<string> {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 } // Cache results for 1 hour to optimize performance
+      next: { revalidate: 3600 } 
     });
     
     if (!response.ok) {
-      const err = await response.json();
-      return `[SEARCH FAILURE]: ${err.error?.message || response.statusText}`;
+      const err = await safeJsonParse(response);
+      return `[SEARCH FAILURE]: ${err?.error?.message || response.statusText}`;
     }
 
     const data = await response.json();
@@ -85,7 +85,6 @@ export async function performWebSearch(query: string): Promise<string> {
       return "Zero search results acquired for this signal. No real-time data found for the current query.";
     }
 
-    // Extract high-density context from top 5 results
     const results = items.slice(0, 5).map((item: any, idx: number) => (
       `[Source ${idx + 1}]\nTitle: ${item.title}\nLink: ${item.link}\nSnippet: ${item.snippet}`
     )).join('\n\n');
