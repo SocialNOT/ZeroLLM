@@ -204,14 +204,14 @@ export function ChatInterface() {
       <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
         {isGuest && (
-          <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/5 z-30">
+          <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/10 z-30">
             <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-full border-2 border-primary">
               <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none">TTL:</span>
               <Clock size={10} className="text-primary" />
               <span className="text-[10px] font-black font-mono text-slate-900 leading-none">{timeLeft}</span>
             </div>
             <Link href="/auth/login">
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
                 <span className="text-[7px] font-black uppercase tracking-widest leading-none">Sign In</span>
                 <LogIn size={10} />
               </div>
@@ -254,14 +254,14 @@ export function ChatInterface() {
             )}
             
             <div className="flex items-center gap-1 shrink-0">
-              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
+              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary shadow-inner" : "bg-white text-slate-900")}>
                 {aiMode === 'online' ? <Cloud size={12} /> : <Laptop size={12} />}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white transition-colors">
                 <Palette size={12} />
               </Button>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white transition-colors">
                   <Settings2 size={12} />
                 </Button>
               </SheetTrigger>
@@ -294,16 +294,8 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 sm:py-16 text-center space-y-6 sm:space-y-10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
+              <div className="flex flex-col items-center justify-center py-6 sm:py-12 text-center space-y-6 sm:space-y-10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
                 <div className="space-y-4">
-                  <div className="relative inline-block">
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[1.5rem] sm:rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-4 border-primary/10 shadow-2xl">
-                      <Zap className="animate-pulse h-8 w-8 sm:h-10 sm:w-10" />
-                    </div>
-                    <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-white flex items-center justify-center border-2 sm:border-4 border-primary text-primary shadow-lg">
-                      <Sparkles size={12} className="animate-pulse" />
-                    </div>
-                  </div>
                   <div className="space-y-1">
                     <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tighter leading-none uppercase px-4">Neural Node Synchronized</h2>
                     <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-primary mt-2">Establish command sequence to begin orchestration</p>
