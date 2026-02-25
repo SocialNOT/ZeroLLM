@@ -175,8 +175,8 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}
         </div>
 
-        {/* High-Fidelity 3x4 Interaction Grid */}
-        <div className="grid grid-cols-3 divide-x-2 divide-slate-100 border-t-2 border-slate-100 bg-slate-50">
+        {/* High-Fidelity 6x2 Interaction Grid (Two Rows) */}
+        <div className="grid grid-cols-6 divide-x-2 divide-slate-100 border-t-2 border-slate-100 bg-slate-50">
           {isAssistant && !isError ? (
             <>
               {[
@@ -191,19 +191,22 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 { id: 'logic', icon: <LineChart size={12} />, title: 'Logic Trace', action: () => handleRefineNode('Logical') },
                 { id: 'translate', icon: <Languages size={12} />, title: 'Translate', action: () => handleRefineNode('Linguistic') },
                 { id: 'copy', icon: <Copy size={12} />, title: 'Copy Node', action: handleCopy },
-              ].map(btn => (
+              ].map((btn, idx) => (
                 <button 
                   key={btn.id}
                   onClick={btn.action}
-                  className="flex flex-col items-center justify-center py-3 hover:bg-primary/5 transition-colors border-b-2 border-slate-100 group"
+                  className={cn(
+                    "flex flex-col items-center justify-center py-2 hover:bg-primary/5 transition-colors group",
+                    idx < 6 && "border-b-2 border-slate-100"
+                  )}
                 >
-                  <div className="text-primary group-hover:scale-110 transition-transform mb-1">{btn.icon}</div>
-                  <span className="text-[7px] font-black uppercase tracking-widest text-primary/60 group-hover:text-primary">{btn.title}</span>
+                  <div className="text-primary group-hover:scale-110 transition-transform mb-0.5">{btn.icon}</div>
+                  <span className="text-[6px] font-black uppercase tracking-widest text-primary/60 group-hover:text-primary">{btn.title}</span>
                 </button>
               ))}
-              <div className="flex flex-col items-center justify-center py-3 bg-primary text-white border-b-2 border-primary">
-                <Clock size={12} className="mb-1" />
-                <span className="text-[8px] font-black font-mono tracking-tighter">
+              <div className="flex flex-col items-center justify-center py-2 bg-primary text-white">
+                <Clock size={12} className="mb-0.5" />
+                <span className="text-[7px] font-black font-mono tracking-tighter">
                   {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}
                 </span>
               </div>
@@ -211,7 +214,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           ) : (
             <button 
               onClick={handleCopy}
-              className="col-span-3 flex items-center justify-center py-4 hover:bg-slate-100 transition-colors gap-3"
+              className="col-span-6 flex items-center justify-center py-4 hover:bg-slate-100 transition-colors gap-3"
             >
               <Copy size={14} className="text-slate-900" />
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Synchronize Node Data</span>
