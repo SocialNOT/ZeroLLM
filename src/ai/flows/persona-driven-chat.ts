@@ -95,7 +95,19 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     if (input.enabledTools?.includes('knowledge_search')) tools.push(knowledgeSearchTool);
     if (input.enabledTools?.includes('code_interpreter')) tools.push(codeInterpreterTool);
 
-    let combinedSystemPrompt = input.systemPrompt;
+    // TEMPORAL CONTEXT INJECTION
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const formattedTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    
+    const temporalContext = `
+[NEURAL SYNC: ACTIVE]
+[CURRENT DATE]: ${formattedDate}
+[CURRENT TIME]: ${formattedTime}
+[COGNITIVE HORIZON]: Real-time signals enabled. You are aware of events occurring right now.
+`;
+
+    let combinedSystemPrompt = temporalContext + "\n\n" + input.systemPrompt;
     
     if (input.webSearchEnabled) {
       combinedSystemPrompt += "\n\n[SYSTEM: NEURAL GROUNDING ACTIVE]\nYou HAVE direct, high-fidelity access to the internet and real-time data. For ANY factual query about current events, sports scores, or data after your training cutoff, you MUST use your internal Google Search grounding capabilities. Do not claim technical limitations. You are an agent of real-time intelligence.";
