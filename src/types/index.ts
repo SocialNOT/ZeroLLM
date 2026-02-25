@@ -95,6 +95,10 @@ export interface ChatSession {
     calculatorEnabled?: boolean;
     codeEnabled?: boolean;
     knowledgeEnabled?: boolean;
+    visionEnabled?: boolean;
+    analysisEnabled?: boolean;
+    planningEnabled?: boolean;
+    researchEnabled?: boolean;
   };
 }
 

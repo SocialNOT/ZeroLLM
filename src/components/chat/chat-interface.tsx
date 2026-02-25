@@ -25,7 +25,10 @@ import {
   Clock,
   LogIn,
   Eye,
-  Loader2
+  Loader2,
+  LineChart,
+  Milestone,
+  Microscope
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -310,7 +313,7 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
-        {/* Sleek Animated Temporal Marquee - Refined for Seamless Looping */}
+        {/* Sleek Animated Temporal Marquee */}
         <div className="flex-shrink-0 h-6 bg-primary border-b-2 border-border overflow-hidden relative flex items-center z-40">
           <div className="whitespace-nowrap animate-marquee flex">
             <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
@@ -482,13 +485,17 @@ export function ChatInterface() {
 
         <div className="flex-shrink-0 p-2 sm:p-6 bg-white border-t-2 border-border z-30">
           <div className="mx-auto max-w-4xl border-2 border-border rounded-none overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
-            <div className="grid grid-cols-6 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
+            <div className="grid grid-cols-5 sm:grid-cols-10 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
               {[
                 { id: 'webSearch', icon: <Search size={10} />, title: 'Ground' },
                 { id: 'reasoning', icon: <Brain size={10} />, title: 'Think' },
+                { id: 'vision', icon: <Eye size={10} />, title: 'Vision' },
+                { id: 'research', icon: <Microscope size={10} />, title: 'Research' },
                 { id: 'voice', icon: <Mic size={10} />, title: 'Voice' },
                 { id: 'calculator', icon: <Calculator size={10} />, title: 'Math' },
                 { id: 'code', icon: <Terminal size={10} />, title: 'Code' },
+                { id: 'analysis', icon: <LineChart size={10} />, title: 'Logic' },
+                { id: 'planning', icon: <Milestone size={10} />, title: 'Strategy' },
                 { id: 'knowledge', icon: <Database size={10} />, title: 'Vault' }
               ].map(tool => {
                 const settingKey = tool.id === 'webSearch' ? 'webSearchEnabled' : 
@@ -503,7 +510,7 @@ export function ChatInterface() {
                     className={cn(
                       "flex flex-col items-center justify-center py-1.5 sm:py-2 transition-all active:scale-95 min-w-0 rounded-none",
                       isActive 
-                        ? "bg-primary text-white" 
+                        ? "bg-primary text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]" 
                         : "bg-transparent text-slate-900 hover:bg-primary/10"
                     )}
                   >

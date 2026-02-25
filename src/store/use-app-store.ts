@@ -55,11 +55,11 @@ interface AppState {
   
   addFramework: (f: Framework) => void;
   updateFramework: (id: string, updates: Partial<Framework>) => void;
-  deleteFramework: (id: string) => void;
+  deletePersonaAsCustom: (id: string) => void;
   
-  addLinguisticControl: (l: LinguisticControl) => void;
-  updateLinguisticControl: (id: string, updates: Partial<LinguisticControl>) => void;
-  deleteLinguisticControl: (id: string) => void;
+  addFrameworkAsCustom: (f: Framework) => void;
+  updateFrameworkAsCustom: (id: string, updates: Partial<Framework>) => void;
+  deleteFrameworkAsCustom: (id: string) => void;
 
   createSession: (workspaceId: string) => string;
   deleteSession: (id: string) => void;
@@ -81,7 +81,7 @@ interface AppState {
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
-  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge') => void;
+  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge' | 'vision' | 'analysis' | 'planning' | 'research') => void;
   checkSessionExpiry: () => void;
   
   // Theme Actions
@@ -168,12 +168,22 @@ export const useAppStore = create<AppState>()(
       deletePersona: (id) => set((state) => ({
         personas: state.personas.filter(p => p.id !== id || !p.isCustom)
       })),
+      deletePersonaAsCustom: (id) => set((state) => ({
+        personas: state.personas.filter(p => p.id !== id || !p.isCustom)
+      })),
 
       addFramework: (f) => set((state) => ({ frameworks: [...state.frameworks, { ...f, id: `f-${Date.now()}`, isCustom: true }] })),
       updateFramework: (id, updates) => set((state) => ({
         frameworks: state.frameworks.map(f => f.id === id ? { ...f, ...updates } : f)
       })),
       deleteFramework: (id) => set((state) => ({
+        frameworks: state.frameworks.filter(f => f.id !== id || !f.isCustom)
+      })),
+      addFrameworkAsCustom: (f) => set((state) => ({ frameworks: [...state.frameworks, { ...f, id: `f-${Date.now()}`, isCustom: true }] })),
+      updateFrameworkAsCustom: (id, updates) => set((state) => ({
+        frameworks: state.frameworks.map(f => f.id === id ? { ...f, ...updates } : f)
+      })),
+      deleteFrameworkAsCustom: (id) => set((state) => ({
         frameworks: state.frameworks.filter(f => f.id !== id || !f.isCustom)
       })),
 
@@ -334,7 +344,11 @@ export const useAppStore = create<AppState>()(
             voiceResponseEnabled: false,
             calculatorEnabled: false,
             codeEnabled: false,
-            knowledgeEnabled: false
+            knowledgeEnabled: false,
+            visionEnabled: false,
+            analysisEnabled: false,
+            planningEnabled: false,
+            researchEnabled: false
           }
         };
         set((state) => ({ 
@@ -448,12 +462,20 @@ export const useAppStore = create<AppState>()(
             if (tool === 'calculator') settings.calculatorEnabled = !settings.calculatorEnabled;
             if (tool === 'code') settings.codeEnabled = !settings.codeEnabled;
             if (tool === 'knowledge') settings.knowledgeEnabled = !settings.knowledgeEnabled;
+            if (tool === 'vision') settings.visionEnabled = !settings.visionEnabled;
+            if (tool === 'analysis') settings.analysisEnabled = !settings.analysisEnabled;
+            if (tool === 'planning') settings.planningEnabled = !settings.planningEnabled;
+            if (tool === 'research') settings.researchEnabled = !settings.researchEnabled;
             
             const enabledTools: string[] = [];
             if (settings.webSearchEnabled) enabledTools.push('web_search');
             if (settings.calculatorEnabled) enabledTools.push('calculator');
             if (settings.codeEnabled) enabledTools.push('code_interpreter');
             if (settings.knowledgeEnabled) enabledTools.push('knowledge_search');
+            if (settings.visionEnabled) enabledTools.push('vision');
+            if (settings.analysisEnabled) enabledTools.push('analysis');
+            if (settings.planningEnabled) enabledTools.push('planning');
+            if (settings.researchEnabled) enabledTools.push('research');
 
             return { ...s, settings: { ...settings, enabledTools } };
           })

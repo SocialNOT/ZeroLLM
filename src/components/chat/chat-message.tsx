@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -14,7 +15,11 @@ import {
   Loader2,
   Terminal,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Search,
+  Brain,
+  Expand,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -82,6 +87,15 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
     } finally {
       setIsTranslating(false);
     }
+  };
+
+  const handleDeepDive = () => {
+    toast({ title: "Energizing Deep Dive Node", description: "Orchestrating multi-step reasoning..." });
+    // In a real app, this would trigger a specific AI flow
+  };
+
+  const handleFactCheck = () => {
+    toast({ title: "Signal Verification Active", description: "Scanning knowledge nodes for claim proof..." });
   };
 
   const operatorName = isAssistant 
@@ -162,26 +176,38 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         </div>
 
         {/* Footer Interaction Bar */}
-        <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        <div className="px-4 py-2.5 border-t-2 border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {isAssistant && !isError && (
               <>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-90" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={16} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-90" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90" onClick={onRegenerate}>
                   <RefreshCw size={16} />
                 </Button>
+                
+                <div className="h-4 w-[2px] bg-slate-200 mx-1" />
+
+                <Button onClick={handleDeepDive} variant="ghost" size="sm" className="h-8 rounded-none border-2 border-transparent hover:border-primary/20 text-[9px] font-black uppercase tracking-widest gap-1.5 px-2 text-primary">
+                  <Brain size={12} />
+                  Deep Dive
+                </Button>
+                <Button onClick={handleFactCheck} variant="ghost" size="sm" className="h-8 rounded-none border-2 border-transparent hover:border-primary/20 text-[9px] font-black uppercase tracking-widest gap-1.5 px-2 text-primary">
+                  <Search size={12} />
+                  Fact Check
+                </Button>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-90">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90">
                       {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Languages size={16} />}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="rounded-2xl p-1.5 shadow-2xl border-2 border-primary/20 bg-white min-w-[160px] z-[100]">
+                  <DropdownMenuContent align="start" className="rounded-none p-1.5 shadow-2xl border-2 border-primary/20 bg-white min-w-[160px] z-[100]">
                     <div className="px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-primary border-b-2 border-primary/10 mb-1.5">Target Language Node</div>
                     {['Hindi', 'Bengali', 'Spanish', 'French', 'Japanese', 'German'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[11px] font-black uppercase tracking-widest rounded-xl px-3 py-3 cursor-pointer text-primary hover:bg-primary hover:text-white transition-colors">
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[11px] font-black uppercase tracking-widest rounded-none px-3 py-3 cursor-pointer text-primary hover:bg-primary hover:text-white transition-colors">
                         {l}
                       </DropdownMenuItem>
                     ))}
@@ -189,12 +215,12 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg transition-all active:scale-90 text-primary hover:bg-primary/10" onClick={handleCopy}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90 text-primary hover:bg-primary/10" onClick={handleCopy}>
               {isCopied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
             </Button>
           </div>
 
-          <div className="flex items-center justify-center px-3 py-1.5 rounded-lg border-2 border-primary bg-primary text-white font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm">
+          <div className="flex items-center justify-center px-3 py-1.5 rounded-none border-2 border-primary bg-primary text-white font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm">
             {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}
           </div>
         </div>
