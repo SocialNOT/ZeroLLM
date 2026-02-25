@@ -132,23 +132,23 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         {children}
       </DialogTrigger>
       <DialogContent className="max-w-xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
-        <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
+        <DialogHeader className="p-4 sm:p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-none bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-              <Zap size={20} />
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-none bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
+              <Zap size={18} className="sm:size-5" />
             </div>
             <div className="min-w-0 text-left">
               <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
                 {dialogTitle}
               </DialogTitle>
-              <DialogDescription className="text-[8px] font-bold uppercase tracking-widest text-primary mt-1">
-                Configure your custom neural protocol and system instructions. Node will be persisted locally.
+              <DialogDescription className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest text-primary mt-1">
+                Configure custom neural protocol. Node persisted locally.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 custom-scrollbar">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5 text-left">
               <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">Protocol Identifier</Label>
@@ -185,20 +185,20 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
             <Textarea 
               value={formData.content}
               onChange={(e) => setFormData({...formData, content: e.target.value})}
-              placeholder="Enter core system instructions and behavioral constraints..."
-              className="rounded-none border-primary/10 bg-slate-50 min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
+              placeholder="Enter core system instructions..."
+              className="rounded-none border-primary/10 bg-slate-50 min-h-[150px] sm:min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
             />
           </div>
         </div>
 
-        <DialogFooter className="p-6 bg-slate-50/50 border-t border-primary/5 shrink-0 flex flex-row items-center justify-between sm:justify-between gap-4">
-          <div className="flex items-center gap-2 text-primary">
+        <DialogFooter className="p-3 sm:p-6 bg-slate-50/50 border-t border-primary/5 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-primary w-full sm:w-auto justify-center sm:justify-start">
             <AlertCircle size={14} className="shrink-0" />
-            <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none hidden sm:inline">Local Node Persisted</span>
+            <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none">Local Node Persisted</span>
           </div>
           <Button 
             onClick={handleSave}
-            className="h-11 px-8 flex-1 sm:flex-none rounded-none bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+            className="h-10 sm:h-11 w-full sm:w-auto px-6 sm:px-8 rounded-none bg-primary text-white font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
           >
             <Save size={14} />
             Commit Node

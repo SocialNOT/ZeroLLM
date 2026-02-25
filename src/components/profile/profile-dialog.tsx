@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -143,32 +142,32 @@ export function ProfileDialog() {
   return (
     <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
       <DialogContent className="max-w-2xl w-[95vw] sm:max-w-2xl border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh] z-[200]">
-        <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
+        <DialogHeader className="p-4 sm:p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-4">
             <div className="relative group">
-              <Avatar className="h-16 w-16 rounded-none border-2 border-primary/20 shadow-xl">
+              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 rounded-none border-2 border-primary/20 shadow-xl">
                 <AvatarImage src={formData.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
                 <AvatarFallback className="rounded-none bg-primary/5 text-primary font-black">
-                  <User size={24} />
+                  <User size={20} />
                 </AvatarFallback>
               </Avatar>
               <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                <ImageIcon size={16} className="text-white" />
+                <ImageIcon size={14} className="text-white" />
               </div>
             </div>
             <div className="min-w-0 text-left">
-              <DialogTitle className="font-headline text-xl font-bold text-slate-900 tracking-tight leading-tight">
+              <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight">
                 Identity Configuration
               </DialogTitle>
-              <DialogDescription className="text-primary font-bold text-[8px] uppercase tracking-widest mt-1">
+              <DialogDescription className="text-primary font-bold text-[7px] sm:text-[8px] uppercase tracking-widest mt-1">
                 Refine your <span className="font-black">Neural Telemetry</span> and credentials.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 custom-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-1.5 text-left">
               <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">Legal Name (Display)</Label>
               <div className="relative">
@@ -176,7 +175,7 @@ export function ProfileDialog() {
                 <Input 
                   value={formData.displayName}
                   onChange={(e) => setFormData({...formData, displayName: e.target.value})}
-                  className="rounded-none border-primary/10 bg-slate-50 h-11 pl-10 text-xs font-bold focus:ring-primary/20"
+                  className="rounded-none border-primary/10 bg-slate-50 h-10 sm:h-11 pl-10 text-xs font-bold focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -188,13 +187,13 @@ export function ProfileDialog() {
                   value={formData.username}
                   onChange={(e) => setFormData({...formData, username: e.target.value})}
                   placeholder="@operator_id"
-                  className="rounded-none border-primary/10 bg-slate-50 h-11 pl-10 text-xs font-bold focus:ring-primary/20"
+                  className="rounded-none border-primary/10 bg-slate-50 h-10 sm:h-11 pl-10 text-xs font-bold focus:ring-primary/20"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-1.5 text-left">
               <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">Email Node (Fixed)</Label>
               <div className="relative">
@@ -202,7 +201,7 @@ export function ProfileDialog() {
                 <Input 
                   value={formData.email}
                   disabled
-                  className="rounded-none border-primary/5 bg-slate-100 h-11 pl-10 text-xs font-bold text-slate-400 cursor-not-allowed"
+                  className="rounded-none border-primary/5 bg-slate-100 h-10 sm:h-11 pl-10 text-xs font-bold text-slate-400 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -214,7 +213,7 @@ export function ProfileDialog() {
                   value={formData.mobile}
                   onChange={(e) => setFormData({...formData, mobile: e.target.value})}
                   placeholder="+91 XXXX XXX XXX"
-                  className="rounded-none border-primary/10 bg-slate-50 h-11 pl-10 text-xs font-bold focus:ring-primary/20"
+                  className="rounded-none border-primary/10 bg-slate-50 h-10 sm:h-11 pl-10 text-xs font-bold focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -228,7 +227,7 @@ export function ProfileDialog() {
                 value={formData.photoURL}
                 onChange={(e) => setFormData({...formData, photoURL: e.target.value})}
                 placeholder="https://images.unsplash.com/..."
-                className="rounded-none border-primary/10 bg-slate-50 h-11 pl-10 text-xs font-bold focus:ring-primary/20"
+                className="rounded-none border-primary/10 bg-slate-50 h-10 sm:h-11 pl-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
           </div>
@@ -241,15 +240,15 @@ export function ProfileDialog() {
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
                 placeholder="Brief summary of your neural expertise..."
-                className="rounded-none border-primary/10 bg-slate-50 min-h-[100px] pl-10 text-xs font-medium focus:ring-primary/20 resize-none pt-3"
+                className="rounded-none border-primary/10 bg-slate-50 min-h-[80px] sm:min-h-[100px] pl-10 text-xs font-medium focus:ring-primary/20 resize-none pt-3"
               />
             </div>
           </div>
 
-          <div className="p-4 bg-rose-50 border border-rose-100 space-y-3">
+          <div className="p-3 sm:p-4 bg-rose-50 border border-rose-100 space-y-3">
             <div className="flex items-center gap-2 text-rose-600">
-              <Lock size={14} />
-              <span className="text-[9px] font-black uppercase tracking-widest">Sensitive Logic Update</span>
+              <Lock size={12} />
+              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Sensitive Logic Update</span>
             </div>
             <div className="space-y-1.5 text-left">
               <Label className="text-[9px] font-black uppercase tracking-widest text-rose-600 ml-1">New Access Key (Password)</Label>
@@ -258,29 +257,37 @@ export function ProfileDialog() {
                 value={formData.newPassword}
                 onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
                 placeholder="Leave blank to maintain current signal"
-                className="rounded-none border-rose-200 bg-white h-11 text-xs font-bold focus:ring-rose-100"
+                className="rounded-none border-rose-200 bg-white h-10 sm:h-11 text-xs font-bold focus:ring-rose-100"
               />
             </div>
           </div>
         </div>
 
-        <DialogFooter className="p-6 bg-slate-50 border-t border-primary/5 shrink-0 flex flex-row items-center justify-between gap-4">
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="h-12 px-6 rounded-none border-rose-200 text-rose-600 font-bold uppercase tracking-widest text-[9px] hover:bg-rose-50 gap-2"
-          >
-            <LogOut size={14} />
-            Terminate
-          </Button>
-          <div className="hidden sm:flex items-center gap-2 text-emerald-600">
+        <DialogFooter className="p-3 sm:p-6 bg-slate-50 border-t border-primary/5 shrink-0 flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex w-full sm:w-auto items-center justify-between gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="h-10 sm:h-12 px-4 sm:px-6 rounded-none border-rose-200 text-rose-600 font-bold uppercase tracking-widest text-[8px] sm:text-[9px] hover:bg-rose-50 gap-2 flex-1 sm:flex-none"
+            >
+              <LogOut size={14} className="shrink-0" />
+              Terminate
+            </Button>
+            <div className="flex sm:hidden items-center gap-1.5 text-emerald-600 px-2">
+              <ShieldCheck size={14} className="shrink-0" />
+              <span className="text-[7px] font-bold uppercase italic leading-none">Secured</span>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2 text-emerald-600 flex-1 justify-center">
             <ShieldCheck size={16} />
             <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none">Signal Secured</span>
           </div>
+
           <Button 
             onClick={handleSave}
             disabled={isLoading}
-            className="h-12 flex-1 sm:flex-none px-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-2xl shadow-primary/20 gap-2"
+            className="h-10 sm:h-12 w-full sm:w-auto sm:px-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] hover:scale-105 transition-all shadow-2xl shadow-primary/20 gap-2"
           >
             {isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : <Save size={16} />}
             Commit Node
