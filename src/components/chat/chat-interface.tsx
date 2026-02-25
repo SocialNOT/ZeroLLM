@@ -13,22 +13,16 @@ import {
   Mic, 
   MicOff, 
   Search,
-  Wifi,
   Calculator,
   Terminal,
   Database,
-  Shield,
-  ArrowRight,
-  Sparkles,
-  Layers,
-  Clock,
-  LogIn,
-  Palette,
+  ChevronRight,
+  Activity,
   Cloud,
   Laptop,
-  Globe,
-  ChevronRight,
-  Activity
+  Palette,
+  Clock,
+  LogIn
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -76,8 +70,6 @@ export function ChatInterface() {
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const lastProcessedIndexRef = useRef<number>(0);
   
   const session = sessions.find(s => s.id === activeSessionId);
   const persona = personas.find(p => p.id === session?.personaId) || personas[0];
@@ -98,46 +90,14 @@ export function ChatInterface() {
         const ONE_HOUR = 3600000;
         const expiryTime = sessionStartTime + ONE_HOUR;
         const remaining = Math.max(0, expiryTime - now.getTime());
-
         const h = Math.floor(remaining / 3600000);
         const m = Math.floor((remaining % 3600000) / 60000);
         const s = Math.floor((remaining % 60000) / 1000);
-        
         setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
       }
     }, 1000);
     return () => clearInterval(timer);
   }, [sessionStartTime, isGuest]);
-
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-
-      recognitionRef.current.onresult = (event: any) => {
-        let finalTranscript = '';
-        for (let i = Math.max(event.resultIndex, lastProcessedIndexRef.current); i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-            lastProcessedIndexRef.current = i + 1;
-          }
-        }
-        if (finalTranscript) {
-          setInput(prev => prev + (prev.endsWith(' ') || prev === '' ? '' : ' ') + finalTranscript);
-        }
-      };
-
-      recognitionRef.current.onerror = (event: any) => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    }
-  }, [mounted]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -148,34 +108,9 @@ export function ChatInterface() {
     }
   }, [session?.messages?.length, isTyping, session?.messages[session?.messages.length - 1]?.content]);
 
-  const handleMicToggle = () => {
-    if (!recognitionRef.current) {
-      toast({
-        variant: "destructive",
-        title: "Microphone Node Unavailable",
-        description: "Your browser does not support high-fidelity voice-to-text."
-      });
-      return;
-    }
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      lastProcessedIndexRef.current = 0;
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
-  };
-
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
     if (!textToSend.trim() || !session || isTyping) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
 
     if (session.messages.length === 0) {
       generateChatTitle(textToSend).then(title => updateSession(session.id, { title }));
@@ -258,47 +193,25 @@ export function ChatInterface() {
     }
   };
 
-  const cognitiveStarters = [
-    { 
-      title: "First Principles Analysis", 
-      prompt: "Analyze the following using First Principles thinking: ",
-      icon: <Brain className="text-primary h-5 w-5" />,
-      desc: "Deconstruct logic to fundamental truths."
-    },
-    { 
-      title: "Technical STRIDE Audit", 
-      prompt: "Perform a STRIDE threat model on this system architecture: ",
-      icon: <Shield className="text-rose-600 h-5 w-5" />,
-      desc: "Security threat modeling for systems."
-    },
-    { 
-      title: "Market Scenario Mapping", 
-      prompt: "Generate three possible future scenarios for this market segment: ",
-      icon: <Globe className="text-emerald-600 h-5 w-5" />,
-      desc: "Strategic trend extrapolation."
-    },
-    { 
-      title: "Clean Code Refactoring", 
-      prompt: "Refactor this code following SOLID and DRY principles: ",
-      icon: <Terminal className="text-indigo-600 h-5 w-5" />,
-      desc: "Architectural logic optimization."
-    }
+  const starters = [
+    { title: "Instant Logic", desc: "Explain anything like I'm 12.", prompt: "Explain the following simply in 3 bullet points: " },
+    { title: "Code Guard", desc: "Find bugs and fix logic errors.", prompt: "Review this code for bugs and security flaws: " },
+    { title: "Draft Master", desc: "Write high-impact professional emails.", prompt: "Draft a professional, clear response to: " },
+    { title: "Plan Pilot", desc: "Create a roadmap in seconds.", prompt: "Create a step-by-step project plan for: " }
   ];
 
   if (!session) return null;
 
   return (
     <Sheet>
-      <div className="flex h-full w-full flex-col overflow-hidden bg-background relative border-border">
+      <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
         {isGuest && (
           <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/5 z-30">
-            <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-full border-2 border-primary shadow-none">
+            <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-full border-2 border-primary">
               <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none">TTL:</span>
               <Clock size={10} className="text-primary" />
-              <span className="text-[10px] font-black font-mono tracking-tight text-foreground leading-none">
-                {timeLeft}
-              </span>
+              <span className="text-[10px] font-black font-mono text-slate-900 leading-none">{timeLeft}</span>
             </div>
             <Link href="/auth/login">
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer">
@@ -309,24 +222,21 @@ export function ChatInterface() {
           </div>
         )}
 
-        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-3 py-2 sm:px-6 bg-white z-20 overflow-hidden">
-          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-2">
+        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-3 py-2 sm:px-6 bg-white z-20">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <SettingsDialog>
-              <button className="flex items-center gap-2 group transition-all text-left bg-slate-50 px-2 py-1 rounded-xl border-2 border-border shadow-sm active:scale-95 min-w-0 max-w-[140px] sm:max-w-none flex-shrink-0">
+              <button className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-xl border-2 border-border shadow-sm active:scale-95 min-w-0">
                 <div className={cn(
-                  "h-8 w-8 rounded-lg flex items-center justify-center transition-all shrink-0 border-2",
+                  "h-8 w-8 rounded-lg flex items-center justify-center border-2",
                   connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
                 )}>
-                  {aiMode === 'online' ? <Cloud size={16} className="animate-pulse" /> : <Wifi size={16} />}
+                  {aiMode === 'online' ? <Cloud size={16} className="animate-pulse" /> : <Activity size={16} />}
                 </div>
-                <div className="flex flex-col items-start overflow-hidden flex-1 leading-tight">
-                  <span className={cn(
-                    "text-[8px] sm:text-[10px] font-black uppercase tracking-tighter truncate w-full",
-                    connectionStatus === 'online' ? "text-primary" : "text-destructive"
-                  )}>
+                <div className="flex flex-col items-start overflow-hidden leading-tight">
+                  <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-tighter text-primary truncate">
                     {aiMode === 'online' ? "Cloud Node" : "Local Node"}
                   </span>
-                  <span className="text-[7px] sm:text-[8px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
+                  <span className="text-[7px] sm:text-[8px] font-black text-slate-900 uppercase tracking-widest truncate">
                     {aiMode === 'online' ? "Gemini 2.5" : (connection?.modelId || "Engine")}
                   </span>
                 </div>
@@ -334,54 +244,54 @@ export function ChatInterface() {
             </SettingsDialog>
 
             {mounted && currentTime && (
-              <div className="flex items-center justify-center gap-1 sm:gap-4 flex-1 overflow-hidden px-1">
-                <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary shrink-0">
+              <div className="flex items-center justify-center gap-1 sm:gap-4 flex-1 overflow-hidden">
+                <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary">
                   {currentTime.toLocaleDateString('en-IN', { weekday: 'short' })}
                 </span>
-                <div className="bg-primary text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border-2 border-primary shadow-lg shadow-primary/20 shrink-0">
+                <div className="bg-primary text-white px-2 py-1 rounded-lg border-2 border-primary shadow-lg shadow-primary/20">
                   <span className="text-[10px] sm:text-[14px] font-black font-mono tracking-tighter">
                     {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                   </span>
                 </div>
-                <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-accent shrink-0">
+                <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary">
                   {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                 </span>
               </div>
             )}
             
             <div className="flex items-center gap-1 shrink-0">
-              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-8 w-8 rounded-lg border-2 border-border transition-all active:scale-90", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
+              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-8 w-8 rounded-lg border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
                 {aiMode === 'online' ? <Cloud size={14} /> : <Laptop size={14} />}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-8 w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white transition-all active:scale-90">
+              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-8 w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
                 <Palette size={14} />
               </Button>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white transition-colors active:scale-90">
+                <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
                   <Settings2 size={14} />
                 </Button>
               </SheetTrigger>
-              <SidebarTrigger className="h-8 w-8 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-lg active:scale-90" />
+              <SidebarTrigger className="h-8 w-8 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-lg" />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 border-2 border-border rounded-xl overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner shrink-0">
+          <div className="grid grid-cols-3 border-2 border-border rounded-xl overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1 px-0.5 hover:bg-accent hover:text-white transition-all group text-center active:scale-95 overflow-hidden">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white shrink-0">Identity</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full mt-0.5 px-1">{persona.name}</span>
+              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center">{persona.name}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1 px-0.5 hover:bg-primary hover:text-white transition-all group text-center active:scale-95 overflow-hidden">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white shrink-0">Arch</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full mt-0.5 px-1">{framework?.name || "None"}</span>
+              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Arch</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center">{framework?.name || "None"}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1 px-0.5 hover:bg-destructive hover:text-white transition-all group text-center active:scale-95 overflow-hidden">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white shrink-0">Logic</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full mt-0.5 px-1">{linguistic?.name || "Default"}</span>
+              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Logic</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center">{linguistic?.name || "Default"}</span>
               </button>
             </SheetTrigger>
           </div>
@@ -396,39 +306,31 @@ export function ChatInterface() {
                     <div className="h-20 w-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-4 border-primary/10 shadow-2xl">
                       <Zap className="animate-pulse h-10 w-10" />
                     </div>
-                    <div className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white flex items-center justify-center border-4 border-accent text-accent shadow-lg">
+                    <div className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white flex items-center justify-center border-4 border-primary text-primary shadow-lg">
                       <Activity size={14} className="animate-spin-slow" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-none">Neural Node Energized</h2>
-                    <div className="flex items-center justify-center gap-2 pt-2">
-                      <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary py-1 px-4 rounded-full font-black text-[9px] uppercase tracking-widest">
-                        Handshake: 100%
-                      </Badge>
-                      <Badge variant="outline" className="border-accent/20 bg-accent/5 text-accent py-1 px-4 rounded-full font-black text-[9px] uppercase tracking-widest">
-                        Identity: Verified
-                      </Badge>
-                    </div>
+                    <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-none uppercase">Node Energized</h2>
+                    <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary mt-4">Establish command sequence to begin orchestration</p>
                   </div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-400 max-w-sm mx-auto">Establish command sequence to begin orchestration</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                  {cognitiveStarters.map((starter, idx) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                  {starters.map((starter, idx) => (
                     <button 
                       key={idx} 
                       onClick={() => setInput(starter.prompt)} 
                       className="group flex flex-col p-5 rounded-[2.5rem] bg-white border-2 border-border shadow-lg hover:shadow-2xl hover:border-primary transition-all text-left relative overflow-hidden"
                     >
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all shadow-inner border border-border/50">
-                          {starter.icon}
+                      <div className="flex items-center gap-4 mb-2">
+                        <div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border">
+                          <Zap size={18} />
                         </div>
-                        <span className="text-[14px] font-black text-slate-900 tracking-tight leading-tight uppercase">{starter.title}</span>
+                        <span className="text-[14px] font-black text-slate-900 uppercase tracking-tight">{starter.title}</span>
                       </div>
-                      <p className="text-[10px] font-bold text-slate-400 leading-relaxed pl-1">{starter.desc}</p>
-                      <div className="absolute bottom-4 right-6 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-3 group-hover:translate-x-0">
+                      <p className="text-[10px] font-bold text-slate-900 leading-relaxed pl-1">{starter.desc}</p>
+                      <div className="absolute bottom-4 right-6 text-primary opacity-0 group-hover:opacity-100 transition-all">
                         <ChevronRight size={20} />
                       </div>
                     </button>
@@ -476,7 +378,7 @@ export function ChatInterface() {
                     key={tool.id} 
                     onClick={() => toggleTool(session.id, tool.id as any)} 
                     className={cn(
-                      "flex flex-col items-center justify-center py-1.5 transition-all active:scale-95",
+                      "flex flex-col items-center justify-center py-2 transition-all active:scale-95",
                       isActive 
                         ? "bg-primary text-white" 
                         : "bg-transparent text-slate-900 hover:bg-primary/5"
@@ -490,17 +392,14 @@ export function ChatInterface() {
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white p-1">
-              <Button type="button" variant="ghost" size="icon" onClick={handleMicToggle} className={cn("h-10 w-10 transition-all rounded-xl shrink-0 active:scale-90", isListening ? "text-white bg-destructive animate-pulse" : "text-slate-950 hover:bg-primary/10")}>
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-              </Button>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
-                placeholder={isListening ? "SAMPLING AUDIO NODE..." : "Input command sequence..."}
-                className="h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black focus-visible:ring-0 placeholder:text-slate-500 placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest"
+                placeholder="INPUT COMMAND SEQUENCE..."
+                className="h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest placeholder:opacity-60"
               />
-              <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-90 transition-all shrink-0">
+              <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
                 <Send size={18} />
               </Button>
             </form>

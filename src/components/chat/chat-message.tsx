@@ -12,10 +12,9 @@ import {
   Volume2,
   Check,
   Loader2,
-  Cpu,
-  Sparkles,
   Terminal,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -95,21 +94,19 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
-        "flex flex-col w-full max-w-[95%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all",
+        "flex flex-col w-full max-w-[95%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all bg-white",
         isAssistant 
-          ? isError 
-            ? "border-rose-600 bg-rose-50 shadow-rose-200/50" 
-            : "border-primary bg-white shadow-primary/10" 
-          : "border-accent bg-primary text-white shadow-accent/20"
+          ? isError ? "border-rose-600 shadow-rose-200/50" : "border-primary shadow-primary/10" 
+          : "border-slate-900 shadow-slate-200/50"
       )}>
-        {/* Terminal Header Bar */}
+        {/* Monolithic Terminal Header */}
         <div className={cn(
           "flex items-center gap-3 px-4 py-2 border-b-2 font-mono text-[10px] font-black uppercase tracking-widest select-none overflow-hidden shrink-0",
           isAssistant 
             ? isError ? "bg-rose-600 text-white border-rose-700" : "bg-primary text-white border-primary"
-            : "bg-accent text-white border-accent"
+            : "bg-slate-900 text-white border-slate-900"
         )}>
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-white/30 shrink-0 shadow-sm">
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-white/30 shrink-0">
             {isAssistant ? isError ? <AlertTriangle size={12} /> : <Bot size={12} /> : <User size={12} />}
           </div>
           <span className="truncate flex-1 font-black">{operatorName}.MD</span>
@@ -118,12 +115,9 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           </div>
         </div>
 
-        {/* Cognitive Payload Body */}
+        {/* Message Body */}
         <div className="p-4 sm:p-6 relative overflow-hidden min-w-0">
-          <div className={cn(
-            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap overflow-hidden",
-            isAssistant ? "text-slate-900" : "text-white"
-          )}>
+          <div className="text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap text-slate-900">
             {isAssistant && !isError ? (
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
@@ -138,7 +132,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                   code: ({node, inline, children, ...props}: any) => {
                     if (inline) return <code className="bg-primary/10 px-1.5 py-0.5 rounded text-[11px] font-mono text-primary font-black border-2 border-primary/20 break-all" {...props}>{children}</code>;
                     return (
-                      <div className="my-4 rounded-xl border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl group/code min-w-0">
+                      <div className="my-4 rounded-xl border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl min-w-0">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-white/20">
                           <span className="text-[10px] font-mono text-white font-black uppercase tracking-widest">Neural Code Node</span>
                           <Terminal size={12} className="text-white" />
@@ -167,23 +161,20 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}
         </div>
 
-        {/* Tactical Interaction Footer */}
-        <div className={cn(
-          "px-4 py-2.5 border-t flex items-center justify-between gap-3",
-          isAssistant ? "bg-slate-50 border-primary/20" : "bg-white/10 border-white/20"
-        )}>
+        {/* Footer Interaction Bar */}
+        <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {isAssistant && !isError && (
               <>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-90" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={16} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-90" onClick={onRegenerate}>
                   <RefreshCw size={16} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-90">
                       {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Languages size={16} />}
                     </Button>
                   </DropdownMenuTrigger>
@@ -198,17 +189,12 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-lg transition-all active:scale-90 border border-transparent", isAssistant ? "text-primary hover:bg-primary/10 hover:border-primary/20" : "text-white hover:bg-white/20 hover:border-white/30")} onClick={handleCopy}>
-              {isCopied ? <Check size={16} className={isAssistant ? "text-emerald-600" : "text-white"} /> : <Copy size={16} />}
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg transition-all active:scale-90 text-primary hover:bg-primary/10" onClick={handleCopy}>
+              {isCopied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
             </Button>
           </div>
 
-          <div className={cn(
-            "flex items-center justify-center px-3 py-1.5 rounded-lg border-2 font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm transition-all",
-            isAssistant 
-              ? "bg-primary text-white border-primary shadow-primary/20" 
-              : "bg-white text-primary border-white shadow-white/30"
-          )}>
+          <div className="flex items-center justify-center px-3 py-1.5 rounded-lg border-2 border-primary bg-primary text-white font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm">
             {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}
           </div>
         </div>
