@@ -227,17 +227,21 @@ export function ChatInterface() {
   const formattedTime = currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00";
   const formattedDate = currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() || "01 JAN 2026";
 
-  const marqueeText = `[NEURAL SYNC: ${formattedDay} | ${formattedTime} | ${formattedDate}] • [COMMAND HUB ACTIVE] • [NODE CRAFTED BY RAJIB SINGH] • [SIGNAL SECURED] • `;
+  const marqueeBase = ` • [NEURAL SYNC: ${formattedDay} | ${formattedTime} | ${formattedDate}] • [COMMAND HUB ACTIVE] • [NODE CRAFTED BY RAJIB SINGH] • [SIGNAL SECURED]`;
+  const marqueeText = marqueeBase.repeat(15);
 
   return (
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
-        {/* Sleek Animated Temporal Marquee */}
-        <div className="flex-shrink-0 h-6 bg-slate-900 border-b-2 border-border overflow-hidden relative flex items-center z-40">
-          <div className="whitespace-nowrap animate-marquee flex gap-8">
-            <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1">
-              {marqueeText.repeat(10)}
+        {/* Sleek Animated Temporal Marquee - Refined for Seamless Looping */}
+        <div className="flex-shrink-0 h-6 bg-primary border-b-2 border-border overflow-hidden relative flex items-center z-40">
+          <div className="whitespace-nowrap animate-marquee flex">
+            <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
+              {marqueeText}
+            </span>
+            <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
+              {marqueeText}
             </span>
           </div>
         </div>
