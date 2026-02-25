@@ -50,8 +50,8 @@ export const calculatorTool = ai.defineTool(
 export const webSearchTool = ai.defineTool(
   {
     name: 'web_search',
-    description: 'Search for real-time information on the internet using Google Search API. Use this when the user asks for current events, news, or specific facts post-2023.',
-    inputSchema: z.object({ query: z.string().describe('The search query to send to Google.') }),
+    description: 'Search Google for real-time information. Use this for ANY query involving current events, dates, sports results (T20, etc.), or facts after 2023.',
+    inputSchema: z.object({ query: z.string().describe('The search query.') }),
     outputSchema: z.string(),
   },
   async (input) => {
@@ -96,18 +96,15 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
 
     let combinedSystemPrompt = input.systemPrompt;
     
-    // SEARCH-FIRST INJECTION FOR MAXIMUM SIGNAL INTEGRITY
     if (input.webSearchEnabled) {
-      const searchData = await performWebSearch(input.userMessage);
-      // Prepend to ensure the model sees it as ground truth immediately
-      combinedSystemPrompt = `[COGNITIVE GROUNDING ENERGIZED: REAL-TIME DATA RETRIEVED]\nYou HAVE access to the web. The following verified information has been retrieved via Google Search. You MUST use this data to answer the user correctly. DO NOT claim you lack internet access. DO NOT apologize for technical limitations.\n\n${searchData}\n\n[INSTRUCTION CONTINUES]:\n${combinedSystemPrompt}`;
+      combinedSystemPrompt += "\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nYou HAVE direct access to Google Search via the 'web_search' tool. For ANY factual query about current events or data after your training cutoff, you MUST invoke this tool immediately. Do not apologize for technical limitations.";
     }
 
     if (input.reasoningEnabled) {
       combinedSystemPrompt += "\n\n[SYSTEM: REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";
     }
 
-    // GROUNDING-FIRST FOR OFFLINE ENGINES
+    // OFFLINE MODE (Custom Engine)
     if (input.baseUrl && !input.baseUrl.includes('genkit')) {
       let finalMessages = [
         { role: 'system' as const, content: combinedSystemPrompt },

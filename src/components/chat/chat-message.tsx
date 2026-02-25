@@ -71,7 +71,6 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
     try {
       const { translatedText } = await translateText({ text: message.content, targetLanguage: lang });
       
-      // Add translation as a new chat bubble
       const translationMsg = {
         id: `trans-${Date.now()}`,
         role: "assistant" as const,
@@ -99,10 +98,10 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       )}>
         <div className="flex-shrink-0 pt-1">
           <div className={cn(
-            "h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center shadow-md border transition-transform group-hover:scale-105",
+            "h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center shadow-md border-2 transition-transform group-hover:scale-105",
             isAssistant 
-              ? isError ? "bg-rose-50 text-rose-500 border-rose-200" : "bg-accent/10 text-accent border-accent/20" 
-              : "bg-primary text-primary-foreground border-primary/20"
+              ? isError ? "bg-rose-100 text-rose-600 border-rose-600" : "bg-accent text-accent-foreground border-accent" 
+              : "bg-primary text-primary-foreground border-primary"
           )}>
             {isAssistant ? <Bot size={14} /> : <User size={14} />}
           </div>
@@ -114,25 +113,25 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         )}>
           <div className="flex items-center gap-2 px-1">
             <span className={cn(
-              "text-[7px] font-black uppercase tracking-widest",
+              "text-[8px] font-black uppercase tracking-widest",
               isError ? "text-rose-600" : "text-primary"
             )}>
-              {isAssistant ? isError ? "Node Error" : "Neural Node" : "Human Identity"}
+              {isAssistant ? isError ? "Node Critical Error" : "Neural Command Node" : "Human Core Identity"}
             </span>
             {message.content.includes("[TRANSLATION:") && (
-              <Badge variant="outline" className="text-[6px] font-bold uppercase py-0 px-1 border-emerald-500 bg-emerald-500/5 text-emerald-500">
-                Linguistic Layer
+              <Badge variant="outline" className="text-[7px] font-black uppercase py-0 px-1 border-emerald-600 bg-emerald-50 text-emerald-600">
+                Linguistic Protocol
               </Badge>
             )}
           </div>
 
           <div className={cn(
-            "p-3 sm:p-4 rounded-xl shadow-sm transition-all relative overflow-hidden",
+            "p-3 sm:p-4 rounded-xl shadow-lg transition-all relative overflow-hidden",
             isAssistant 
               ? isError 
-                ? "bg-rose-50 border border-rose-200 text-rose-950 rounded-tl-none" 
-                : "bg-white border border-border text-slate-900 rounded-tl-none" 
-              : "bg-primary text-primary-foreground rounded-tr-none"
+                ? "bg-rose-50 border-2 border-rose-600 text-rose-950 rounded-tl-none" 
+                : "bg-white border-2 border-border text-slate-900 rounded-tl-none" 
+              : "bg-primary text-primary-foreground rounded-tr-none border-2 border-black/5"
           )}>
             <div className={cn(
               "text-[14px] sm:text-[15px] leading-relaxed relative z-10 font-bold",
@@ -143,25 +142,25 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                   remarkPlugins={[remarkGfm]}
                   components={{
                     p: ({...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                    h1: ({...props}) => <h1 className="text-lg font-bold mb-2 mt-3 first:mt-0 text-primary" {...props} />,
-                    h2: ({...props}) => <h2 className="text-md font-bold mb-2 mt-2 first:mt-0 text-primary" {...props} />,
-                    h3: ({...props}) => <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0 text-primary" {...props} />,
+                    h1: ({...props}) => <h1 className="text-lg font-black mb-2 mt-3 first:mt-0 text-primary" {...props} />,
+                    h2: ({...props}) => <h2 className="text-md font-black mb-2 mt-2 first:mt-0 text-primary" {...props} />,
+                    h3: ({...props}) => <h3 className="text-sm font-black mb-1 mt-2 first:mt-0 text-primary" {...props} />,
                     ul: ({...props}) => <ul className="list-disc pl-5 mb-2 space-y-1" {...props} />,
                     ol: ({...props}) => <ol className="list-decimal pl-5 mb-2 space-y-1" {...props} />,
-                    li: ({...props}) => <li className="marker:text-primary" {...props} />,
+                    li: ({...props}) => <li className="marker:text-primary font-bold" {...props} />,
                     strong: ({...props}) => <strong className="font-black text-primary" {...props} />,
                     code: ({node, inline, className, children, ...props}: any) => {
-                      if (inline) return <code className="bg-muted px-1.5 py-0.5 rounded text-[12px] font-mono text-primary font-bold" {...props}>{children}</code>;
+                      if (inline) return <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[12px] font-mono text-primary font-black border border-primary/10" {...props}>{children}</code>;
                       return (
-                        <div className="my-3 rounded-lg border-2 border-border bg-slate-950 p-3 overflow-x-auto custom-scrollbar shadow-inner">
+                        <div className="my-3 rounded-lg border-2 border-primary/20 bg-slate-950 p-3 overflow-x-auto custom-scrollbar shadow-inner">
                           <code className="text-[12px] font-mono text-slate-100 leading-normal block" {...props}>{children}</code>
                         </div>
                       );
                     },
-                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-2 text-foreground font-medium" {...props} />,
+                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-2 text-foreground font-black" {...props} />,
                     table: ({...props}) => <div className="overflow-x-auto my-3 rounded-lg border-2 border-border"><table className="w-full text-left border-collapse" {...props} /></div>,
-                    th: ({...props}) => <th className="bg-muted p-2 border-b-2 border-border font-bold text-[12px] uppercase tracking-wider text-foreground" {...props} />,
-                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px] text-foreground font-bold" {...props} />,
+                    th: ({...props}) => <th className="bg-slate-50 p-2 border-b-2 border-border font-black text-[12px] uppercase tracking-wider text-foreground" {...props} />,
+                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px] text-foreground font-black" {...props} />,
                   }}
                 >
                   {message.content}
@@ -171,7 +170,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               )}
             </div>
             {isAssistant && !isError && (
-              <div className="absolute top-0 right-0 p-2 opacity-20">
+              <div className="absolute top-0 right-0 p-2 opacity-10">
                 <Sparkles size={32} className="text-primary" />
               </div>
             )}
@@ -196,8 +195,8 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align={isAssistant ? "start" : "end"} className="rounded-xl p-1 shadow-2xl border-2 border-border bg-white">
-                    {['Hindi', 'Bengali (India)', 'Spanish', 'French', 'Japanese', 'German'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-black uppercase tracking-widest rounded-lg px-3 py-2 cursor-pointer text-primary">
+                    {['Hindi', 'Bengali', 'Spanish', 'French', 'Japanese', 'German'].map(l => (
+                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[10px] font-black uppercase tracking-widest rounded-lg px-3 py-2 cursor-pointer text-primary hover:bg-primary hover:text-white">
                         {l}
                       </DropdownMenuItem>
                     ))}
