@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile",
-      "description": "Extended information for application users including roles.",
+      "description": "Extended information for application users including roles and personal telemetry.",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
@@ -13,7 +13,12 @@
           "enum": ["Admin", "User", "Viewer"],
           "description": "The RBAC role of the user."
         },
-        "displayName": { "type": "string" }
+        "displayName": { "type": "string" },
+        "username": { "type": "string" },
+        "mobile": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "bio": { "type": "string" },
+        "createdAt": { "type": "number" }
       },
       "required": ["uid", "email", "role"]
     },

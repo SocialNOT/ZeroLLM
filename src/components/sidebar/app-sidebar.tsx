@@ -50,6 +50,7 @@ import Link from "next/link";
 import { LibraryEditor } from "@/components/library/library-editor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ProfileDialog } from "@/components/profile/profile-dialog";
 
 export function AppSidebar() {
   const { 
@@ -71,6 +72,7 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const { user } = useUser();
   const auth = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
 
   const customPersonas = personas.filter(p => p.isCustom);
   const customFrameworks = frameworks.filter(f => f.isCustom);
@@ -107,6 +109,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-primary/10 bg-white/50 backdrop-blur-xl">
+      <ProfileDialog isOpen={isProfileOpen} onOpenChange={setIsProfileOpen} />
+      
       <SidebarHeader className="p-6 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pt-6">
         <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
           <div className="flex items-center gap-3 group group-data-[collapsible=icon]:gap-0">
@@ -334,11 +338,11 @@ export function AppSidebar() {
                 <SidebarMenuButton size="lg" className="rounded-none hover:bg-primary/5 transition-all h-14 border border-primary/10 bg-white">
                   <div className="flex items-center gap-3 w-full">
                     <Avatar className="h-8 w-8 rounded-none border border-primary/20 shrink-0">
-                      <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
+                      <AvatarImage src={user?.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
                       <AvatarFallback className="rounded-none bg-primary/10 text-primary font-black"><User size={16} /></AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col text-left overflow-hidden group-data-[collapsible=icon]:hidden">
-                      <span className="text-[10px] font-black uppercase text-slate-900 truncate leading-none mb-1">{user?.email?.split('@')[0]}</span>
+                      <span className="text-[10px] font-black uppercase text-slate-900 truncate leading-none mb-1">{user?.displayName || user?.email?.split('@')[0]}</span>
                       <div className="flex items-center gap-1.5">
                         <div className="h-1 w-1 bg-emerald-500 rounded-none animate-pulse" />
                         <span className="text-[7px] font-bold uppercase tracking-widest text-primary">{currentUserRole} Node</span>
@@ -352,6 +356,10 @@ export function AppSidebar() {
                   <p className="text-[8px] font-black uppercase tracking-widest text-primary mb-0.5">Identity Protocol</p>
                   <p className="text-[10px] font-bold text-slate-900 truncate">{user?.email}</p>
                 </div>
+                <DropdownMenuItem onClick={() => setIsProfileOpen(true)} className="text-[9px] font-black uppercase tracking-widest text-slate-900 focus:bg-primary/5 cursor-pointer rounded-none p-3 gap-2">
+                  <UserCircle size={14} className="text-primary" />
+                  Configure Identity
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-[9px] font-black uppercase tracking-widest text-rose-600 focus:bg-rose-50 focus:text-rose-700 cursor-pointer rounded-none p-3 gap-2">
                   <LogOut size={14} />
                   Terminate Session
