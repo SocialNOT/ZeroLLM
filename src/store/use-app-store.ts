@@ -187,7 +187,10 @@ export const useAppStore = create<AppState>()(
 
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
-      setAiMode: (mode) => set({ aiMode: mode }),
+      setAiMode: (mode) => {
+        set({ aiMode: mode });
+        get().refreshModels();
+      },
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       
       checkConnection: async () => {
@@ -219,7 +222,9 @@ export const useAppStore = create<AppState>()(
         try {
           const models = await fetchModelsAction(activeConn.baseUrl, activeConn.apiKey);
           set({ availableModels: models.map(m => m.id) });
-        } catch (e) {}
+        } catch (e) {
+          set({ availableModels: [] });
+        }
       },
 
       triggerModelLoad: async (modelId) => {

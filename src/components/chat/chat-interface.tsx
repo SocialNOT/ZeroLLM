@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -59,7 +60,8 @@ export function ChatInterface() {
     sessionStartTime,
     cycleTheme,
     aiMode,
-    setAiMode
+    setAiMode,
+    setIsSettingsOpen
   } = useAppStore();
   
   const [input, setInput] = useState("");
@@ -284,7 +286,10 @@ export function ChatInterface() {
             </SettingsDialog>
 
             {mounted && (
-              <div className="flex flex-col items-start justify-center leading-none flex-1 min-w-0 px-4">
+              <button 
+                onClick={() => setIsSettingsOpen(true)}
+                className="flex flex-col items-start justify-center leading-none flex-1 min-w-0 px-4 hover:bg-slate-50 transition-colors cursor-pointer group rounded-none"
+              >
                 <div className="flex items-center gap-1.5 mb-1">
                   <div className={cn("h-1.5 w-1.5 rounded-none shrink-0", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
                   <span className={cn("text-[8px] font-black uppercase tracking-widest", connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600")}>
@@ -302,7 +307,7 @@ export function ChatInterface() {
                     {getModelFeatures(activeModelId)}
                   </div>
                 </div>
-              </div>
+              </button>
             )}
             
             <div className="flex items-center gap-0.5 shrink-0">
