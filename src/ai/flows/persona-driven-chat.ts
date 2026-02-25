@@ -3,7 +3,7 @@
 
 import { z } from 'genkit';
 import { ai } from '@/ai/genkit';
-import { callChatCompletion } from '@/lib/llm-api';
+import { callChatCompletion, performWebSearch } from '@/lib/llm-api';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
@@ -50,13 +50,12 @@ export const calculatorTool = ai.defineTool(
 export const webSearchTool = ai.defineTool(
   {
     name: 'web_search',
-    description: 'Search the internet for real-time information. Use this for ANY query involving current events, sports results, or facts after 2023.',
+    description: 'Search the internet for real-time information via Serper API.',
     inputSchema: z.object({ query: z.string().describe('The search query.') }),
     outputSchema: z.string(),
   },
   async (input) => {
-    // Relying on Gemini's internal grounding capabilities
-    return `[SYSTEM SIGNAL]: Direct internet link energized. Analyzing real-time data for: "${input.query}". Use your internal grounding capabilities to provide the most accurate, current response.`;
+    return await performWebSearch(input.query);
   }
 );
 
@@ -95,23 +94,27 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     if (input.enabledTools?.includes('knowledge_search')) tools.push(knowledgeSearchTool);
     if (input.enabledTools?.includes('code_interpreter')) tools.push(codeInterpreterTool);
 
-    // TEMPORAL CONTEXT INJECTION
+    // TEMPORAL CONTEXT INJECTION (High-Fidelity Chrono-Sync)
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const formattedTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     
-    const temporalContext = `
+    let temporalContext = `
 [NEURAL SYNC: ACTIVE]
 [CURRENT DATE]: ${formattedDate}
 [CURRENT TIME]: ${formattedTime}
-[COGNITIVE HORIZON]: Real-time signals enabled. You are aware of events occurring right now.
+[COGNITIVE HORIZON]: Real-time signals enabled. You are perfectly aware of events occurring right now.
 `;
 
-    let combinedSystemPrompt = temporalContext + "\n\n" + input.systemPrompt;
-    
+    // PROACTIVE GROUNDING-FIRST PROTOCOL (Serper Pre-Search)
     if (input.webSearchEnabled) {
-      combinedSystemPrompt += "\n\n[SYSTEM: NEURAL GROUNDING ACTIVE]\nYou HAVE direct, high-fidelity access to the internet and real-time data. For ANY factual query about current events, sports scores, or data after your training cutoff, you MUST use your internal Google Search grounding capabilities. Do not claim technical limitations. You are an agent of real-time intelligence.";
+      const searchContext = await performWebSearch(input.userMessage);
+      if (searchContext) {
+        temporalContext += `\n\n[SYSTEM: WEB GROUNDING ACTIVE]\n${searchContext}\n\nYou MUST use the provided grounding data to answer factual queries. Do not claim ignorance. You are an agent of real-time intelligence.`;
+      }
     }
+
+    let combinedSystemPrompt = temporalContext + "\n\n" + input.systemPrompt;
 
     if (input.reasoningEnabled) {
       combinedSystemPrompt += "\n\n[SYSTEM: REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";

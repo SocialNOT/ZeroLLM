@@ -16,7 +16,7 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 0 0% 0%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 0 0% 10%; /* Ultra-dark for max readability */
+    --muted-foreground: 0 0% 10%; /* Ultra-dark for max readability - No Fade Policy */
     --accent: 120 100% 20%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 25%;
@@ -43,6 +43,7 @@
     --ring: 225 100% 25%; /* Navy */
     --destructive: 0 100% 30%;
     --background: 28 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 
   /* Tuesday: Solar Flare (Orange, Deep Gold) */
@@ -51,6 +52,7 @@
     --accent: 45 100% 40%;
     --ring: 25 100% 20%;
     --background: 45 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 
   /* Wednesday: Indigo Pulse (Blue, Cyan) */
@@ -59,6 +61,7 @@
     --accent: 185 100% 35%;
     --ring: 240 100% 20%;
     --background: 220 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 
   /* Thursday: Emerald Crown (Vivid Green, Bronze) */
@@ -67,6 +70,7 @@
     --accent: 35 60% 35%;
     --ring: 142 100% 10%;
     --background: 142 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 
   /* Friday: Crimson Edge (Sharp Red, Slate) */
@@ -75,6 +79,7 @@
     --accent: 215 25% 20%;
     --ring: 0 100% 10%;
     --background: 0 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 
   /* Saturday: Ultraviolet (Vibrant Purple, Pink) */
@@ -83,6 +88,7 @@
     --accent: 320 100% 45%;
     --ring: 270 100% 20%;
     --background: 270 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 
   /* Sunday: Cyber Lime (High-Contrast Lime, Teal) */
@@ -91,6 +97,7 @@
     --accent: 170 100% 30%;
     --ring: 75 100% 10%;
     --background: 75 100% 98%;
+    --muted-foreground: 0 0% 10%;
   }
 }
 

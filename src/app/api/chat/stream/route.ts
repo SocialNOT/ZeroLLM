@@ -1,9 +1,10 @@
 
 import { NextRequest } from 'next/server';
+import { performWebSearch } from '@/lib/llm-api';
 
 /**
  * @fileOverview Streaming API Route for Real-time Token Orchestration.
- * Includes Grounding-First enhancement for high-fidelity cognitive context.
+ * Includes Proactive Grounding-First enhancement for high-fidelity cognitive context.
  */
 
 export async function POST(req: NextRequest) {
@@ -24,21 +25,33 @@ export async function POST(req: NextRequest) {
 
     let activeMessages = [...messages];
     
-    // High-Fidelity Web Grounding Sequence (Grounding-First)
+    // TEMPORAL SYNC
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const formattedTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    
+    const temporalPrefix = `[NEURAL SYNC: ${formattedDate} | ${formattedTime}]\n`;
+
+    // PROACTIVE GROUNDING-FIRST SEQUENCE (Serper Integration)
     if (settings?.webSearchEnabled) {
-      const groundingPrefix = `\n\n[SYSTEM: NEURAL GROUNDING ACTIVE]\nYou are equipped with high-fidelity real-time internet access. You must acknowledge current events and use verified data from the web to answer accurately. DO NOT claim technical limitations.`;
+      const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || "";
+      const groundingData = await performWebSearch(lastUserMsg);
+      
+      const groundingPrefix = `\n\n[SYSTEM: NEURAL GROUNDING ACTIVE]\nYou are equipped with high-fidelity real-time internet access via Serper node.\n${groundingData}\nYou must use this verified data to answer accurately. DO NOT claim technical limitations.`;
 
       if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
         activeMessages[0] = {
           ...activeMessages[0],
-          content: `${activeMessages[0].content}${groundingPrefix}`
+          content: `${temporalPrefix}${activeMessages[0].content}${groundingPrefix}`
         };
       } else {
         activeMessages = [
-          { role: 'system', content: `[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access. You must answer correctly using current information.${groundingPrefix}` },
+          { role: 'system', content: `${temporalPrefix}[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access.${groundingPrefix}` },
           ...messages
         ];
       }
+    } else if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
+      activeMessages[0].content = `${temporalPrefix}${activeMessages[0].content}`;
     }
 
     // Reasoning Enhancement for Custom Engines

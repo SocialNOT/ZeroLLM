@@ -113,13 +113,13 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         )}>
           <div className="flex items-center gap-3 px-1">
             <span className={cn(
-              "text-[10px] font-black uppercase tracking-[0.1em]",
+              "text-[10px] font-black uppercase tracking-[0.1em] opacity-100",
               isError ? "text-rose-700" : "text-primary"
             )}>
               {isAssistant ? isError ? "Node Critical Error" : "Neural Command Node" : "Human Core Identity"}
             </span>
             {message.content.includes("[TRANSLATION:") && (
-              <Badge variant="outline" className="text-[9px] font-black uppercase py-0 px-2 border-emerald-700 bg-emerald-50 text-emerald-700">
+              <Badge variant="outline" className="text-[9px] font-black uppercase py-0 px-2 border-emerald-700 bg-emerald-100 text-emerald-900 opacity-100">
                 Linguistic Protocol
               </Badge>
             )}
@@ -170,7 +170,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               )}
             </div>
             {isAssistant && !isError && (
-              <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
+              <div className="absolute top-0 right-0 p-3 opacity-30 pointer-events-none">
                 <Sparkles size={40} className="text-primary" />
               </div>
             )}
@@ -207,7 +207,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-primary/10 rounded-lg transition-colors border border-transparent hover:border-primary/20" onClick={handleCopy}>
               {isCopied ? <Check size={12} className="text-emerald-700" /> : <Copy size={12} />}
             </Button>
-            <div className="flex items-center justify-center bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
+            <div className="flex items-center justify-center bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 opacity-100">
               <span className="text-[9px] font-black font-mono text-primary leading-none">
                 {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
               </span>

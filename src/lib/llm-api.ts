@@ -50,17 +50,45 @@ function getHeaders(apiKey?: string) {
 }
 
 /**
- * Performs a Tactical Web Access sequence.
- * Uses a Neural Grounding logic to retrieve real-time data nodes.
+ * Performs a High-Fidelity Web Search via Serper API.
+ * Injects real-time organic results into the cognitive stream.
  */
 export async function performWebSearch(query: string): Promise<string> {
-  // Logic shifted to Gemini Native Grounding tool calling
-  // This serves as a secondary diagnostic node
-  if (!query || query.trim().length < 2) {
-    return "Query too brief for tactical grounding.";
-  }
+  const apiKey = process.env.SERPER_API_KEY || '4da302c7314ac7c1831cf678ca75f18dd5b7c83f';
+  if (!query || query.trim().length < 2) return "";
 
-  return `[NEURAL GROUNDING ACTIVE]: Retrieving real-time signals for query: "${query}". Gemini Node is processing current events via direct internet link.`;
+  try {
+    const response = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ q: query, num: 5 }),
+    });
+
+    if (!response.ok) {
+      return `[SIGNAL FAILURE]: Serper node unreachable (${response.status}).`;
+    }
+
+    const data = await response.json();
+    const results = data.organic?.map((r: any) => `- ${r.title}: ${r.snippet} (${r.link})`).join("\n") || "";
+    const answer = data.answerBox?.answer || data.answerBox?.snippet || "";
+    
+    if (!results && !answer) return "[SYSTEM]: Search returned zero relevant nodes.";
+
+    return `
+[REAL-TIME WEB GROUNDING DATA]
+QUERY: ${query}
+${answer ? `DIRECT ANSWER: ${answer}` : ""}
+TOP ORGANIC SOURCES:
+${results}
+[END GROUNDING DATA]
+`;
+  } catch (error: any) {
+    console.error("Serper Search Error:", error);
+    return `[SEARCH ERROR]: Signal interruption during real-time retrieval.`;
+  }
 }
 
 export async function testConnection(baseUrl: string, apiKey?: string): Promise<boolean> {
