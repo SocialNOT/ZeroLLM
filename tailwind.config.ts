@@ -8,6 +8,15 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    'theme-0',
+    'theme-1',
+    'theme-2',
+    'theme-3',
+    'theme-4',
+    'theme-5',
+    'theme-6',
+  ],
   theme: {
     extend: {
       fontFamily: {
