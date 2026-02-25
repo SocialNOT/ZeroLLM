@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -224,10 +223,25 @@ export function ChatInterface() {
 
   if (!session) return null;
 
+  const formattedDay = currentTime?.toLocaleDateString('en-IN', { weekday: 'long' }).toUpperCase() || "LOADING";
+  const formattedTime = currentTime?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) || "00:00:00";
+  const formattedDate = currentTime?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() || "01 JAN 2026";
+
+  const marqueeText = `[NEURAL SYNC: ${formattedDay} | ${formattedTime} | ${formattedDate}] • [COMMAND HUB ACTIVE] • [NODE CRAFTED BY RAJIB SINGH] • [SIGNAL SECURED] • `;
+
   return (
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
+        {/* Sleek Animated Temporal Marquee */}
+        <div className="flex-shrink-0 h-6 bg-slate-900 border-b-2 border-border overflow-hidden relative flex items-center z-40">
+          <div className="whitespace-nowrap animate-marquee flex gap-8">
+            <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1">
+              {marqueeText.repeat(10)}
+            </span>
+          </div>
+        </div>
+
         {showTimer && (
           <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/10 z-30">
             <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-none border-2 border-primary">
