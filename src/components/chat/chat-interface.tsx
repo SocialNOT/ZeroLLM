@@ -78,7 +78,6 @@ export function ChatInterface() {
   const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
-  const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -113,20 +112,6 @@ export function ChatInterface() {
     }, 1000);
     return () => clearInterval(timer);
   }, [sessionStartTime, isGuest]);
-
-  useEffect(() => {
-    if (mounted && connectionStatus === 'online') {
-      const updateLatency = () => {
-        const val = aiMode === 'online' ? Math.floor(Math.random() * 100 + 50) : Math.floor(Math.random() * 40 + 10);
-        setLatency(`${val}ms`);
-      };
-      updateLatency();
-      const latInterval = setInterval(updateLatency, 10000);
-      return () => clearInterval(latInterval);
-    } else {
-      setLatency("---");
-    }
-  }, [connectionStatus, mounted, aiMode]);
 
   useEffect(() => {
     if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitRecognition' in window)) {
@@ -322,10 +307,10 @@ export function ChatInterface() {
     } catch (error: any) {
       let friendlyError = error.message || 'Node connection failure.';
       if (friendlyError.includes('Too Many Requests') || friendlyError.includes('429')) {
-        friendlyError = "ERROR: RESOURCE_EXHAUSTED. Gemini node rate limit reached. Please wait for signal reset.";
+        friendlyError = "FAILURE: RESOURCE_EXHAUSTED. Gemini node rate limit reached. Please wait for signal reset.";
       }
       updateMessage(session.id, assistantMsgId, {
-        content: `ERROR: ${friendlyError}`
+        content: `FAILURE: ${friendlyError}`
       });
     } finally {
       setIsTyping(false);
@@ -431,20 +416,20 @@ export function ChatInterface() {
 
           <div className="grid grid-cols-3 mt-2 border-2 border-border rounded-xl overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-accent hover:text-white transition-all group text-center active:scale-95">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-slate-900 group-hover:text-white">Identity</span>
+              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-accent hover:text-white transition-all group text-center active:scale-95 overflow-hidden">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-slate-900 group-hover:text-white shrink-0">Identity</span>
                 <span className="text-[8px] sm:text-[10px] font-black uppercase truncate w-full mt-0.5 px-1">{persona.name}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-primary hover:text-white transition-all group text-center active:scale-95">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-slate-900 group-hover:text-white">Arch</span>
+              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-primary hover:text-white transition-all group text-center active:scale-95 overflow-hidden">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-slate-900 group-hover:text-white shrink-0">Arch</span>
                 <span className="text-[8px] sm:text-[10px] font-black uppercase truncate w-full mt-0.5 px-1">{framework?.name || "None"}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-destructive hover:text-white transition-all group text-center active:scale-95">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-slate-900 group-hover:text-white">Logic</span>
+              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1.5 px-1 hover:bg-destructive hover:text-white transition-all group text-center active:scale-95 overflow-hidden">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-slate-900 group-hover:text-white shrink-0">Logic</span>
                 <span className="text-[8px] sm:text-[10px] font-black uppercase truncate w-full mt-0.5 px-1">{linguistic?.name || "Default"}</span>
               </button>
             </SheetTrigger>
@@ -508,10 +493,10 @@ export function ChatInterface() {
                   key={tool.id} 
                   onClick={() => toggleTool(session.id, tool.id as any)} 
                   className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all text-[9px] font-black uppercase tracking-[0.1em] shrink-0 active:scale-95",
+                    "flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all text-[9px] font-black uppercase tracking-[0.1em] shrink-0 active:scale-95 font-black",
                     (session.settings as any)[tool.id + (tool.id === 'webSearch' ? 'Enabled' : tool.id === 'reasoning' ? 'Enabled' : tool.id === 'voice' ? 'ResponseEnabled' : 'Enabled')] 
                       ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
-                      : "bg-white text-slate-900 border-border hover:border-primary"
+                      : "bg-white text-slate-950 border-border hover:border-primary"
                   )}
                 >
                   {tool.icon}
@@ -521,7 +506,7 @@ export function ChatInterface() {
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white hover:bg-slate-50 transition-all rounded-2xl p-1.5 border-2 border-border shadow-2xl focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/5">
-              <Button type="button" variant="ghost" size="icon" onClick={handleMicToggle} className={cn("h-11 w-11 transition-all rounded-xl shrink-0 active:scale-90", isListening ? "text-white bg-destructive animate-pulse" : "text-slate-900 hover:bg-primary/10")}>
+              <Button type="button" variant="ghost" size="icon" onClick={handleMicToggle} className={cn("h-11 w-11 transition-all rounded-xl shrink-0 active:scale-90", isListening ? "text-white bg-destructive animate-pulse" : "text-slate-950 hover:bg-primary/10")}>
                 {isListening ? <MicOff size={20} /> : <Mic size={20} />}
               </Button>
               <Input
@@ -529,7 +514,7 @@ export function ChatInterface() {
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
                 placeholder={isListening ? "SAMPLING AUDIO NODE..." : "Input command sequence..."}
-                className="h-11 w-full border-none bg-transparent px-4 text-[15px] font-bold focus-visible:ring-0 placeholder:text-slate-400 placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest"
+                className="h-11 w-full border-none bg-transparent px-4 text-[15px] font-black focus-visible:ring-0 placeholder:text-slate-500 placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest"
               />
               <Button type="submit" disabled={!input.trim() || isTyping} className="h-11 w-11 rounded-xl bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105 active:scale-90 transition-all shrink-0">
                 <Send size={20} />
