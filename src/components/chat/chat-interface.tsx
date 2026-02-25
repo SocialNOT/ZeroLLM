@@ -251,7 +251,7 @@ export function ChatInterface() {
                   {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                 </span>
                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
-                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}
+                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
                 </span>
               </div>
             )}
