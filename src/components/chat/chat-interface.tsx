@@ -219,21 +219,21 @@ export function ChatInterface() {
           </div>
         )}
 
-        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-3 py-2 sm:px-6 bg-white z-20 shadow-sm">
-          <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-2 py-2 sm:px-6 bg-white z-20 shadow-sm">
+          <div className="flex items-center justify-between gap-1.5 mb-2">
             <SettingsDialog>
-              <button className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-xl border-2 border-border shadow-sm active:scale-95 min-w-0">
+              <button className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-1 rounded-xl border-2 border-border shadow-sm active:scale-95 min-w-0 max-w-[120px] sm:max-w-none">
                 <div className={cn(
-                  "h-8 w-8 rounded-lg flex items-center justify-center border-2",
+                  "h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center border-2 shrink-0",
                   connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
                 )}>
-                  {aiMode === 'online' ? <Cloud size={16} className="animate-pulse" /> : <Activity size={16} />}
+                  {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3 sm:h-4 sm:w-4" /> : <Activity className="h-3 w-3 sm:h-4 sm:w-4" />}
                 </div>
-                <div className="flex flex-col items-start overflow-hidden leading-tight">
-                  <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-tighter text-primary truncate">
+                <div className="flex flex-col items-start overflow-hidden leading-none">
+                  <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-tighter text-primary truncate w-full">
                     {aiMode === 'online' ? "Cloud Node" : "Local Node"}
                   </span>
-                  <span className="text-[7px] sm:text-[8px] font-black text-slate-900 uppercase tracking-widest truncate">
+                  <span className="text-[6px] sm:text-[8px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
                     {aiMode === 'online' ? "Gemini 2.5" : (connection?.modelId || "Engine")}
                   </span>
                 </div>
@@ -241,97 +241,94 @@ export function ChatInterface() {
             </SettingsDialog>
 
             {mounted && currentTime && (
-              <div className="flex items-center justify-center gap-1 sm:gap-4 flex-1 overflow-hidden">
-                <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary">
-                  {currentTime.toLocaleDateString('en-IN', { weekday: 'short' })}
-                </span>
-                <div className="bg-primary text-white px-3 py-1 rounded-lg border-2 border-primary shadow-lg shadow-primary/20">
-                  <span className="text-[10px] sm:text-[14px] font-black font-mono tracking-tighter">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1 overflow-hidden px-1">
+                <div className="bg-primary text-white px-2 py-1 rounded-lg border-2 border-primary shadow-lg shadow-primary/20 shrink-0">
+                  <span className="text-[10px] sm:text-[13px] font-black font-mono tracking-tighter">
                     {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                   </span>
                 </div>
-                <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary">
+                <span className="hidden sm:inline-block text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary whitespace-nowrap">
                   {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                 </span>
               </div>
             )}
             
             <div className="flex items-center gap-1 shrink-0">
-              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-8 w-8 rounded-lg border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
-                {aiMode === 'online' ? <Cloud size={14} /> : <Laptop size={14} />}
+              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
+                {aiMode === 'online' ? <Cloud size={12} /> : <Laptop size={12} />}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-8 w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
-                <Palette size={14} />
+              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                <Palette size={12} />
               </Button>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
-                  <Settings2 size={14} />
+                <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                  <Settings2 size={12} />
                 </Button>
               </SheetTrigger>
-              <SidebarTrigger className="h-8 w-8 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-lg" />
+              <SidebarTrigger className="h-7 w-7 sm:h-8 sm:w-8 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-lg" />
             </div>
           </div>
 
           <div className="grid grid-cols-3 border-2 border-border rounded-xl overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group transition-colors">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{persona.name}</span>
+              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
+                <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
+                <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{persona.name}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group transition-colors">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Arch</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{framework?.name || "None"}</span>
+              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
+                <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Arch</span>
+                <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{framework?.name || "None"}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group transition-colors">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Logic</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{linguistic?.name || "Default"}</span>
+              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
+                <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Logic</span>
+                <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{linguistic?.name || "Default"}</span>
               </button>
             </SheetTrigger>
           </div>
         </div>
 
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
-          <div className="mx-auto flex w-full max-w-5xl flex-col py-6 px-4 sm:px-8">
+          <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 sm:py-16 text-center space-y-10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
+              <div className="flex flex-col items-center justify-center py-6 sm:py-16 text-center space-y-6 sm:space-y-10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
                 <div className="space-y-4">
                   <div className="relative inline-block">
-                    <div className="h-20 w-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-4 border-primary/10 shadow-2xl">
-                      <Zap className="animate-pulse h-10 w-10" />
+                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[1.5rem] sm:rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-4 border-primary/10 shadow-2xl">
+                      <Zap className="animate-pulse h-8 w-8 sm:h-10 sm:w-10" />
                     </div>
-                    <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white flex items-center justify-center border-4 border-primary text-primary shadow-lg">
-                      <Sparkles size={14} className="animate-pulse" />
+                    <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-white flex items-center justify-center border-2 sm:border-4 border-primary text-primary shadow-lg">
+                      <Sparkles size={12} className="animate-pulse" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-none uppercase">Neural Node Synchronized</h2>
-                    <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary mt-4">Establish command sequence to begin orchestration</p>
+                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tighter leading-none uppercase px-4">Neural Node Synchronized</h2>
+                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-primary mt-2">Establish command sequence to begin orchestration</p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 w-full max-w-xl">
+                <div className="flex flex-col gap-2 w-full max-w-xl px-2">
                   {starters.map((starter, idx) => (
                     <button 
                       key={idx} 
                       onClick={() => setInput(starter.prompt)} 
                       className={cn(
-                        "group flex items-center gap-4 p-4 rounded-2xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
+                        "group flex items-center gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
                         idx === 0 ? "delay-[100ms]" : idx === 1 ? "delay-[200ms]" : idx === 2 ? "delay-[300ms]" : "delay-[400ms]"
                       )}
                     >
-                      <div className="p-2.5 rounded-xl bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
-                        <Zap size={16} />
+                      <div className="p-2 rounded-lg bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
+                        <Zap size={14} />
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[12px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{starter.title}</span>
-                        <p className="text-[10px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
+                      <div className="flex flex-col min-w-0 overflow-hidden">
+                        <span className="text-[10px] sm:text-[12px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1 truncate">{starter.title}</span>
+                        <p className="text-[8px] sm:text-[10px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
                       </div>
                       <div className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                        <ChevronRight size={18} />
+                        <ChevronRight size={16} />
                       </div>
                     </button>
                   ))}
@@ -357,16 +354,16 @@ export function ChatInterface() {
           </div>
         </ScrollArea>
 
-        <div className="flex-shrink-0 p-3 sm:p-6 bg-white border-t-2 border-border z-30">
+        <div className="flex-shrink-0 p-2 sm:p-6 bg-white border-t-2 border-border z-30">
           <div className="mx-auto max-w-4xl border-2 border-border rounded-2xl overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
             <div className="grid grid-cols-6 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
               {[
-                { id: 'webSearch', icon: <Search size={12} />, title: 'Grounding' },
-                { id: 'reasoning', icon: <Brain size={12} />, title: 'Thinking' },
-                { id: 'voice', icon: <Mic size={12} />, title: 'Voice' },
-                { id: 'calculator', icon: <Calculator size={12} />, title: 'Math' },
-                { id: 'code', icon: <Terminal size={12} />, title: 'Code' },
-                { id: 'knowledge', icon: <Database size={12} />, title: 'Vault' }
+                { id: 'webSearch', icon: <Search size={10} />, title: 'Ground' },
+                { id: 'reasoning', icon: <Brain size={10} />, title: 'Think' },
+                { id: 'voice', icon: <Mic size={10} />, title: 'Voice' },
+                { id: 'calculator', icon: <Calculator size={10} />, title: 'Math' },
+                { id: 'code', icon: <Terminal size={10} />, title: 'Code' },
+                { id: 'knowledge', icon: <Database size={10} />, title: 'Vault' }
               ].map(tool => {
                 const settingKey = tool.id === 'webSearch' ? 'webSearchEnabled' : 
                                  tool.id === 'reasoning' ? 'reasoningEnabled' : 
@@ -378,14 +375,14 @@ export function ChatInterface() {
                     key={tool.id} 
                     onClick={() => toggleTool(session.id, tool.id as any)} 
                     className={cn(
-                      "flex flex-col items-center justify-center py-2 transition-all active:scale-95",
+                      "flex flex-col items-center justify-center py-1.5 sm:py-2 transition-all active:scale-95 min-w-0",
                       isActive 
                         ? "bg-primary text-white" 
                         : "bg-transparent text-slate-900 hover:bg-primary/10"
                     )}
                   >
                     <div className="mb-0.5">{tool.icon}</div>
-                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-tighter leading-none">{tool.title}</span>
+                    <span className="text-[5px] sm:text-[7px] font-black uppercase tracking-tighter leading-none truncate w-full px-0.5 text-center">{tool.title}</span>
                   </button>
                 );
               })}
@@ -396,11 +393,11 @@ export function ChatInterface() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
-                placeholder="INPUT COMMAND SEQUENCE..."
-                className="h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest"
+                placeholder="INPUT COMMAND..."
+                className="h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[13px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[8px] sm:placeholder:text-[9px] placeholder:tracking-widest"
               />
-              <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
-                <Send size={18} />
+              <Button type="submit" disabled={!input.trim() || isTyping} className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
+                <Send size={16} className="sm:size-[18px]" />
               </Button>
             </form>
           </div>
