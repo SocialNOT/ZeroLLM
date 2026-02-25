@@ -15,7 +15,7 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 0 0% 0%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 0 0% 10%; /* High-contrast zero-fade */
+    --muted-foreground: 0 0% 10%; /* FORCE HIGH CONTRAST */
     --accent: 120 100% 20%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 25%;
@@ -76,7 +76,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  padding: 1px; /* The 1px animated margin */
+  padding: 1px;
   overflow: hidden;
   background: transparent;
 }
@@ -145,4 +145,14 @@
 
 .break-all {
   word-break: break-all;
+}
+
+.staggered-entry {
+  animation: slide-in 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }

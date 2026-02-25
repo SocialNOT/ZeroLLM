@@ -109,7 +109,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           <div className="flex h-5 w-5 items-center justify-center rounded bg-white/30 shrink-0">
             {isAssistant ? isError ? <AlertTriangle size={12} /> : <Bot size={12} /> : <User size={12} />}
           </div>
-          <span className="truncate flex-1 font-black">{operatorName}.MD</span>
+          <span className="truncate flex-1 font-black leading-none">{operatorName}.MD</span>
           <div className="flex items-center gap-2 shrink-0 ml-auto pl-2">
             <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_5px_white]" />
           </div>
@@ -150,7 +150,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 {message.content}
               </ReactMarkdown>
             ) : (
-              <div className="font-black break-words">{message.content}</div>
+              <div className="font-black break-words break-all">{message.content}</div>
             )}
           </div>
           

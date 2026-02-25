@@ -11,7 +11,6 @@ import {
   Zap, 
   Brain, 
   Mic, 
-  MicOff, 
   Search,
   Calculator,
   Terminal,
@@ -22,7 +21,8 @@ import {
   Laptop,
   Palette,
   Clock,
-  LogIn
+  LogIn,
+  Sparkles
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -36,10 +36,8 @@ import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
-import { toast } from "@/hooks/use-toast";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 
 export function ChatInterface() {
   const { 
@@ -65,7 +63,6 @@ export function ChatInterface() {
   
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isListening, setIsListening] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
   const [mounted, setMounted] = useState(false);
@@ -194,10 +191,10 @@ export function ChatInterface() {
   };
 
   const starters = [
-    { title: "Instant Logic", desc: "Explain anything like I'm 12.", prompt: "Explain the following simply in 3 bullet points: " },
-    { title: "Code Guard", desc: "Find bugs and fix logic errors.", prompt: "Review this code for bugs and security flaws: " },
-    { title: "Draft Master", desc: "Write high-impact professional emails.", prompt: "Draft a professional, clear response to: " },
-    { title: "Plan Pilot", desc: "Create a roadmap in seconds.", prompt: "Create a step-by-step project plan for: " }
+    { title: "Instant Logic", desc: "Explain anything simply in 3 bullet points.", prompt: "Explain the following simply in 3 bullet points: " },
+    { title: "Code Guard", desc: "Find bugs and fix security flaws in code.", prompt: "Review this code for bugs and security flaws: " },
+    { title: "Draft Master", desc: "Write a high-impact professional response.", prompt: "Draft a professional, clear response to: " },
+    { title: "Plan Pilot", desc: "Create a step-by-step roadmap for project.", prompt: "Create a step-by-step project plan for: " }
   ];
 
   if (!session) return null;
@@ -222,7 +219,7 @@ export function ChatInterface() {
           </div>
         )}
 
-        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-3 py-2 sm:px-6 bg-white z-20">
+        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-3 py-2 sm:px-6 bg-white z-20 shadow-sm">
           <div className="flex items-center justify-between gap-2 mb-2">
             <SettingsDialog>
               <button className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-xl border-2 border-border shadow-sm active:scale-95 min-w-0">
@@ -248,7 +245,7 @@ export function ChatInterface() {
                 <span className="hidden xs:inline-block text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary">
                   {currentTime.toLocaleDateString('en-IN', { weekday: 'short' })}
                 </span>
-                <div className="bg-primary text-white px-2 py-1 rounded-lg border-2 border-primary shadow-lg shadow-primary/20">
+                <div className="bg-primary text-white px-3 py-1 rounded-lg border-2 border-primary shadow-lg shadow-primary/20">
                   <span className="text-[10px] sm:text-[14px] font-black font-mono tracking-tighter">
                     {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                   </span>
@@ -277,21 +274,21 @@ export function ChatInterface() {
 
           <div className="grid grid-cols-3 border-2 border-border rounded-xl overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group">
+              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group transition-colors">
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center">{persona.name}</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{persona.name}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group">
+              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group transition-colors">
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Arch</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center">{framework?.name || "None"}</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{framework?.name || "None"}</span>
               </button>
             </SheetTrigger>
             <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group">
+              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1.5 hover:bg-primary hover:text-white group transition-colors">
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Logic</span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center">{linguistic?.name || "Default"}</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{linguistic?.name || "Default"}</span>
               </button>
             </SheetTrigger>
           </div>
@@ -300,38 +297,41 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-5xl flex-col py-6 px-4 sm:px-8">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center space-y-10 animate-in fade-in zoom-in duration-700 max-w-4xl mx-auto w-full">
+              <div className="flex flex-col items-center justify-center py-10 sm:py-16 text-center space-y-10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
                 <div className="space-y-4">
                   <div className="relative inline-block">
                     <div className="h-20 w-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-4 border-primary/10 shadow-2xl">
                       <Zap className="animate-pulse h-10 w-10" />
                     </div>
-                    <div className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white flex items-center justify-center border-4 border-primary text-primary shadow-lg">
-                      <Activity size={14} className="animate-spin-slow" />
+                    <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white flex items-center justify-center border-4 border-primary text-primary shadow-lg">
+                      <Sparkles size={14} className="animate-pulse" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-none uppercase">Node Energized</h2>
+                    <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-none uppercase">Neural Node Synchronized</h2>
                     <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary mt-4">Establish command sequence to begin orchestration</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                <div className="flex flex-col gap-3 w-full max-w-xl">
                   {starters.map((starter, idx) => (
                     <button 
                       key={idx} 
                       onClick={() => setInput(starter.prompt)} 
-                      className="group flex flex-col p-5 rounded-[2.5rem] bg-white border-2 border-border shadow-lg hover:shadow-2xl hover:border-primary transition-all text-left relative overflow-hidden"
+                      className={cn(
+                        "group flex items-center gap-4 p-4 rounded-2xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
+                        idx === 0 ? "delay-[100ms]" : idx === 1 ? "delay-[200ms]" : idx === 2 ? "delay-[300ms]" : "delay-[400ms]"
+                      )}
                     >
-                      <div className="flex items-center gap-4 mb-2">
-                        <div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border">
-                          <Zap size={18} />
-                        </div>
-                        <span className="text-[14px] font-black text-slate-900 uppercase tracking-tight">{starter.title}</span>
+                      <div className="p-2.5 rounded-xl bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
+                        <Zap size={16} />
                       </div>
-                      <p className="text-[10px] font-bold text-slate-900 leading-relaxed pl-1">{starter.desc}</p>
-                      <div className="absolute bottom-4 right-6 text-primary opacity-0 group-hover:opacity-100 transition-all">
-                        <ChevronRight size={20} />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[12px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{starter.title}</span>
+                        <p className="text-[10px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
+                      </div>
+                      <div className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                        <ChevronRight size={18} />
                       </div>
                     </button>
                   ))}
@@ -381,7 +381,7 @@ export function ChatInterface() {
                       "flex flex-col items-center justify-center py-2 transition-all active:scale-95",
                       isActive 
                         ? "bg-primary text-white" 
-                        : "bg-transparent text-slate-900 hover:bg-primary/5"
+                        : "bg-transparent text-slate-900 hover:bg-primary/10"
                     )}
                   >
                     <div className="mb-0.5">{tool.icon}</div>
@@ -397,7 +397,7 @@ export function ChatInterface() {
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
                 placeholder="INPUT COMMAND SEQUENCE..."
-                className="h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest placeholder:opacity-60"
+                className="h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest"
               />
               <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
                 <Send size={18} />
