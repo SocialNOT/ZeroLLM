@@ -480,7 +480,7 @@ export function ChatInterface() {
 
         <div className="flex-shrink-0 p-3 sm:p-6 bg-white border-t-2 border-border z-30">
           <div className="mx-auto max-w-4xl space-y-3">
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2 mx-auto overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 mx-auto overflow-x-auto no-scrollbar py-1">
               {[
                 { id: 'webSearch', icon: <Search size={14} />, title: 'Grounding' },
                 { id: 'reasoning', icon: <Brain size={14} />, title: 'Thinking' },

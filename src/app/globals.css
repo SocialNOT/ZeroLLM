@@ -177,3 +177,10 @@
 .animate-spin-slow {
   animation: spin-slow 12s linear infinite;
 }
+
+/* Ensure inner elements respect parent width and handle long content */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}

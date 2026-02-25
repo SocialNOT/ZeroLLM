@@ -95,14 +95,14 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
-        "flex flex-col w-full max-w-[98%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all",
+        "flex flex-col w-full max-w-[100%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all",
         isAssistant 
           ? isError 
             ? "border-rose-600 bg-rose-50 shadow-rose-200/50" 
             : "border-primary bg-white shadow-primary/10" 
           : "border-accent bg-primary text-white shadow-accent/20"
       )}>
-        {/* Terminal Header Bar (Hardened for Responsiveness) */}
+        {/* Terminal Header Bar (Optimized for Responsiveness) */}
         <div className={cn(
           "flex items-center gap-2 sm:gap-3 px-3 py-2 border-b-2 font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-widest select-none overflow-hidden shrink-0",
           isAssistant 
@@ -113,16 +113,16 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
             {isAssistant ? isError ? <AlertTriangle size={12} /> : <Bot size={12} /> : <User size={12} />}
           </div>
           <span className="truncate flex-1 min-w-0 font-black">{operatorName}</span>
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto pl-2">
-            <span className="hidden xs:inline-block font-black">.MD</span>
-            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_5px_white]" />
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto pl-2 min-w-0">
+            <span className="hidden xs:inline-block font-black shrink-0">.MD</span>
+            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_5px_white] shrink-0" />
           </div>
         </div>
 
         {/* Cognitive Payload Body */}
-        <div className="p-4 sm:p-6 relative">
+        <div className="p-4 sm:p-6 relative overflow-hidden min-w-0">
           <div className={cn(
-            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap",
+            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap overflow-hidden",
             isAssistant ? "text-slate-900" : "text-white"
           )}>
             {isAssistant && !isError ? (
@@ -139,7 +139,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                   code: ({node, inline, children, ...props}: any) => {
                     if (inline) return <code className="bg-primary/10 px-1.5 py-0.5 rounded text-[11px] font-mono text-primary font-black border-2 border-primary/20" {...props}>{children}</code>;
                     return (
-                      <div className="my-4 rounded-xl border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl group/code">
+                      <div className="my-4 rounded-xl border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl group/code min-w-0">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-white/20">
                           <span className="text-[10px] font-mono text-white font-black uppercase tracking-widest">Neural Code Node</span>
                           <Terminal size={12} className="text-white" />
@@ -149,7 +149,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                     );
                   },
                   blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 py-2 italic my-4 text-slate-900 bg-primary/10 rounded-r-xl font-black shadow-sm" {...props} />,
-                  table: ({...props}) => <div className="overflow-x-auto my-5 rounded-xl border-2 border-primary/20 shadow-lg"><table className="w-full text-left border-collapse" {...props} /></div>,
+                  table: ({...props}) => <div className="overflow-x-auto my-5 rounded-xl border-2 border-primary/20 shadow-lg min-w-0 w-full"><table className="w-full text-left border-collapse" {...props} /></div>,
                   th: ({...props}) => <th className="bg-primary/10 p-3 border-b-2 border-primary/20 font-black text-[11px] uppercase tracking-wider text-primary" {...props} />,
                   td: ({...props}) => <td className="p-3 border-b border-primary/10 text-[12px] text-slate-900 font-bold" {...props} />,
                 }}
@@ -157,7 +157,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 {message.content}
               </ReactMarkdown>
             ) : (
-              <div className="font-black">{message.content}</div>
+              <div className="font-black break-words">{message.content}</div>
             )}
           </div>
           
@@ -173,18 +173,18 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           "px-4 py-2.5 border-t flex items-center justify-between gap-3",
           isAssistant ? "bg-slate-50 border-primary/20" : "bg-white/10 border-white/20"
         )}>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden">
             {isAssistant && !isError && (
               <>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20 shrink-0" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={16} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20 shrink-0" onClick={onRegenerate}>
                   <RefreshCw size={16} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20 shrink-0">
                       {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Languages size={16} />}
                     </Button>
                   </DropdownMenuTrigger>
@@ -199,13 +199,13 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-lg transition-all active:scale-90 border border-transparent", isAssistant ? "text-primary hover:bg-primary/10 hover:border-primary/20" : "text-white hover:bg-white/20 hover:border-white/30")} onClick={handleCopy}>
+            <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-lg transition-all active:scale-90 border border-transparent shrink-0", isAssistant ? "text-primary hover:bg-primary/10 hover:border-primary/20" : "text-white hover:bg-white/20 hover:border-white/30")} onClick={handleCopy}>
               {isCopied ? <Check size={16} className={isAssistant ? "text-emerald-600" : "text-white"} /> : <Copy size={16} />}
             </Button>
           </div>
 
           <div className={cn(
-            "flex items-center justify-center px-3 py-1.5 rounded-lg border-2 font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm transition-all",
+            "flex items-center justify-center px-3 py-1.5 rounded-lg border-2 font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm transition-all shrink-0",
             isAssistant 
               ? "bg-primary text-white border-primary shadow-primary/20" 
               : "bg-white text-primary border-white shadow-white/30"
