@@ -119,28 +119,8 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       combinedSystemPrompt += "\n\n[SYSTEM: REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";
     }
 
-    // OFFLINE MODE (Custom Engine)
-    if (input.baseUrl && !input.baseUrl.includes('genkit')) {
-      let finalMessages = [
-        { role: 'system' as const, content: combinedSystemPrompt },
-        ...(input.history || []).map(m => ({ role: m.role as any, content: m.content })),
-      ];
-
-      finalMessages.push({ role: 'user' as const, content: input.userMessage });
-
-      return await callChatCompletion(
-        input.baseUrl,
-        input.modelId,
-        finalMessages,
-        {
-          temperature: input.temperature,
-          topP: input.topP,
-          maxTokens: input.maxTokens
-        }
-      );
-    }
-
     // ONLINE MODE (Gemini via Genkit)
+    // Always prioritize Cloud Node for high-fidelity grounding if available
     const { text } = await ai.generate({
       system: combinedSystemPrompt,
       prompt: input.userMessage,

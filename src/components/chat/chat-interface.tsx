@@ -207,100 +207,38 @@ export function ChatInterface() {
         linguistic ? `\n\n[LINGUISTIC CONSTRAINTS: ${linguistic.name}]\n${linguistic.system_instruction}` : ''
       ].filter(Boolean).join('\n\n').trim();
 
-      if (aiMode === 'online') {
-        const responseText = await personaDrivenChat({
-          baseUrl: 'genkit',
-          modelId: 'gemini-2.5-flash',
-          systemPrompt: combinedSystemPrompt,
-          userMessage: textToSend,
-          temperature: session.settings.temperature,
-          topP: session.settings.topP,
-          maxTokens: session.settings.maxTokens,
-          history: session.messages.map(m => ({ 
-            role: m.role as any, 
-            content: m.content,
-            timestamp: m.timestamp
-          })),
-          webSearchEnabled: session.settings.webSearchEnabled,
-          reasoningEnabled: session.settings.reasoningEnabled
-        });
+      const responseText = await personaDrivenChat({
+        baseUrl: aiMode === 'online' ? 'genkit' : (connection?.baseUrl || ''),
+        modelId: aiMode === 'online' ? 'gemini-2.5-flash' : (connection?.modelId || ''),
+        systemPrompt: combinedSystemPrompt,
+        userMessage: textToSend,
+        temperature: session.settings.temperature,
+        topP: session.settings.topP,
+        maxTokens: session.settings.maxTokens,
+        history: session.messages.map(m => ({ 
+          role: m.role as any, 
+          content: m.content,
+          timestamp: m.timestamp
+        })),
+        webSearchEnabled: session.settings.webSearchEnabled,
+        reasoningEnabled: session.settings.reasoningEnabled
+      });
 
-        updateMessage(session.id, assistantMsgId, { content: responseText });
+      updateMessage(session.id, assistantMsgId, { content: responseText });
 
-        if (session.settings.voiceResponseEnabled && responseText) {
-          try {
-            const { audioUri } = await generateSpeech({ text: responseText });
-            const audio = new Audio(audioUri);
-            audio.play();
-          } catch (vErr) {
-            console.warn("Voice auto-play failed", vErr);
-          }
-        }
-      } else {
-        const response = await fetch('/api/chat/stream', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            baseUrl: connection?.baseUrl || '',
-            modelId: connection?.modelId || '',
-            messages: [
-              { role: 'system', content: combinedSystemPrompt },
-              ...session.messages,
-              { role: 'user', content: textToSend }
-            ],
-            settings: session.settings,
-            apiKey: connection?.apiKey
-          })
-        });
-
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || "Stream Initialization Failed");
-        }
-
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let accumulatedContent = "";
-
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6);
-                if (data === '[DONE]') continue;
-                try {
-                  const parsed = JSON.parse(data);
-                  const delta = parsed.choices?.[0]?.delta?.content || "";
-                  if (delta) {
-                    accumulatedContent += delta;
-                    updateMessage(session.id, assistantMsgId, { content: accumulatedContent });
-                  }
-                } catch (e) {}
-              }
-            }
-          }
-        }
-
-        if (session.settings.voiceResponseEnabled && accumulatedContent) {
-          try {
-            const { audioUri } = await generateSpeech({ text: accumulatedContent });
-            const audio = new Audio(audioUri);
-            audio.play();
-          } catch (vErr) {
-            console.warn("Voice auto-play failed", vErr);
-          }
+      if (session.settings.voiceResponseEnabled && responseText) {
+        try {
+          const { audioUri } = await generateSpeech({ text: responseText });
+          const audio = new Audio(audioUri);
+          audio.play();
+        } catch (vErr) {
+          console.warn("Voice auto-play failed", vErr);
         }
       }
 
     } catch (error: any) {
       let friendlyError = error.message || 'Node connection failure.';
-      if (friendlyError.includes('Too Many Requests') || friendlyError.includes('429')) {
+      if (friendlyError.includes('RESOURCE_EXHAUSTED') || friendlyError.includes('429')) {
         friendlyError = "FAILURE: RESOURCE_EXHAUSTED. Gemini node rate limit reached. Please wait for signal reset.";
       }
       updateMessage(session.id, assistantMsgId, {

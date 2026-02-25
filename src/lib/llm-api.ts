@@ -1,4 +1,3 @@
-
 /**
  * Professional LLM Utility for local/remote engine interactions.
  * Optimized for server-side execution to bypass browser CORS/Mixed Content.
@@ -54,7 +53,8 @@ function getHeaders(apiKey?: string) {
  * Injects real-time organic results into the cognitive stream.
  */
 export async function performWebSearch(query: string): Promise<string> {
-  const apiKey = process.env.SERPER_API_KEY || '4da302c7314ac7c1831cf678ca75f18dd5b7c83f';
+  // Using the energized Serper node
+  const apiKey = '4da302c7314ac7c1831cf678ca75f18dd5b7c83f';
   if (!query || query.trim().length < 2) return "";
 
   try {
