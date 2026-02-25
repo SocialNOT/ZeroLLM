@@ -244,7 +244,7 @@ export function ChatInterface() {
             {mounted && currentTime && (
               <div className="flex flex-col items-center justify-center leading-none flex-1 min-w-0 px-1">
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
-                  {currentTime.toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase()}
+                  {currentTime.toLocaleDateString('en-IN', { weekday: 'long' }).toUpperCase()}
                 </span>
                 <div className="bg-primary text-white px-1.5 py-0.5 rounded border-2 border-primary shadow-lg shadow-primary/10">
                   <span className="text-[9px] sm:text-[11px] font-black font-mono tracking-tighter">
@@ -252,7 +252,7 @@ export function ChatInterface() {
                   </span>
                 </div>
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
-                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }).toUpperCase()}
+                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}
                 </span>
               </div>
             )}
