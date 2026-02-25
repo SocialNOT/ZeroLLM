@@ -53,7 +53,6 @@ function getHeaders(apiKey?: string) {
  * Injects real-time organic results into the cognitive stream.
  */
 export async function performWebSearch(query: string): Promise<string> {
-  // Using the energized Serper node
   const apiKey = '4da302c7314ac7c1831cf678ca75f18dd5b7c83f';
   if (!query || query.trim().length < 2) return "";
 

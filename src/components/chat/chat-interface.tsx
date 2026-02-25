@@ -19,7 +19,6 @@ import {
   Database,
   Shield,
   ArrowRight,
-  Cpu,
   Sparkles,
   Layers,
   Clock,
@@ -261,12 +260,12 @@ export function ChatInterface() {
     { 
       title: "First Principles Analysis", 
       prompt: "Analyze the following using First Principles thinking: ",
-      icon: <Brain size={14} className="text-primary" />
+      icon: <Brain className="text-primary h-4 w-4 sm:h-5 sm:w-5" />
     },
     { 
       title: "Technical STRIDE Audit", 
       prompt: "Perform a STRIDE threat model on this system architecture: ",
-      icon: <Shield size={14} className="text-destructive" />
+      icon: <Shield className="text-destructive h-4 w-4 sm:h-5 sm:w-5" />
     }
   ];
 
@@ -378,8 +377,8 @@ export function ChatInterface() {
               <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center space-y-8 animate-in fade-in zoom-in duration-700">
                 <div className="space-y-3">
                   <div className="relative inline-block">
-                    <Zap className="text-primary mx-auto animate-pulse" size={48} />
-                    <Sparkles className="absolute -top-2 -right-2 text-accent" size={20} />
+                    <Zap className="text-primary mx-auto animate-pulse h-12 w-12 sm:h-14 sm:w-14" />
+                    <Sparkles className="absolute -top-2 -right-2 text-accent h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
                   <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tighter">Neural Node Synchronized</h2>
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Establish Cognitive Sequence</p>
@@ -415,33 +414,34 @@ export function ChatInterface() {
         </ScrollArea>
 
         <div className="flex-shrink-0 p-3 sm:p-6 bg-white border-t-2 border-border z-30">
-          <div className="mx-auto max-w-4xl space-y-3">
-            <div className="flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 mx-auto overflow-x-auto no-scrollbar py-1">
+          <div className="mx-auto max-w-4xl">
+            <div className="grid grid-cols-6 gap-1 sm:gap-2 w-full mb-3">
               {[
-                { id: 'webSearch', icon: <Search size={14} />, title: 'Grounding' },
-                { id: 'reasoning', icon: <Brain size={14} />, title: 'Thinking' },
-                { id: 'voice', icon: <Mic size={14} />, title: 'Voice' },
-                { id: 'calculator', icon: <Calculator size={14} />, title: 'Math' },
-                { id: 'code', icon: <Terminal size={14} />, title: 'Code' },
-                { id: 'knowledge', icon: <Database size={14} />, title: 'Vault' }
+                { id: 'webSearch', icon: <Search size={12} />, title: 'Grounding' },
+                { id: 'reasoning', icon: <Brain size={12} />, title: 'Thinking' },
+                { id: 'voice', icon: <Mic size={12} />, title: 'Voice' },
+                { id: 'calculator', icon: <Calculator size={12} />, title: 'Math' },
+                { id: 'code', icon: <Terminal size={12} />, title: 'Code' },
+                { id: 'knowledge', icon: <Database size={12} />, title: 'Vault' }
               ].map(tool => {
                 const settingKey = tool.id === 'webSearch' ? 'webSearchEnabled' : 
                                  tool.id === 'reasoning' ? 'reasoningEnabled' : 
                                  tool.id === 'voice' ? 'voiceResponseEnabled' : 
                                  tool.id + 'Enabled';
+                const isActive = (session.settings as any)[settingKey];
                 return (
                   <button 
                     key={tool.id} 
                     onClick={() => toggleTool(session.id, tool.id as any)} 
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all text-[9px] font-black uppercase tracking-[0.1em] shrink-0 active:scale-95",
-                      (session.settings as any)[settingKey] 
+                      "flex flex-col items-center justify-center py-1.5 sm:py-2 rounded-lg border-2 transition-all active:scale-95",
+                      isActive 
                         ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                         : "bg-white text-slate-950 border-border hover:border-primary"
                     )}
                   >
-                    {tool.icon}
-                    <span className="hidden md:inline">{tool.title}</span>
+                    <div className="mb-0.5">{tool.icon}</div>
+                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter leading-none">{tool.title}</span>
                   </button>
                 );
               })}

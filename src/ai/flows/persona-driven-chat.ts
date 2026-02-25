@@ -65,7 +65,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       config: {
         temperature: input.temperature,
         topP: input.topP,
-        maxOutputTokens: input.maxTokens, // Correct parameter name for Gemini schema
+        maxOutputTokens: input.maxTokens,
       },
     });
 
