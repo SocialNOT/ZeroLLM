@@ -221,52 +221,55 @@ export function ChatInterface() {
         )}
 
         <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-2 py-2 sm:px-6 bg-white z-20 shadow-sm">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
+          <div className="flex items-center justify-between gap-1 mb-2">
             <SettingsDialog>
-              <button className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-1 rounded-xl border-2 border-border shadow-sm active:scale-95 min-w-0 max-w-[120px] sm:max-w-none">
+              <button className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-lg border-2 border-border shadow-sm active:scale-95 min-w-0">
                 <div className={cn(
-                  "h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center border-2 shrink-0",
+                  "h-6 w-6 sm:h-7 sm:w-7 rounded-md flex items-center justify-center border-2 shrink-0",
                   connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
                 )}>
-                  {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3 sm:h-4 sm:w-4" /> : <Activity className="h-3 w-3 sm:h-4 sm:w-4" />}
+                  {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3" /> : <Activity className="h-3 w-3" />}
                 </div>
                 <div className="flex flex-col items-start overflow-hidden leading-none">
-                  <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-tighter text-primary truncate w-full">
-                    {aiMode === 'online' ? "Cloud Node" : "Local Node"}
+                  <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter text-primary truncate w-full">
+                    {aiMode === 'online' ? "Cloud" : "Local"}
                   </span>
-                  <span className="text-[6px] sm:text-[8px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
-                    {aiMode === 'online' ? "Gemini 2.5" : (connection?.modelId || "Engine")}
+                  <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
+                    {aiMode === 'online' ? "Gemini" : (connection?.modelId || "Node")}
                   </span>
                 </div>
               </button>
             </SettingsDialog>
 
             {mounted && currentTime && (
-              <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1 overflow-hidden px-1">
-                <div className="bg-primary text-white px-2 py-1 rounded-lg border-2 border-primary shadow-lg shadow-primary/20 shrink-0">
-                  <span className="text-[10px] sm:text-[13px] font-black font-mono tracking-tighter">
+              <div className="flex flex-col items-center justify-center leading-none flex-1 min-w-0 px-1">
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
+                  {currentTime.toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase()}
+                </span>
+                <div className="bg-primary text-white px-1.5 py-0.5 rounded border-2 border-primary shadow-lg shadow-primary/10">
+                  <span className="text-[9px] sm:text-[11px] font-black font-mono tracking-tighter">
                     {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                   </span>
                 </div>
-                <span className="hidden sm:inline-block text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary whitespace-nowrap">
-                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
+                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }).toUpperCase()}
                 </span>
               </div>
             )}
             
-            <div className="flex items-center gap-1 shrink-0">
-              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary shadow-inner" : "bg-white text-slate-900")}>
-                {aiMode === 'online' ? <Cloud size={12} /> : <Laptop size={12} />}
+            <div className="flex items-center gap-0.5 shrink-0">
+              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
+                {aiMode === 'online' ? <Cloud size={10} /> : <Laptop size={10} />}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white transition-colors">
-                <Palette size={12} />
+              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                <Palette size={10} />
               </Button>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-2 border-border text-slate-900 hover:bg-primary hover:text-white transition-colors">
-                  <Settings2 size={12} />
+                <Button variant="outline" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                  <Settings2 size={10} />
                 </Button>
               </SheetTrigger>
-              <SidebarTrigger className="h-7 w-7 sm:h-8 sm:w-8 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-lg" />
+              <SidebarTrigger className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-md" />
             </div>
           </div>
 
