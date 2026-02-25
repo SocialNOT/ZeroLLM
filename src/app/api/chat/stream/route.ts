@@ -23,22 +23,25 @@ export async function POST(req: NextRequest) {
       ? `${chatUrl}/chat/completions` 
       : `${chatUrl}/v1/chat/completions`;
 
-    // High-Fidelity Web Grounding Sequence
+    // High-Fidelity Web Grounding Sequence (Grounding-First)
     let activeMessages = [...messages];
     if (settings?.webSearchEnabled) {
       const lastUserMsg = messages[messages.length - 1]?.content;
       if (lastUserMsg) {
+        // Automatically perform search before sending to local model
         const searchResults = await performWebSearch(lastUserMsg);
         
         // Inject grounding context into the system prompt (first message)
+        const groundingPrefix = `\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nThe following verified search results have been retrieved from the internet. Use them to answer the user accurately. If info is missing, inform the user you searched but found limited data.\n\n${searchResults}`;
+
         if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
           activeMessages[0] = {
             ...activeMessages[0],
-            content: `${activeMessages[0].content}\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nUse the following verified search results to inform your response. If info is missing, state it clearly.\n\n${searchResults}`
+            content: `${activeMessages[0].content}${groundingPrefix}`
           };
         } else {
           activeMessages = [
-            { role: 'system', content: `[SYSTEM: WEB GROUNDING ACTIVE]\nUse the following verified search results to inform your response. If info is missing, state it clearly.\n\n${searchResults}` },
+            { role: 'system', content: `[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access.${groundingPrefix}` },
             ...messages
           ];
         }

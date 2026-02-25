@@ -51,18 +51,27 @@ function getHeaders(apiKey?: string) {
 
 /**
  * Performs a real Google Web Search using Custom Search JSON API.
+ * This node provides high-fidelity internet access to the neural engine.
  */
 export async function performWebSearch(query: string): Promise<string> {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
   const cx = process.env.GOOGLE_SEARCH_CX;
 
   if (!apiKey || !cx) {
-    return "[DIAGNOSTIC ERROR]: Google Search Node not configured in environment. Please add GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CX.";
+    return "[DIAGNOSTIC ERROR]: Google Search Node not configured in environment. Please ensure GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CX are established.";
+  }
+
+  if (!query || query.trim().length < 2) {
+    return "Query too brief for tactical search.";
   }
 
   try {
     const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 3600 } // Cache results for 1 hour to optimize performance
+    });
     
     if (!response.ok) {
       const err = await response.json();
@@ -73,14 +82,17 @@ export async function performWebSearch(query: string): Promise<string> {
     const items = data.items || [];
 
     if (items.length === 0) {
-      return "Zero search results acquired for this signal.";
+      return "Zero search results acquired for this signal. No real-time data found for the current query.";
     }
 
-    return items.slice(0, 5).map((item: any, idx: number) => (
+    // Extract high-density context from top 5 results
+    const results = items.slice(0, 5).map((item: any, idx: number) => (
       `[Source ${idx + 1}]\nTitle: ${item.title}\nLink: ${item.link}\nSnippet: ${item.snippet}`
     )).join('\n\n');
+
+    return `[REAL-TIME WEB DATA ACQUIRED]\n\n${results}`;
   } catch (error: any) {
-    return `[SEARCH EXCEPTION]: ${error.message}`;
+    return `[SEARCH EXCEPTION]: ${error.message || 'Signal interruption during web search sequence.'}`;
   }
 }
 

@@ -50,8 +50,8 @@ export const calculatorTool = ai.defineTool(
 export const webSearchTool = ai.defineTool(
   {
     name: 'web_search',
-    description: 'Search for real-time information on the internet using Google Search API.',
-    inputSchema: z.object({ query: z.string() }),
+    description: 'Search for real-time information on the internet using Google Search API. Use this when the user asks for current events, news, or specific facts post-2023.',
+    inputSchema: z.object({ query: z.string().describe('The search query to send to Google.') }),
     outputSchema: z.string(),
   },
   async (input) => {
@@ -95,11 +95,17 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     if (input.enabledTools?.includes('code_interpreter')) tools.push(codeInterpreterTool);
 
     let combinedSystemPrompt = input.systemPrompt;
+    
+    // Explicit tool use instruction for Web Grounding
+    if (input.webSearchEnabled) {
+      combinedSystemPrompt += "\n\n[WEB SEARCH NODE ACTIVE]\nYou have access to real-time internet data via the 'web_search' tool. If the user asks about current events, news, sports scores, or any factual information that might have changed since your training cutoff, you MUST use the 'web_search' tool first. Do not guess, and do not apologize for not knowing until you have tried searching.";
+    }
+
     if (input.reasoningEnabled) {
       combinedSystemPrompt += "\n\n[REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process before providing the final answer. Use a step-by-step logical approach.";
     }
 
-    // Grounding-First Logic for Custom Engines
+    // Grounding-First Logic for Custom Engines (Fallback)
     if (input.baseUrl && !input.baseUrl.includes('genkit')) {
       let finalMessages = [
         { role: 'system' as const, content: combinedSystemPrompt },
@@ -109,7 +115,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       // Perform real search if grounding is enabled
       if (input.webSearchEnabled) {
         const searchResults = await performWebSearch(input.userMessage);
-        finalMessages[0].content += `\n\n[WEB GROUNDING ACQUIRED]\nUse these search results to answer precisely:\n\n${searchResults}`;
+        finalMessages[0].content += `\n\n[WEB GROUNDING DATA ACQUIRED]\nUse the following verified information to inform your response:\n\n${searchResults}`;
       }
 
       finalMessages.push({ role: 'user' as const, content: input.userMessage });
@@ -126,6 +132,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       );
     }
 
+    // ONLINE MODE (Cloud Gemini via Genkit)
     const { text } = await ai.generate({
       system: combinedSystemPrompt,
       prompt: input.userMessage,
@@ -140,6 +147,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
 
     return text || "No response generated.";
   } catch (error: any) {
+    console.error("Neural Orchestration Error:", error);
     if (error.message?.includes("No models loaded") || error.message?.includes("404")) {
       return "ERROR: Engine node unavailable. Please establish connection or re-load model.";
     }
