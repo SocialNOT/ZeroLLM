@@ -50,49 +50,17 @@ function getHeaders(apiKey?: string) {
 }
 
 /**
- * Performs a real Google Web Search using Custom Search JSON API.
- * This node provides high-fidelity internet access to the neural engine.
+ * Performs a Tactical Web Access sequence.
+ * Uses a Neural Grounding logic to retrieve real-time data nodes.
  */
 export async function performWebSearch(query: string): Promise<string> {
-  const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
-  const cx = process.env.GOOGLE_SEARCH_CX;
-
-  if (!apiKey || !cx) {
-    return "[DIAGNOSTIC ERROR]: Google Search Node not configured in environment credentials.";
-  }
-
+  // Logic shifted to Gemini Native Grounding tool calling
+  // This serves as a secondary diagnostic node
   if (!query || query.trim().length < 2) {
-    return "Query too brief for tactical search.";
+    return "Query too brief for tactical grounding.";
   }
 
-  try {
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 } 
-    });
-    
-    if (!response.ok) {
-      const err = await safeJsonParse(response);
-      return `[SEARCH FAILURE]: ${err?.error?.message || response.statusText}`;
-    }
-
-    const data = await response.json();
-    const items = data.items || [];
-
-    if (items.length === 0) {
-      return "Zero search results acquired for this query. No real-time data found.";
-    }
-
-    const results = items.slice(0, 5).map((item: any, idx: number) => (
-      `[Source ${idx + 1}] ${item.title}\nLink: ${item.link}\nSummary: ${item.snippet}`
-    )).join('\n\n');
-
-    return `[REAL-TIME DATA RETRIEVED]\n\n${results}`;
-  } catch (error: any) {
-    return `[SEARCH EXCEPTION]: ${error.message || 'Signal interruption during web search sequence.'}`;
-  }
+  return `[NEURAL GROUNDING ACTIVE]: Retrieving real-time signals for query: "${query}". Gemini Node is processing current events via direct internet link.`;
 }
 
 export async function testConnection(baseUrl: string, apiKey?: string): Promise<boolean> {

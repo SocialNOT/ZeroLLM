@@ -100,8 +100,8 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           <div className={cn(
             "h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center shadow-md border-2 transition-transform group-hover:scale-105",
             isAssistant 
-              ? isError ? "bg-rose-100 text-rose-600 border-rose-600" : "bg-accent text-accent-foreground border-accent" 
-              : "bg-primary text-primary-foreground border-primary"
+              ? isError ? "bg-rose-600 text-white border-rose-700" : "bg-accent text-white border-accent" 
+              : "bg-primary text-white border-primary"
           )}>
             {isAssistant ? <Bot size={14} /> : <User size={14} />}
           </div>
@@ -113,13 +113,13 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         )}>
           <div className="flex items-center gap-2 px-1">
             <span className={cn(
-              "text-[8px] font-black uppercase tracking-widest",
-              isError ? "text-rose-600" : "text-primary"
+              "text-[9px] font-black uppercase tracking-widest",
+              isError ? "text-rose-700" : "text-primary"
             )}>
               {isAssistant ? isError ? "Node Critical Error" : "Neural Command Node" : "Human Core Identity"}
             </span>
             {message.content.includes("[TRANSLATION:") && (
-              <Badge variant="outline" className="text-[7px] font-black uppercase py-0 px-1 border-emerald-600 bg-emerald-50 text-emerald-600">
+              <Badge variant="outline" className="text-[8px] font-black uppercase py-0 px-1 border-emerald-700 bg-emerald-50 text-emerald-700">
                 Linguistic Protocol
               </Badge>
             )}
@@ -130,12 +130,12 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
             isAssistant 
               ? isError 
                 ? "bg-rose-50 border-2 border-rose-600 text-rose-950 rounded-tl-none" 
-                : "bg-white border-2 border-border text-slate-900 rounded-tl-none" 
-              : "bg-primary text-primary-foreground rounded-tr-none border-2 border-black/5"
+                : "bg-white border-2 border-border text-slate-950 rounded-tl-none" 
+              : "bg-primary text-white rounded-tr-none border-2 border-black/5"
           )}>
             <div className={cn(
               "text-[14px] sm:text-[15px] leading-relaxed relative z-10 font-bold",
-              isError && "font-mono text-[11px] text-rose-800"
+              isError && "font-mono text-[11px] text-rose-900"
             )}>
               {isAssistant && !isError ? (
                 <ReactMarkdown 
@@ -157,10 +157,10 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                         </div>
                       );
                     },
-                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-2 text-foreground font-black" {...props} />,
+                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-2 text-slate-950 font-black" {...props} />,
                     table: ({...props}) => <div className="overflow-x-auto my-3 rounded-lg border-2 border-border"><table className="w-full text-left border-collapse" {...props} /></div>,
-                    th: ({...props}) => <th className="bg-slate-50 p-2 border-b-2 border-border font-black text-[12px] uppercase tracking-wider text-foreground" {...props} />,
-                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px] text-foreground font-black" {...props} />,
+                    th: ({...props}) => <th className="bg-slate-50 p-2 border-b-2 border-border font-black text-[12px] uppercase tracking-wider text-slate-950" {...props} />,
+                    td: ({...props}) => <td className="p-2 border-b border-border text-[13px] text-slate-950 font-black" {...props} />,
                   }}
                 >
                   {message.content}
@@ -170,14 +170,14 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               )}
             </div>
             {isAssistant && !isError && (
-              <div className="absolute top-0 right-0 p-2 opacity-10">
+              <div className="absolute top-0 right-0 p-2 opacity-15">
                 <Sparkles size={32} className="text-primary" />
               </div>
             )}
           </div>
 
           <div className={cn(
-            "flex items-center gap-1 mt-0.5 transition-all duration-300 opacity-0 group-hover:opacity-100",
+            "flex items-center gap-1 mt-0.5 transition-all duration-300 opacity-100",
             !isAssistant && "flex-row-reverse"
           )}>
             {isAssistant && !isError && (
@@ -205,8 +205,11 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
               </>
             )}
             <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10 rounded-lg transition-colors" onClick={handleCopy}>
-              {isCopied ? <Check size={10} className="text-emerald-600" /> : <Copy size={10} />}
+              {isCopied ? <Check size={10} className="text-emerald-700" /> : <Copy size={10} />}
             </Button>
+            <span className="text-[8px] font-black font-mono text-primary px-1">
+              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
           </div>
         </div>
       </div>

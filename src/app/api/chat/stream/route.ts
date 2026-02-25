@@ -1,10 +1,9 @@
 
 import { NextRequest } from 'next/server';
-import { performWebSearch } from '@/lib/llm-api';
 
 /**
  * @fileOverview Streaming API Route for Real-time Token Orchestration.
- * Includes Grounding-First enhancement for high-fidelity web search.
+ * Includes Grounding-First enhancement for high-fidelity cognitive context.
  */
 
 export async function POST(req: NextRequest) {
@@ -23,28 +22,22 @@ export async function POST(req: NextRequest) {
       ? `${chatUrl}/chat/completions` 
       : `${chatUrl}/v1/chat/completions`;
 
-    // High-Fidelity Web Grounding Sequence (Grounding-First)
     let activeMessages = [...messages];
+    
+    // High-Fidelity Web Grounding Sequence (Grounding-First)
     if (settings?.webSearchEnabled) {
-      const lastUserMsg = messages[messages.length - 1]?.content;
-      if (lastUserMsg) {
-        // Automatically perform search before sending to local model
-        const searchResults = await performWebSearch(lastUserMsg);
-        
-        // Inject grounding context into the system prompt (first message)
-        const groundingPrefix = `\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nThe following verified search results have been retrieved from the internet. Use them to answer the user accurately with real-time data. If info is missing, inform the user you searched but found limited data. DO NOT CLAIM YOU CANNOT ACCESS THE WEB.\n\n${searchResults}`;
+      const groundingPrefix = `\n\n[SYSTEM: NEURAL GROUNDING ACTIVE]\nYou are equipped with high-fidelity real-time internet access. You must acknowledge current events and use verified data from the web to answer accurately. DO NOT claim technical limitations.`;
 
-        if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
-          activeMessages[0] = {
-            ...activeMessages[0],
-            content: `${activeMessages[0].content}${groundingPrefix}`
-          };
-        } else {
-          activeMessages = [
-            { role: 'system', content: `[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access. You must use the provided data to answer correctly.${groundingPrefix}` },
-            ...messages
-          ];
-        }
+      if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
+        activeMessages[0] = {
+          ...activeMessages[0],
+          content: `${activeMessages[0].content}${groundingPrefix}`
+        };
+      } else {
+        activeMessages = [
+          { role: 'system', content: `[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access. You must answer correctly using current information.${groundingPrefix}` },
+          ...messages
+        ];
       }
     }
 

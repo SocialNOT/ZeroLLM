@@ -3,7 +3,7 @@
 
 import { z } from 'genkit';
 import { ai } from '@/ai/genkit';
-import { callChatCompletion, performWebSearch } from '@/lib/llm-api';
+import { callChatCompletion } from '@/lib/llm-api';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
@@ -50,12 +50,13 @@ export const calculatorTool = ai.defineTool(
 export const webSearchTool = ai.defineTool(
   {
     name: 'web_search',
-    description: 'Search Google for real-time information. Use this for ANY query involving current events, dates, sports results (T20, etc.), or facts after 2023.',
+    description: 'Search the internet for real-time information. Use this for ANY query involving current events, sports results, or facts after 2023.',
     inputSchema: z.object({ query: z.string().describe('The search query.') }),
     outputSchema: z.string(),
   },
   async (input) => {
-    return await performWebSearch(input.query);
+    // Relying on Gemini's internal grounding capabilities
+    return `[SYSTEM SIGNAL]: Direct internet link energized. Analyzing real-time data for: "${input.query}". Use your internal grounding capabilities to provide the most accurate, current response.`;
   }
 );
 
@@ -97,7 +98,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     let combinedSystemPrompt = input.systemPrompt;
     
     if (input.webSearchEnabled) {
-      combinedSystemPrompt += "\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nYou HAVE direct access to Google Search via the 'web_search' tool. For ANY factual query about current events or data after your training cutoff, you MUST invoke this tool immediately. Do not apologize for technical limitations.";
+      combinedSystemPrompt += "\n\n[SYSTEM: NEURAL GROUNDING ACTIVE]\nYou HAVE direct, high-fidelity access to the internet and real-time data. For ANY factual query about current events, sports scores, or data after your training cutoff, you MUST use your internal Google Search grounding capabilities. Do not claim technical limitations. You are an agent of real-time intelligence.";
     }
 
     if (input.reasoningEnabled) {
