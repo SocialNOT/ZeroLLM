@@ -1,7 +1,8 @@
 
-export type ModelProvider = 'Ollama' | 'LM Studio' | 'Custom';
+export type ModelProvider = 'Ollama' | 'LM Studio' | 'Custom' | 'Gemini Cloud';
 export type UserRole = 'Admin' | 'User' | 'Viewer';
 export type MemoryType = 'buffer' | 'summary' | 'knowledge-graph';
+export type AiMode = 'online' | 'offline';
 
 export interface ModelConnection {
   id: string;

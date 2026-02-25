@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Zap, Server, Cpu, Loader2, AlertCircle, Key, CheckCircle2, ChevronRight, ShieldCheck } from "lucide-react";
+import { Zap, Server, Cpu, Loader2, AlertCircle, Key, CheckCircle2, ChevronRight, ShieldCheck, Globe, Cloud, Laptop } from "lucide-react";
 import { testConnectionAction, fetchModelsAction } from "@/ai/actions/engine-actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function SetupOverlay() {
   const { completeInitialSetup } = useAppStore();
+  const [setupMode, setSetupMode] = useState<'online' | 'offline'>('online');
   const [baseUrl, setBaseUrl] = useState("http://localhost:11434/v1");
   const [modelId, setModelId] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -48,7 +50,12 @@ export function SetupOverlay() {
     setError(null);
     setIsTesting(true);
     try {
-      const success = await completeInitialSetup(baseUrl, modelId || "unspecified", apiKey);
+      const success = await completeInitialSetup(
+        setupMode === 'online' ? '' : baseUrl, 
+        setupMode === 'online' ? 'gemini-2.5-flash' : (modelId || "unspecified"), 
+        apiKey,
+        setupMode
+      );
       if (!success) {
         setError("Finalization protocol rejected. Node may have timed out.");
       }
@@ -80,16 +87,27 @@ export function SetupOverlay() {
               Establish a high-fidelity <span className="text-primary font-black">Neural Handshake</span> to supercharge your AI orchestration.
             </CardDescription>
             
-            <div className="flex items-center justify-center gap-1.5 mt-4">
-              <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">
-                <ShieldCheck size={10} className="mr-1" /> Secure
-              </Badge>
-              <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">
-                <Server size={10} className="mr-1" /> Local
-              </Badge>
-              <Badge variant="outline" className="h-5 text-[7px] uppercase font-bold px-2 border-slate-100 bg-slate-50 text-slate-400">
-                <Cpu size={10} className="mr-1" /> Neural
-              </Badge>
+            <div className="grid grid-cols-2 gap-2 mt-6 p-1 bg-slate-50 rounded-2xl border border-slate-100">
+              <button 
+                onClick={() => setSetupMode('online')}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                  setupMode === 'online' ? "bg-white text-primary shadow-sm ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                <Cloud size={14} />
+                Cloud Node
+              </button>
+              <button 
+                onClick={() => setSetupMode('offline')}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                  setupMode === 'offline' ? "bg-white text-primary shadow-sm ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                <Laptop size={14} />
+                Local Node
+              </button>
             </div>
           </CardHeader>
 
@@ -101,97 +119,126 @@ export function SetupOverlay() {
               </div>
             )}
 
-            {!isVerified ? (
-              <div className="space-y-4 animate-in fade-in duration-300">
-                <div className="space-y-1.5">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Endpoint Node</Label>
-                  <div className="relative">
-                    <Server className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                    <Input 
-                      value={baseUrl} 
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="http://localhost:11434/v1"
-                      className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
-                    />
+            {setupMode === 'online' ? (
+              <div className="py-6 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 text-center">
+                <div className="flex justify-center">
+                  <div className="h-16 w-16 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-2 border-primary/10">
+                    <Globe size={32} className="animate-spin-slow" />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Access Secret (Optional)</Label>
-                  <div className="relative">
-                    <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                    <Input 
-                      type="password"
-                      value={apiKey} 
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="sk-..."
-                      className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
-                    />
-                  </div>
+                <div className="space-y-1">
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900">Gemini Infrastructure Energized</h3>
+                  <p className="text-[9px] font-medium text-slate-400 leading-relaxed">Utilizing high-performance Cloud nodes for instant orchestration. No configuration required.</p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-600">
-                  <CheckCircle2 size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Node Signal Synchronized</span>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Primary Model Identifier</Label>
-                  <div className="relative">
-                    <Cpu className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 z-10" size={14} />
-                    {models.length > 0 ? (
-                      <Select value={modelId} onValueChange={setModelId}>
-                        <SelectTrigger className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20">
-                          <SelectValue placeholder="Select indexed model" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 z-[200]">
-                          {models.map(m => (
-                            <SelectItem key={m} value={m} className="text-xs font-bold">{m}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input 
-                        value={modelId} 
-                        onChange={(e) => setModelId(e.target.value)}
-                        placeholder="llama3:8b"
-                        className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20"
-                      />
-                    )}
+              <>
+                {!isVerified ? (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Endpoint Node</Label>
+                      <div className="relative">
+                        <Server className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+                        <Input 
+                          value={baseUrl} 
+                          onChange={(e) => setBaseUrl(e.target.value)}
+                          placeholder="http://localhost:11434/v1"
+                          className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Access Secret (Optional)</Label>
+                      <div className="relative">
+                        <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+                        <Input 
+                          type="password"
+                          value={apiKey} 
+                          onChange={(e) => setApiKey(e.target.value)}
+                          placeholder="sk-..."
+                          className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                ) : (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-600">
+                      <CheckCircle2 size={16} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Node Signal Synchronized</span>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Primary Model Identifier</Label>
+                      <div className="relative">
+                        <Cpu className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 z-10" size={14} />
+                        {models.length > 0 ? (
+                          <Select value={modelId} onValueChange={setModelId}>
+                            <SelectTrigger className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20">
+                              <SelectValue placeholder="Select indexed model" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100 z-[200]">
+                              {models.map(m => (
+                                <SelectItem key={m} value={m} className="text-xs font-bold">{m}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input 
+                            value={modelId} 
+                            onChange={(e) => setModelId(e.target.value)}
+                            placeholder="llama3:8b"
+                            className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
 
           <CardFooter className="pt-4 pb-8 px-8">
-            {!isVerified ? (
+            {setupMode === 'online' ? (
               <Button 
-                onClick={handleVerify} 
-                disabled={!baseUrl || isTesting}
+                onClick={handleFinalize} 
+                disabled={isTesting}
                 className="w-full h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
               >
-                {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Node Signal"}
+                {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Energize Cloud Node"}
                 {!isTesting && <ChevronRight size={14} />}
               </Button>
             ) : (
-              <div className="w-full flex gap-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => setIsVerified(false)}
-                  className="h-12 flex-1 rounded-xl text-[9px] font-bold uppercase tracking-widest border-slate-100 text-slate-400 hover:bg-slate-50"
-                >
-                  Reset
-                </Button>
-                <Button 
-                  onClick={handleFinalize} 
-                  disabled={isTesting}
-                  className="h-12 flex-[2] rounded-xl bg-emerald-600 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-emerald-200 gap-2"
-                >
-                  {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Energize Node"}
-                </Button>
-              </div>
+              <>
+                {!isVerified ? (
+                  <Button 
+                    onClick={handleVerify} 
+                    disabled={!baseUrl || isTesting}
+                    className="w-full h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+                  >
+                    {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Node Signal"}
+                    {!isTesting && <ChevronRight size={14} />}
+                  </Button>
+                ) : (
+                  <div className="w-full flex gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setIsVerified(false)}
+                      className="h-12 flex-1 rounded-xl text-[9px] font-bold uppercase tracking-widest border-slate-100 text-slate-400 hover:bg-slate-50"
+                    >
+                      Reset
+                    </Button>
+                    <Button 
+                      onClick={handleFinalize} 
+                      disabled={isTesting}
+                      className="h-12 flex-[2] rounded-xl bg-emerald-600 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-emerald-200 gap-2"
+                    >
+                      {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Energize Local Node"}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </CardFooter>
         </Card>

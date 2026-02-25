@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -27,9 +28,12 @@ import {
   UserCircle,
   Clock,
   LogIn,
-  Palette
+  Palette,
+  Cloud,
+  Laptop
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
+import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Sheet, 
@@ -64,7 +68,9 @@ export function ChatInterface() {
     toggleTool,
     sessionStartTime,
     cycleTheme,
-    activeTheme
+    activeTheme,
+    aiMode,
+    setAiMode
   } = useAppStore();
   
   const [input, setInput] = useState("");
@@ -111,7 +117,7 @@ export function ChatInterface() {
   useEffect(() => {
     if (mounted && connectionStatus === 'online') {
       const updateLatency = () => {
-        const val = Math.floor(Math.random() * 40 + 10);
+        const val = aiMode === 'online' ? Math.floor(Math.random() * 100 + 50) : Math.floor(Math.random() * 40 + 10);
         setLatency(`${val}ms`);
       };
       updateLatency();
@@ -120,7 +126,7 @@ export function ChatInterface() {
     } else {
       setLatency("---");
     }
-  }, [connectionStatus, mounted]);
+  }, [connectionStatus, mounted, aiMode]);
 
   useEffect(() => {
     if (mounted && typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitRecognition' in window)) {
@@ -222,63 +228,96 @@ export function ChatInterface() {
         linguistic ? `\n\n[LINGUISTIC CONSTRAINTS: ${linguistic.name}]\n${linguistic.system_instruction}` : ''
       ].filter(Boolean).join('\n\n').trim();
 
-      const response = await fetch('/api/chat/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          baseUrl: connection?.baseUrl || '',
-          modelId: connection?.modelId || '',
-          messages: [
-            { role: 'system', content: combinedSystemPrompt },
-            ...session.messages,
-            { role: 'user', content: textToSend }
-          ],
-          settings: session.settings,
-          apiKey: connection?.apiKey
-        })
-      });
+      if (aiMode === 'online') {
+        // ONLINE MODE: Call Genkit Flow directly
+        const responseText = await personaDrivenChat({
+          baseUrl: 'genkit', // Signifies cloud mode
+          modelId: 'gemini-2.5-flash',
+          systemPrompt: combinedSystemPrompt,
+          userMessage: textToSend,
+          temperature: session.settings.temperature,
+          topP: session.settings.topP,
+          maxTokens: session.settings.maxTokens,
+          history: session.messages.map(m => ({ 
+            role: m.role as any, 
+            content: m.content,
+            timestamp: m.timestamp
+          })),
+          webSearchEnabled: session.settings.webSearchEnabled,
+          reasoningEnabled: session.settings.reasoningEnabled
+        });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "Stream Initialization Failed");
-      }
+        updateMessage(session.id, assistantMsgId, { content: responseText });
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedContent = "";
+        if (session.settings.voiceResponseEnabled && responseText) {
+          try {
+            const { audioUri } = await generateSpeech({ text: responseText });
+            const audio = new Audio(audioUri);
+            audio.play();
+          } catch (vErr) {
+            console.warn("Voice auto-play failed", vErr);
+          }
+        }
+      } else {
+        // OFFLINE MODE: Use Streaming Proxy
+        const response = await fetch('/api/chat/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            baseUrl: connection?.baseUrl || '',
+            modelId: connection?.modelId || '',
+            messages: [
+              { role: 'system', content: combinedSystemPrompt },
+              ...session.messages,
+              { role: 'user', content: textToSend }
+            ],
+            settings: session.settings,
+            apiKey: connection?.apiKey
+          })
+        });
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || "Stream Initialization Failed");
+        }
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedContent = "";
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-              try {
-                const parsed = JSON.parse(data);
-                const delta = parsed.choices?.[0]?.delta?.content || "";
-                if (delta) {
-                  accumulatedContent += delta;
-                  updateMessage(session.id, assistantMsgId, { content: accumulatedContent });
-                }
-              } catch (e) {}
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') continue;
+                try {
+                  const parsed = JSON.parse(data);
+                  const delta = parsed.choices?.[0]?.delta?.content || "";
+                  if (delta) {
+                    accumulatedContent += delta;
+                    updateMessage(session.id, assistantMsgId, { content: accumulatedContent });
+                  }
+                } catch (e) {}
+              }
             }
           }
         }
-      }
 
-      if (session.settings.voiceResponseEnabled && accumulatedContent) {
-        try {
-          const { audioUri } = await generateSpeech({ text: accumulatedContent });
-          const audio = new Audio(audioUri);
-          audio.play();
-        } catch (vErr) {
-          console.warn("Voice auto-play failed", vErr);
+        if (session.settings.voiceResponseEnabled && accumulatedContent) {
+          try {
+            const { audioUri } = await generateSpeech({ text: accumulatedContent });
+            const audio = new Audio(audioUri);
+            audio.play();
+          } catch (vErr) {
+            console.warn("Voice auto-play failed", vErr);
+          }
         }
       }
 
@@ -369,7 +408,7 @@ export function ChatInterface() {
                   "h-7 w-7 sm:h-8 sm:w-8 rounded-[0.75rem] flex items-center justify-center transition-all shadow-inner border-2 shrink-0",
                   connectionStatus === 'online' ? "bg-primary text-white border-primary" : "bg-destructive text-white border-destructive"
                 )}>
-                  {connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
+                  {aiMode === 'online' ? <Cloud size={14} className="animate-pulse" /> : connectionStatus === 'online' ? <Wifi size={14} className="animate-pulse" /> : <WifiOff size={14} />}
                 </div>
                 <div className="flex flex-col items-start text-left pr-1 overflow-hidden min-w-0 flex-1">
                   <div className="flex items-center gap-1 leading-none w-full justify-between">
@@ -377,7 +416,7 @@ export function ChatInterface() {
                       "text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em] whitespace-nowrap",
                       connectionStatus === 'online' ? "text-primary" : "text-destructive"
                     )}>
-                      {connectionStatus === 'online' ? "System Optimal" : "Node Offline"}
+                      {aiMode === 'online' ? "Cloud Active" : connectionStatus === 'online' ? "Local Active" : "Node Offline"}
                     </span>
                     {mounted && connectionStatus === 'online' && (
                       <span className="text-[6px] sm:text-[7px] font-mono font-black text-foreground">
@@ -386,7 +425,7 @@ export function ChatInterface() {
                     )}
                   </div>
                   <span className="text-[6px] sm:text-[7px] font-black text-foreground uppercase tracking-wider mt-0.5 truncate w-full">
-                    {connection?.modelId || "Primary Engine"}
+                    {aiMode === 'online' ? "Gemini 2.5 Flash" : (connection?.modelId || "Primary Engine")}
                   </span>
                 </div>
               </button>
@@ -409,6 +448,18 @@ export function ChatInterface() {
             )}
             
             <div className="flex items-center gap-1 shrink-0">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')}
+                title={`Toggle Neural Mode: Currently ${aiMode}`}
+                className={cn(
+                  "h-7 w-7 rounded-lg border-2 border-border transition-all shadow-sm active:scale-90",
+                  aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-foreground hover:bg-slate-50"
+                )}
+              >
+                {aiMode === 'online' ? <Cloud size={14} /> : <Laptop size={14} />}
+              </Button>
               <Button 
                 variant="outline" 
                 size="icon" 

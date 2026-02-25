@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl } from '@/types';
+import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl, AiMode } from '@/types';
 import { testConnectionAction, fetchModelsAction, loadModelAction } from '@/ai/actions/engine-actions';
 import { PERSONAS } from '@/lib/personas';
 import { FRAMEWORKS } from '@/lib/frameworks';
@@ -25,6 +25,7 @@ interface AppState {
   isModelLoading: boolean;
   activeParameterTab: string;
   showInfoSidebar: boolean;
+  aiMode: AiMode;
   
   // Theme Engine
   activeTheme: 'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -63,7 +64,8 @@ interface AppState {
   applyPersona: (sessionId: string, personaId: string) => void;
   applyLinguisticControl: (sessionId: string, linguisticId: string) => void;
 
-  completeInitialSetup: (baseUrl: string, modelId: string, apiKey?: string) => Promise<boolean>;
+  completeInitialSetup: (baseUrl: string, modelId: string, apiKey?: string, mode?: AiMode) => Promise<boolean>;
+  setAiMode: (mode: AiMode) => void;
   setRole: (role: UserRole) => void;
   startSession: () => void;
   checkConnection: () => Promise<void>;
@@ -98,6 +100,7 @@ export const useAppStore = create<AppState>()(
       activeSessionId: null,
       isConfigured: false,
       currentUserRole: 'User',
+      aiMode: 'online',
       availableTools: [
         { id: 'calculator', name: 'Calculator', description: 'Perform mathematical operations', icon: 'calculator' },
         { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'globe' },
@@ -160,9 +163,14 @@ export const useAppStore = create<AppState>()(
 
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
+      setAiMode: (mode) => set({ aiMode: mode }),
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       
       checkConnection: async () => {
+        if (get().aiMode === 'online') {
+          set({ connectionStatus: 'online' });
+          return;
+        }
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return;
 
@@ -177,6 +185,10 @@ export const useAppStore = create<AppState>()(
       },
 
       refreshModels: async () => {
+        if (get().aiMode === 'online') {
+          set({ availableModels: ['gemini-2.5-flash'] });
+          return;
+        }
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return;
         try {
@@ -186,6 +198,7 @@ export const useAppStore = create<AppState>()(
       },
 
       triggerModelLoad: async (modelId) => {
+        if (get().aiMode === 'online') return true;
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return false;
         set({ isModelLoading: true });
@@ -200,7 +213,11 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      completeInitialSetup: async (baseUrl, modelId, apiKey) => {
+      completeInitialSetup: async (baseUrl, modelId, apiKey, mode = 'online') => {
+        if (mode === 'online') {
+          set({ aiMode: 'online', isConfigured: true, connectionStatus: 'online' });
+          return true;
+        }
         const id = 'default-conn';
         set({ connectionStatus: 'checking' });
         try {
@@ -219,6 +236,7 @@ export const useAppStore = create<AppState>()(
             connections: [newConn], 
             activeConnectionId: id,
             isConfigured: true,
+            aiMode: 'offline',
             connectionStatus: isOnline ? 'online' : 'offline'
           });
           if (isOnline) await get().refreshModels();
@@ -414,7 +432,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     { 
-      name: 'zerogpt-storage-v10',
+      name: 'zerogpt-storage-v11',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
