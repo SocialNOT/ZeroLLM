@@ -104,7 +104,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       )}>
         {/* Terminal Header Bar */}
         <div className={cn(
-          "flex items-center gap-2 sm:gap-3 px-3 py-2 border-b-2 font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-widest select-none overflow-hidden shrink-0",
+          "flex items-center gap-3 px-4 py-2 border-b-2 font-mono text-[10px] font-black uppercase tracking-widest select-none overflow-hidden shrink-0",
           isAssistant 
             ? isError ? "bg-rose-600 text-white border-rose-700" : "bg-primary text-white border-primary"
             : "bg-accent text-white border-accent"
@@ -112,17 +112,16 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           <div className="flex h-5 w-5 items-center justify-center rounded bg-white/30 shrink-0 shadow-sm">
             {isAssistant ? isError ? <AlertTriangle size={12} /> : <Bot size={12} /> : <User size={12} />}
           </div>
-          <span className="truncate flex-1 min-w-0 font-black">{operatorName}</span>
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto pl-2 min-w-0">
-            <span className="hidden xs:inline-block font-black shrink-0">.MD</span>
-            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_5px_white] shrink-0" />
+          <span className="truncate flex-1 font-black">{operatorName}.MD</span>
+          <div className="flex items-center gap-2 shrink-0 ml-auto pl-2">
+            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_5px_white]" />
           </div>
         </div>
 
         {/* Cognitive Payload Body */}
         <div className="p-4 sm:p-6 relative overflow-hidden min-w-0">
           <div className={cn(
-            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words break-all whitespace-pre-wrap overflow-hidden",
+            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap overflow-hidden",
             isAssistant ? "text-slate-900" : "text-white"
           )}>
             {isAssistant && !isError ? (
@@ -157,7 +156,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 {message.content}
               </ReactMarkdown>
             ) : (
-              <div className="font-black break-words break-all">{message.content}</div>
+              <div className="font-black break-words">{message.content}</div>
             )}
           </div>
           
@@ -173,18 +172,18 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           "px-4 py-2.5 border-t flex items-center justify-between gap-3",
           isAssistant ? "bg-slate-50 border-primary/20" : "bg-white/10 border-white/20"
         )}>
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden">
+          <div className="flex items-center gap-2">
             {isAssistant && !isError && (
               <>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20 shrink-0" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={16} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20 shrink-0" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20" onClick={onRegenerate}>
                   <RefreshCw size={16} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg transition-all active:scale-90 border border-transparent hover:border-primary/20">
                       {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Languages size={16} />}
                     </Button>
                   </DropdownMenuTrigger>
@@ -199,13 +198,13 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-lg transition-all active:scale-90 border border-transparent shrink-0", isAssistant ? "text-primary hover:bg-primary/10 hover:border-primary/20" : "text-white hover:bg-white/20 hover:border-white/30")} onClick={handleCopy}>
+            <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-lg transition-all active:scale-90 border border-transparent", isAssistant ? "text-primary hover:bg-primary/10 hover:border-primary/20" : "text-white hover:bg-white/20 hover:border-white/30")} onClick={handleCopy}>
               {isCopied ? <Check size={16} className={isAssistant ? "text-emerald-600" : "text-white"} /> : <Copy size={16} />}
             </Button>
           </div>
 
           <div className={cn(
-            "flex items-center justify-center px-3 py-1.5 rounded-lg border-2 font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm transition-all shrink-0",
+            "flex items-center justify-center px-3 py-1.5 rounded-lg border-2 font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm transition-all",
             isAssistant 
               ? "bg-primary text-white border-primary shadow-primary/20" 
               : "bg-white text-primary border-white shadow-white/30"

@@ -26,7 +26,9 @@ import {
   Palette,
   Cloud,
   Laptop,
-  Globe
+  Globe,
+  ChevronRight,
+  Activity
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -43,6 +45,7 @@ import { generateChatTitle } from "@/ai/actions/chat-actions";
 import { toast } from "@/hooks/use-toast";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export function ChatInterface() {
   const { 
@@ -127,7 +130,6 @@ export function ChatInterface() {
       };
 
       recognitionRef.current.onerror = (event: any) => {
-        console.error('Speech Recognition Error:', event.error);
         setIsListening(false);
       };
 
@@ -260,12 +262,26 @@ export function ChatInterface() {
     { 
       title: "First Principles Analysis", 
       prompt: "Analyze the following using First Principles thinking: ",
-      icon: <Brain className="text-primary h-5 w-5" />
+      icon: <Brain className="text-primary h-5 w-5" />,
+      desc: "Deconstruct logic to fundamental truths."
     },
     { 
       title: "Technical STRIDE Audit", 
       prompt: "Perform a STRIDE threat model on this system architecture: ",
-      icon: <Shield className="text-destructive h-5 w-5" />
+      icon: <Shield className="text-rose-600 h-5 w-5" />,
+      desc: "Security threat modeling for systems."
+    },
+    { 
+      title: "Market Scenario Mapping", 
+      prompt: "Generate three possible future scenarios for this market segment: ",
+      icon: <Globe className="text-emerald-600 h-5 w-5" />,
+      desc: "Strategic trend extrapolation."
+    },
+    { 
+      title: "Clean Code Refactoring", 
+      prompt: "Refactor this code following SOLID and DRY principles: ",
+      icon: <Terminal className="text-indigo-600 h-5 w-5" />,
+      desc: "Architectural logic optimization."
     }
   ];
 
@@ -374,21 +390,47 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-5xl flex-col py-6 px-4 sm:px-8">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center space-y-8 animate-in fade-in zoom-in duration-700">
-                <div className="space-y-3">
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center space-y-10 animate-in fade-in zoom-in duration-700 max-w-4xl mx-auto w-full">
+                <div className="space-y-4">
                   <div className="relative inline-block">
-                    <Zap className="text-primary mx-auto animate-pulse h-12 w-12 sm:h-14 sm:w-14" />
-                    <Sparkles className="absolute -top-2 -right-2 text-accent h-5 w-5 sm:h-6 sm:w-6" />
+                    <div className="h-20 w-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-4 border-primary/10 shadow-2xl">
+                      <Zap className="animate-pulse h-10 w-10" />
+                    </div>
+                    <div className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white flex items-center justify-center border-4 border-accent text-accent shadow-lg">
+                      <Activity size={14} className="animate-spin-slow" />
+                    </div>
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tighter">Neural Node Synchronized</h2>
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Establish Cognitive Sequence</p>
+                  <div className="space-y-1">
+                    <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-none">Neural Node Energized</h2>
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary py-1 px-4 rounded-full font-black text-[9px] uppercase tracking-widest">
+                        Handshake: 100%
+                      </Badge>
+                      <Badge variant="outline" className="border-accent/20 bg-accent/5 text-accent py-1 px-4 rounded-full font-black text-[9px] uppercase tracking-widest">
+                        Identity: Verified
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-400 max-w-sm mx-auto">Establish command sequence to begin orchestration</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                   {cognitiveStarters.map((starter, idx) => (
-                    <button key={idx} onClick={() => setInput(starter.prompt)} className="group flex items-center gap-4 p-4 rounded-2xl bg-white border-2 border-border shadow-sm hover:shadow-xl hover:border-primary transition-all text-left">
-                      <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary group-hover:text-white transition-colors">{starter.icon}</div>
-                      <span className="text-[12px] sm:text-[14px] font-black text-slate-900 tracking-tight leading-tight">{starter.title}</span>
-                      <ArrowRight size={16} className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-3 group-hover:translate-x-0" />
+                    <button 
+                      key={idx} 
+                      onClick={() => setInput(starter.prompt)} 
+                      className="group flex flex-col p-5 rounded-[2.5rem] bg-white border-2 border-border shadow-lg hover:shadow-2xl hover:border-primary transition-all text-left relative overflow-hidden"
+                    >
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all shadow-inner border border-border/50">
+                          {starter.icon}
+                        </div>
+                        <span className="text-[14px] font-black text-slate-900 tracking-tight leading-tight uppercase">{starter.title}</span>
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-400 leading-relaxed pl-1">{starter.desc}</p>
+                      <div className="absolute bottom-4 right-6 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-3 group-hover:translate-x-0">
+                        <ChevronRight size={20} />
+                      </div>
                     </button>
                   ))}
                 </div>
