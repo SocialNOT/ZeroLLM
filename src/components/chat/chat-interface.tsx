@@ -32,7 +32,6 @@ import {
   Sparkles
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
-import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Sheet, 
@@ -236,28 +235,80 @@ export function ChatInterface() {
         linguistic ? `\n\n[LINGUISTIC CONSTRAINTS: ${linguistic.name}]\n${linguistic.system_instruction}` : ''
       ].filter(Boolean).join('\n\n').trim();
 
-      const responseText = await personaDrivenChat({
-        baseUrl: aiMode === 'online' ? 'genkit' : (connection?.baseUrl || ''),
-        modelId: aiMode === 'online' ? activeOnlineModelId : (connection?.modelId || ''),
-        systemPrompt: combinedSystemPrompt,
-        userMessage: textToSend,
-        temperature: session.settings.temperature,
-        topP: session.settings.topP,
-        maxTokens: session.settings.maxTokens,
-        history: session.messages.map(m => ({ 
-          role: m.role as any, 
-          content: m.content,
-          timestamp: m.timestamp
-        })),
-        webSearchEnabled: session.settings.webSearchEnabled,
-        reasoningEnabled: session.settings.reasoningEnabled
+      // EXECUTE REAL-TIME STREAM ORCHESTRATION
+      const response = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          baseUrl: aiMode === 'online' ? 'genkit' : (connection?.baseUrl || ''),
+          modelId: aiMode === 'online' ? activeOnlineModelId : (connection?.modelId || ''),
+          messages: [
+            { role: 'system', content: combinedSystemPrompt },
+            ...session.messages.map(m => ({ role: m.role, content: m.content })),
+            { role: 'user', content: textToSend }
+          ],
+          settings: {
+            temperature: session.settings.temperature,
+            topP: session.settings.topP,
+            maxTokens: session.settings.maxTokens,
+            webSearchEnabled: session.settings.webSearchEnabled,
+            reasoningEnabled: session.settings.reasoningEnabled
+          },
+          apiKey: connection?.apiKey
+        }),
       });
 
-      updateMessage(session.id, assistantMsgId, { content: responseText });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Engine Node Error');
+      }
 
-      if (session.settings.voiceResponseEnabled && responseText) {
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("Signal Stream Interrupted");
+
+      const decoder = new TextDecoder();
+      let streamedContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          if (trimmed.startsWith('data: ')) {
+            const dataStr = trimmed.slice(6);
+            if (dataStr === '[DONE]') break;
+            try {
+              const data = JSON.parse(dataStr);
+              const text = data.choices?.[0]?.delta?.content || "";
+              if (text) {
+                streamedContent += text;
+                updateMessage(session.id, assistantMsgId, { content: streamedContent });
+              }
+            } catch (e) {}
+          } else {
+            // Check for raw JSON format
+            try {
+              const data = JSON.parse(trimmed);
+              const text = data.choices?.[0]?.delta?.content || data.choices?.[0]?.text || "";
+              if (text) {
+                streamedContent += text;
+                updateMessage(session.id, assistantMsgId, { content: streamedContent });
+              }
+            } catch (e) {}
+          }
+        }
+      }
+
+      // Voice auto-play after stream ends if enabled
+      if (session.settings.voiceResponseEnabled && streamedContent) {
         try {
-          const { audioUri } = await generateSpeech({ text: responseText });
+          const { audioUri } = await generateSpeech({ text: streamedContent });
           const audio = new Audio(audioUri);
           audio.onended = () => {
             if (session.settings.voiceResponseEnabled && !isTyping) {
@@ -524,7 +575,7 @@ export function ChatInterface() {
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white p-1">
-              <Button 
+              <button 
                 type="button" 
                 onClick={toggleListening}
                 className={cn(
@@ -535,7 +586,7 @@ export function ChatInterface() {
                 )}
               >
                 {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-              </Button>
+              </button>
               
               <div className="relative flex-1">
                 <Input
