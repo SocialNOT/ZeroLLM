@@ -113,8 +113,8 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         )}>
           <div className="flex items-center gap-2 px-1">
             <span className={cn(
-              "text-[7px] font-bold uppercase tracking-widest",
-              isError ? "text-rose-500" : "text-muted-foreground/50"
+              "text-[7px] font-black uppercase tracking-widest",
+              isError ? "text-rose-600" : "text-primary"
             )}>
               {isAssistant ? isError ? "Node Error" : "Neural Node" : "Human Identity"}
             </span>
@@ -182,15 +182,15 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}>
             {isAssistant && !isError && (
               <>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={handleSpeech}>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors" onClick={handleSpeech}>
                   {isPlaying ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={12} />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={onRegenerate}>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors" onClick={onRegenerate}>
                   <RefreshCw size={12} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors">
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors">
                       {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={12} />}
                     </Button>
                   </DropdownMenuTrigger>
@@ -204,7 +204,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 </DropdownMenu>
               </>
             )}
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-primary rounded-lg transition-colors" onClick={handleCopy}>
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/5 rounded-lg transition-colors" onClick={handleCopy}>
               {isCopied ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
             </Button>
           </div>

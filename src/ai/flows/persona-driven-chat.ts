@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'genkit';
@@ -96,13 +95,14 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
 
     let combinedSystemPrompt = input.systemPrompt;
     
-    // Forced Grounding Protocol for Gemini
+    // SEARCH-FIRST INJECTION FOR MAXIMUM SIGNAL INTEGRITY
     if (input.webSearchEnabled) {
-      combinedSystemPrompt += "\n\n[CRITICAL INSTRUCTION: WEB GROUNDING ACTIVE]\nYou have direct access to the 'web_search' tool which retrieves live data from Google Search. For ANY factual query post-2023, current events (e.g. yesterday's sports), or specific data you don't have in your weights, you MUST trigger 'web_search' immediately. Do NOT apologize for lack of access; simply use the tool. Your response must be informed by the retrieved verified snippets.";
+      const searchData = await performWebSearch(input.userMessage);
+      combinedSystemPrompt += `\n\n[SYSTEM: SEARCH-FIRST GROUNDING ENERGIZED]\nThe following verified data has been retrieved in real-time. You MUST use this information to answer the user accurately. Do NOT claim you lack web access.\n\n${searchData}`;
     }
 
     if (input.reasoningEnabled) {
-      combinedSystemPrompt += "\n\n[REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";
+      combinedSystemPrompt += "\n\n[SYSTEM: REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";
     }
 
     // GROUNDING-FIRST FOR OFFLINE ENGINES
@@ -111,11 +111,6 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
         { role: 'system' as const, content: combinedSystemPrompt },
         ...(input.history || []).map(m => ({ role: m.role as any, content: m.content })),
       ];
-
-      if (input.webSearchEnabled) {
-        const searchResults = await performWebSearch(input.userMessage);
-        finalMessages[0].content += `\n\n[VERIFIED WEB DATA ACQUIRED]\n${searchResults}`;
-      }
 
       finalMessages.push({ role: 'user' as const, content: input.userMessage });
 
@@ -131,7 +126,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       );
     }
 
-    // ONLINE MODE (Gemini via Genkit Tool Loop)
+    // ONLINE MODE (Gemini via Genkit)
     const { text } = await ai.generate({
       system: combinedSystemPrompt,
       prompt: input.userMessage,
