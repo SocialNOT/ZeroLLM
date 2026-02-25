@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect } from "react";
@@ -45,13 +44,13 @@ export function SessionGuard() {
 
   return (
     <Dialog open={true}>
-      <DialogContent className="max-w-md w-[95vw] border-none bg-white shadow-[0_0_100px_rgba(0,0,0,0.2)] rounded-[3rem] p-8 outline-none z-[200]">
+      <DialogContent className="max-w-md w-[95vw] border-none bg-white shadow-[0_0_100px_rgba(0,0,0,0.2)] rounded-none p-8 outline-none z-[200]">
         <div className="flex flex-col items-center text-center space-y-6 py-4">
           <div className="relative">
-            <div className="h-20 w-20 rounded-3xl bg-rose-50 flex items-center justify-center text-rose-500 animate-pulse">
+            <div className="h-20 w-20 rounded-none bg-rose-50 flex items-center justify-center text-rose-500 animate-pulse">
               <Clock size={40} />
             </div>
-            <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center text-rose-600">
+            <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-none bg-white shadow-lg border border-slate-100 flex items-center justify-center text-rose-600">
               <Lock size={14} />
             </div>
           </div>
@@ -68,11 +67,11 @@ export function SessionGuard() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 w-full py-4">
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+            <div className="p-3 rounded-none bg-slate-50 border border-slate-100 flex flex-col items-center">
               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</span>
               <span className="text-[10px] font-black text-rose-600 uppercase">Expired</span>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+            <div className="p-3 rounded-none bg-slate-50 border border-slate-100 flex flex-col items-center">
               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-1">Constraint</span>
               <span className="text-[10px] font-black text-slate-700 uppercase">1-Hour Daily</span>
             </div>
@@ -80,7 +79,7 @@ export function SessionGuard() {
 
           <Button 
             onClick={handleReauth}
-            className="w-full h-14 rounded-2xl bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-primary/30 hover:scale-105 transition-all gap-3"
+            className="w-full h-14 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-primary/30 hover:scale-105 transition-all gap-3"
           >
             <LogIn size={18} />
             Re-energize Node

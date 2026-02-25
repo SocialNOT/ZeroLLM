@@ -141,11 +141,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border">
+      <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border">
         <div className="flex flex-col max-h-[75vh]">
           <header className="p-4 sm:p-6 bg-white/50 border-b border-primary/5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
+              <div className="p-2 rounded-none bg-primary text-white shadow-lg shadow-primary/20">
                 <Settings2 size={18} />
               </div>
               <div>
@@ -157,10 +157,10 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <Badge variant="outline" className={cn(
-                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-full border",
+                "text-[8px] uppercase font-bold gap-1.5 px-3 py-1 rounded-none border",
                 connectionStatus === 'online' ? "border-emerald-100 text-emerald-600 bg-emerald-50" : "border-rose-100 text-rose-500 bg-rose-50"
               )}>
-                <div className={cn("h-1.5 w-1.5 rounded-full", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse" : "bg-rose-500")} />
+                <div className={cn("h-1.5 w-1.5 rounded-none", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse" : "bg-rose-500")} />
                 {aiMode === 'online' ? 'Cloud Connected' : connectionStatus}
               </Badge>
             </div>
@@ -170,11 +170,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             
             <div className="px-2">
               <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1 mb-2 block">Neural Orchestration Mode</Label>
-              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-none border border-slate-200">
                 <button 
                   onClick={() => setAiMode('online')}
                   className={cn(
-                    "flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                    "flex items-center justify-center gap-2 py-3 rounded-none text-[10px] font-black uppercase tracking-widest transition-all",
                     aiMode === 'online' ? "bg-white text-primary shadow-md ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
                   )}
                 >
@@ -184,7 +184,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                 <button 
                   onClick={() => setAiMode('offline')}
                   className={cn(
-                    "flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                    "flex items-center justify-center gap-2 py-3 rounded-none text-[10px] font-black uppercase tracking-widest transition-all",
                     aiMode === 'offline' ? "bg-white text-primary shadow-md ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
                   )}
                 >
@@ -195,7 +195,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             </div>
 
             <Card className={cn(
-              "border-primary/5 bg-white shadow-sm rounded-2xl overflow-hidden transition-all duration-500",
+              "border-primary/5 bg-white shadow-sm rounded-none overflow-hidden transition-all duration-500",
               activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
             )}>
               <div 
@@ -203,7 +203,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                 onClick={() => setActiveCard('engine')}
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                  <div className="h-8 w-8 rounded-none bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                     {aiMode === 'online' ? <Cloud size={16} /> : <Server size={16} className={cn(connectionStatus === 'online' && activeCard === 'engine' && "animate-pulse")} />}
                   </div>
                   <div className="flex flex-col">
@@ -219,7 +219,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                   <Button 
                     size="sm" 
                     variant="secondary" 
-                    className="h-7 text-[8px] font-bold uppercase rounded-lg gap-1.5 px-2"
+                    className="h-7 text-[8px] font-bold uppercase rounded-none gap-1.5 px-2"
                     onClick={handleRefresh}
                     disabled={connectionStatus === 'checking'}
                   >
@@ -238,7 +238,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                         <Input 
                           value={urlInput} 
                           onChange={(e) => setUrlInput(e.target.value)}
-                          className="rounded-xl border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                          className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
                           placeholder="http://localhost:11434/v1"
                         />
                       </div>
@@ -248,14 +248,14 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                           type="password"
                           value={tokenInput} 
                           onChange={(e) => setTokenInput(e.target.value)}
-                          className="rounded-xl border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                          className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
                           placeholder="sk-..."
                         />
                       </div>
                     </div>
                   ) : (
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-primary/5 flex items-center gap-4 mt-2">
-                      <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                    <div className="p-4 bg-slate-50 rounded-none border border-primary/5 flex items-center gap-4 mt-2">
+                      <div className="h-10 w-10 rounded-none bg-primary/5 flex items-center justify-center text-primary">
                         <Globe size={20} />
                       </div>
                       <div>
@@ -271,7 +271,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                         <Cpu size={12} className="text-primary" />
                         <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine</span>
                       </div>
-                      <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary">
+                      <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary rounded-none">
                         {aiMode === 'online' ? '1 Active Node' : `${availableModels.length} Indexed Models`}
                       </Badge>
                     </div>
@@ -287,13 +287,13 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                           <div 
                             key={model}
                             className={cn(
-                              "relative flex flex-col p-3 rounded-2xl border transition-all duration-300 group overflow-hidden bg-white cursor-default",
+                              "relative flex flex-col p-3 rounded-none border transition-all duration-300 group overflow-hidden bg-white cursor-default",
                               isActive ? "ring-2 ring-primary border-transparent" : "border-primary/5 hover:bg-primary/5",
                               glowClass
                             )}
                           >
                             <div className="flex items-start justify-between mb-2">
-                              <div className={cn("h-1.5 w-1.5 rounded-full mt-1", pulseColor, isActive && "animate-ping")} />
+                              <div className={cn("h-1.5 w-1.5 rounded-none mt-1", pulseColor, isActive && "animate-ping")} />
                               <div className="flex gap-1">
                                 {caps.slice(0, 2).map((cap, i) => (
                                   <div key={i} title={cap.label} className="text-slate-300 group-hover:text-primary transition-colors">
@@ -309,7 +309,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                               size="sm"
                               variant={isActive ? "default" : "outline"}
                               className={cn(
-                                "h-6 w-full text-[7px] font-bold uppercase rounded-lg transition-all",
+                                "h-6 w-full text-[7px] font-bold uppercase rounded-none transition-all",
                                 isActive ? "bg-primary text-white" : "text-primary border-primary/10 hover:bg-primary/5 hover:text-primary"
                               )}
                               onClick={(e) => aiMode === 'offline' && handleLoadModel(model, e)}
@@ -329,14 +329,14 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Card 
                 className={cn(
-                  "border-primary/5 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
+                  "border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden",
                   activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-80 grayscale-[0.5]"
                 )}
                 onClick={() => setActiveCard('shield')}
               >
                 <div className="p-3 sm:p-4 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                    <div className="h-8 w-8 rounded-none bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                       <ShieldCheck size={16} className={cn(activeCard === 'shield' && "animate-pulse")} />
                     </div>
                     <div className="flex flex-col">
@@ -346,16 +346,16 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                   </div>
                   {activeCard === 'shield' && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="p-2 rounded-xl bg-slate-50 border border-emerald-500/10 flex items-center justify-between">
+                      <div className="p-2 rounded-none bg-slate-50 border border-emerald-500/10 flex items-center justify-between">
                         <span className="text-[8px] font-bold text-emerald-600 uppercase">AES-256 Protocol</span>
-                        <Badge className="h-4 text-[7px] bg-emerald-500">Active</Badge>
+                        <Badge className="h-4 text-[7px] bg-emerald-500 rounded-none">Active</Badge>
                       </div>
                       <div className="space-y-1 px-1">
                         <div className="flex justify-between text-[7px] font-bold uppercase text-emerald-600">
                           <span>Signal Integrity</span>
                           <span>99.9%</span>
                         </div>
-                        <Progress value={99.9} className="h-1 bg-emerald-500/10" />
+                        <Progress value={99.9} className="h-1 bg-emerald-500/10 rounded-none" />
                       </div>
                     </div>
                   )}
@@ -364,14 +364,14 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
               <Card 
                 className={cn(
-                  "border-primary/5 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
+                  "border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden",
                   activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
                 )}
                 onClick={() => setActiveCard('vault')}
               >
                 <div className="p-3 sm:p-4 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                    <div className="h-8 w-8 rounded-none bg-accent/10 flex items-center justify-center text-accent">
                       <Database size={16} className={cn(activeCard === 'vault' && "animate-pulse")} />
                     </div>
                     <div className="flex flex-col">
@@ -382,11 +382,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                   {activeCard === 'vault' && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2 rounded-xl bg-slate-50 border border-accent/10 flex flex-col items-center">
+                        <div className="p-2 rounded-none bg-slate-50 border border-accent/10 flex flex-col items-center">
                           <span className="text-[7px] font-bold text-accent uppercase">Segments</span>
                           <span className="text-[10px] font-bold text-slate-800">1,428</span>
                         </div>
-                        <div className="p-2 rounded-xl bg-slate-50 border border-accent/10 flex flex-col items-center">
+                        <div className="p-2 rounded-none bg-slate-50 border border-accent/10 flex flex-col items-center">
                           <span className="text-[7px] font-bold text-accent uppercase">Latency</span>
                           <span className="text-[10px] font-bold text-slate-800">{latency}</span>
                         </div>

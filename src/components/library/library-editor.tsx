@@ -131,10 +131,10 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
+      <DialogContent className="max-w-xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
         <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
+            <div className="h-10 w-10 rounded-none bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
               <Zap size={20} />
             </div>
             <div className="min-w-0 text-left">
@@ -156,7 +156,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g. Tactical Strategist"
-                className="rounded-xl border-primary/10 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
+                className="rounded-none border-primary/10 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
             <div className="space-y-1.5 text-left">
@@ -165,7 +165,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 placeholder="Custom"
-                className="rounded-xl border-primary/10 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
+                className="rounded-none border-primary/10 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
           </div>
@@ -176,7 +176,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
               placeholder="Brief overview of protocol behavior..."
-              className="rounded-xl border-primary/10 bg-slate-50 h-10 text-xs font-medium focus:ring-primary/20"
+              className="rounded-none border-primary/10 bg-slate-50 h-10 text-xs font-medium focus:ring-primary/20"
             />
           </div>
 
@@ -186,7 +186,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
               value={formData.content}
               onChange={(e) => setFormData({...formData, content: e.target.value})}
               placeholder="Enter core system instructions and behavioral constraints..."
-              className="rounded-2xl border-primary/10 bg-slate-50 min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
+              className="rounded-none border-primary/10 bg-slate-50 min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
           </div>
           <Button 
             onClick={handleSave}
-            className="h-11 px-8 flex-1 sm:flex-none rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+            className="h-11 px-8 flex-1 sm:flex-none rounded-none bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
           >
             <Save size={14} />
             Commit Node

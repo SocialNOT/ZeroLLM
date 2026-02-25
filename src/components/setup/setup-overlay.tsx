@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -69,7 +68,7 @@ export function SetupOverlay() {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-3xl p-4 overflow-hidden">
       <div className="w-full max-w-sm animate-in fade-in zoom-in duration-500">
-        <Card className="border-none bg-white shadow-[0_40px_120px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden">
+        <Card className="border-none bg-white shadow-[0_40px_120px_rgba(0,0,0,0.15)] rounded-none overflow-hidden">
           <CardHeader className="text-center pt-8 pb-4">
             <div className="mb-4">
               <h1 className="logo-shimmer font-headline text-4xl font-black tracking-tighter leading-none select-none">
@@ -87,11 +86,11 @@ export function SetupOverlay() {
               Establish a high-fidelity <span className="text-primary font-black">Neural Handshake</span> to supercharge your AI orchestration.
             </CardDescription>
             
-            <div className="grid grid-cols-2 gap-2 mt-6 p-1 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="grid grid-cols-2 gap-2 mt-6 p-1 bg-slate-50 rounded-none border border-slate-100">
               <button 
                 onClick={() => setSetupMode('online')}
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                  "flex items-center justify-center gap-2 py-2.5 rounded-none text-[9px] font-black uppercase tracking-widest transition-all",
                   setupMode === 'online' ? "bg-white text-primary shadow-sm ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
                 )}
               >
@@ -101,7 +100,7 @@ export function SetupOverlay() {
               <button 
                 onClick={() => setSetupMode('offline')}
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                  "flex items-center justify-center gap-2 py-2.5 rounded-none text-[9px] font-black uppercase tracking-widest transition-all",
                   setupMode === 'offline' ? "bg-white text-primary shadow-sm ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
                 )}
               >
@@ -113,7 +112,7 @@ export function SetupOverlay() {
 
           <CardContent className="space-y-4 px-8">
             {error && (
-              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-600 animate-in slide-in-from-top-2">
+              <div className="p-3 rounded-none bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-600 animate-in slide-in-from-top-2">
                 <AlertCircle size={16} className="shrink-0" />
                 <p className="text-[10px] font-bold uppercase leading-tight">{error}</p>
               </div>
@@ -122,7 +121,7 @@ export function SetupOverlay() {
             {setupMode === 'online' ? (
               <div className="py-6 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 text-center">
                 <div className="flex justify-center">
-                  <div className="h-16 w-16 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border-2 border-primary/10">
+                  <div className="h-16 w-16 rounded-none bg-primary/5 flex items-center justify-center text-primary border-2 border-primary/10">
                     <Globe size={32} className="animate-spin-slow" />
                   </div>
                 </div>
@@ -143,7 +142,7 @@ export function SetupOverlay() {
                           value={baseUrl} 
                           onChange={(e) => setBaseUrl(e.target.value)}
                           placeholder="http://localhost:11434/v1"
-                          className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
+                          className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-none text-xs font-mono focus:ring-primary/20"
                         />
                       </div>
                     </div>
@@ -156,14 +155,14 @@ export function SetupOverlay() {
                           value={apiKey} 
                           onChange={(e) => setApiKey(e.target.value)}
                           placeholder="sk-..."
-                          className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-mono focus:ring-primary/20"
+                          className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-none text-xs font-mono focus:ring-primary/20"
                         />
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-600">
+                    <div className="p-3 rounded-none bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-600">
                       <CheckCircle2 size={16} />
                       <span className="text-[10px] font-bold uppercase tracking-wider">Node Signal Synchronized</span>
                     </div>
@@ -174,10 +173,10 @@ export function SetupOverlay() {
                         <Cpu className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 z-10" size={14} />
                         {models.length > 0 ? (
                           <Select value={modelId} onValueChange={setModelId}>
-                            <SelectTrigger className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20">
+                            <SelectTrigger className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-none text-xs font-bold focus:ring-primary/20">
                               <SelectValue placeholder="Select indexed model" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-slate-100 z-[200]">
+                            <SelectContent className="rounded-none border-slate-100 z-[200]">
                               {models.map(m => (
                                 <SelectItem key={m} value={m} className="text-xs font-bold">{m}</SelectItem>
                               ))}
@@ -188,7 +187,7 @@ export function SetupOverlay() {
                             value={modelId} 
                             onChange={(e) => setModelId(e.target.value)}
                             placeholder="llama3:8b"
-                            className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-xl text-xs font-bold focus:ring-primary/20"
+                            className="pl-10 h-11 bg-slate-50 border-slate-100 rounded-none text-xs font-bold focus:ring-primary/20"
                           />
                         )}
                       </div>
@@ -204,7 +203,7 @@ export function SetupOverlay() {
               <Button 
                 onClick={handleFinalize} 
                 disabled={isTesting}
-                className="w-full h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+                className="w-full h-12 rounded-none bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
               >
                 {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Energize Cloud Node"}
                 {!isTesting && <ChevronRight size={14} />}
@@ -215,7 +214,7 @@ export function SetupOverlay() {
                   <Button 
                     onClick={handleVerify} 
                     disabled={!baseUrl || isTesting}
-                    className="w-full h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
+                    className="w-full h-12 rounded-none bg-primary text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-primary/20 gap-2"
                   >
                     {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Node Signal"}
                     {!isTesting && <ChevronRight size={14} />}
@@ -225,14 +224,14 @@ export function SetupOverlay() {
                     <Button 
                       variant="outline"
                       onClick={() => setIsVerified(false)}
-                      className="h-12 flex-1 rounded-xl text-[9px] font-bold uppercase tracking-widest border-slate-100 text-slate-400 hover:bg-slate-50"
+                      className="h-12 flex-1 rounded-none text-[9px] font-bold uppercase tracking-widest border-slate-100 text-slate-400 hover:bg-slate-50"
                     >
                       Reset
                     </Button>
                     <Button 
                       onClick={handleFinalize} 
                       disabled={isTesting}
-                      className="h-12 flex-[2] rounded-xl bg-emerald-600 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-emerald-200 gap-2"
+                      className="h-12 flex-[2] rounded-none bg-emerald-600 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-xl shadow-emerald-200 gap-2"
                     >
                       {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Energize Local Node"}
                     </Button>

@@ -205,13 +205,13 @@ export function ChatInterface() {
         
         {showTimer && (
           <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/10 z-30">
-            <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-full border-2 border-primary">
+            <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-none border-2 border-primary">
               <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none">TTL:</span>
               <Clock size={10} className="text-primary" />
               <span className="text-[10px] font-black font-mono text-slate-900 leading-none">{timeLeft}</span>
             </div>
             <Link href="/auth/login">
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-none bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
                 <span className="text-[7px] font-black uppercase tracking-widest leading-none">Upgrade</span>
                 <LogIn size={10} />
               </div>
@@ -222,9 +222,9 @@ export function ChatInterface() {
         <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-2 py-2 sm:px-6 bg-white z-20 shadow-sm">
           <div className="flex items-center justify-between gap-1 mb-2">
             <SettingsDialog>
-              <button className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-lg border-2 border-border shadow-sm active:scale-95 min-w-0">
+              <button className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-none border-2 border-border shadow-sm active:scale-95 min-w-0">
                 <div className={cn(
-                  "h-6 w-6 sm:h-7 sm:w-7 rounded-md flex items-center justify-center border-2 shrink-0",
+                  "h-6 w-6 sm:h-7 sm:w-7 rounded-none flex items-center justify-center border-2 shrink-0",
                   connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
                 )}>
                   {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3" /> : <Activity className="h-3 w-3" />}
@@ -255,22 +255,22 @@ export function ChatInterface() {
             )}
             
             <div className="flex items-center gap-0.5 shrink-0">
-              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
+              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
                 {aiMode === 'online' ? <Cloud size={10} /> : <Laptop size={10} />}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
                 <Palette size={10} />
               </Button>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                <Button variant="outline" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
                   <Settings2 size={10} />
                 </Button>
               </SheetTrigger>
-              <SidebarTrigger className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-md" />
+              <SidebarTrigger className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-none" />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 border-2 border-border rounded-xl overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
+          <div className="grid grid-cols-3 border-2 border-border rounded-none overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
             <SheetTrigger asChild>
               <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
                 <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
@@ -309,11 +309,11 @@ export function ChatInterface() {
                       key={idx} 
                       onClick={() => setInput(starter.prompt)} 
                       className={cn(
-                        "group flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
+                        "group flex items-center gap-3 p-2.5 sm:p-3 rounded-none bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
                         idx === 0 ? "delay-[100ms]" : idx === 1 ? "delay-[200ms]" : idx === 2 ? "delay-[300ms]" : "delay-[400ms]"
                       )}
                     >
-                      <div className="p-1.5 rounded-lg bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
+                      <div className="p-1.5 rounded-none bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
                         <Zap size={12} />
                       </div>
                       <div className="flex flex-col min-w-0 overflow-hidden">
@@ -337,9 +337,9 @@ export function ChatInterface() {
             {isTyping && !session.messages[session.messages.length - 1]?.content && (
               <div className="flex items-center gap-3 px-6 py-6 text-[11px] text-primary font-black uppercase tracking-[0.3em] animate-pulse">
                 <div className="flex gap-1">
-                  <div className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-                  <div className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-                  <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+                  <div className="h-2 w-2 rounded-none bg-primary animate-bounce [animation-delay:-0.3s]" />
+                  <div className="h-2 w-2 rounded-none bg-primary animate-bounce [animation-delay:-0.15s]" />
+                  <div className="h-2 w-2 rounded-none bg-primary animate-bounce" />
                 </div>
                 Orchestrating Logic...
               </div>
@@ -348,7 +348,7 @@ export function ChatInterface() {
         </ScrollArea>
 
         <div className="flex-shrink-0 p-2 sm:p-6 bg-white border-t-2 border-border z-30">
-          <div className="mx-auto max-w-4xl border-2 border-border rounded-2xl overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
+          <div className="mx-auto max-w-4xl border-2 border-border rounded-none overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
             <div className="grid grid-cols-6 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
               {[
                 { id: 'webSearch', icon: <Search size={10} />, title: 'Ground' },
@@ -368,7 +368,7 @@ export function ChatInterface() {
                     key={tool.id} 
                     onClick={() => toggleTool(session.id, tool.id as any)} 
                     className={cn(
-                      "flex flex-col items-center justify-center py-1.5 sm:py-2 transition-all active:scale-95 min-w-0",
+                      "flex flex-col items-center justify-center py-1.5 sm:py-2 transition-all active:scale-95 min-w-0 rounded-none",
                       isActive 
                         ? "bg-primary text-white" 
                         : "bg-transparent text-slate-900 hover:bg-primary/10"
@@ -387,16 +387,16 @@ export function ChatInterface() {
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
                 placeholder="INPUT COMMAND..."
-                className="h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[13px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[8px] sm:placeholder:text-[9px] placeholder:tracking-widest"
+                className="h-9 sm:h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[13px] sm:text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-900 placeholder:uppercase placeholder:text-[8px] sm:placeholder:text-[9px] placeholder:tracking-widest rounded-none"
               />
-              <Button type="submit" disabled={!input.trim() || isTyping} className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
+              <Button type="submit" disabled={!input.trim() || isTyping} className="h-8 w-8 sm:h-10 sm:w-10 rounded-none bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all shrink-0">
                 <Send size={16} className="sm:size-[18px]" />
               </Button>
             </form>
           </div>
         </div>
       </div>
-      <SheetContent side="right" className="p-0 border-l-2 border-border w-full sm:max-w-md">
+      <SheetContent side="right" className="p-0 border-l-2 border-border w-full sm:max-w-md rounded-none">
         <ParameterControls />
       </SheetContent>
     </Sheet>
