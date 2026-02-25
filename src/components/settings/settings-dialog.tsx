@@ -23,7 +23,10 @@ import {
   Cloud,
   Laptop,
   ShieldCheck,
-  Database
+  Database,
+  Link as LinkIcon,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -70,11 +73,24 @@ export function SettingsDialog() {
     }
   }, [connectionStatus]);
 
-  const handleRefresh = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRefresh = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (conn) {
       updateConnection(conn.id, { baseUrl: urlInput, apiKey: tokenInput });
       await checkConnection();
+      
+      if (useAppStore.getState().connectionStatus === 'online') {
+        toast({
+          title: "Signal Synchronized",
+          description: "Local engine node established. Models indexed.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Handshake Failed",
+          description: "Could not reach local engine. Verify URL and signal.",
+        });
+      }
     }
   };
 
@@ -210,7 +226,7 @@ export function SettingsDialog() {
                     </span>
                   </div>
                 </div>
-                {activeCard === 'engine' && aiMode === 'offline' && (
+                {activeCard === 'engine' && aiMode === 'offline' && connectionStatus === 'online' && (
                   <Button 
                     size="sm" 
                     variant="secondary" 
@@ -227,26 +243,44 @@ export function SettingsDialog() {
               {activeCard === 'engine' && (
                 <CardContent className="px-4 pb-4 pt-0 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   {aiMode === 'offline' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                      <div className="space-y-1">
-                        <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">Base API URL</Label>
-                        <Input 
-                          value={urlInput} 
-                          onChange={(e) => setUrlInput(e.target.value)}
-                          className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
-                          placeholder="http://localhost:11434/v1"
-                        />
+                    <div className="space-y-4 mt-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">Base API URL</Label>
+                          <Input 
+                            value={urlInput} 
+                            onChange={(e) => setUrlInput(e.target.value)}
+                            className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                            placeholder="http://localhost:11434/v1"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">API Secret Token (Optional)</Label>
+                          <Input 
+                            type="password"
+                            value={tokenInput} 
+                            onChange={(e) => setTokenInput(e.target.value)}
+                            className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                            placeholder="sk-..."
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">API Secret Token (Optional)</Label>
-                        <Input 
-                          type="password"
-                          value={tokenInput} 
-                          onChange={(e) => setTokenInput(e.target.value)}
-                          className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
-                          placeholder="sk-..."
-                        />
-                      </div>
+                      
+                      <Button 
+                        onClick={() => handleRefresh()}
+                        disabled={connectionStatus === 'checking'}
+                        className="w-full h-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] gap-2"
+                      >
+                        {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-4 w-4" /> : <Wifi size={14} />}
+                        {connectionStatus === 'online' ? "Establish New Neural Connection" : "Connect to Local Engine"}
+                      </Button>
+
+                      {connectionStatus !== 'online' && (
+                        <div className="p-4 bg-rose-50 border border-rose-100 flex items-center gap-3">
+                          <WifiOff size={16} className="text-rose-500" />
+                          <p className="text-[9px] font-bold text-rose-600 uppercase">Handshake Required. Establish connection to index local models.</p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="p-4 bg-slate-50 rounded-none border border-primary/5 flex items-center gap-4 mt-2">
@@ -260,75 +294,81 @@ export function SettingsDialog() {
                     </div>
                   )}
 
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between px-1">
-                      <div className="flex items-center gap-2">
-                        <Cpu size={12} className="text-primary" />
-                        <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine Selection</span>
+                  {(aiMode === 'online' || connectionStatus === 'online') && (
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <Cpu size={12} className="text-primary" />
+                          <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine Selection</span>
+                        </div>
+                        <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary rounded-none">
+                          {availableModels.length} Indexed Models
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary rounded-none">
-                        {availableModels.length} Indexed Models
-                      </Badge>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {availableModels.map(model => {
-                        const caps = getModelCapabilities(model);
-                        const isActive = aiMode === 'online' ? (activeOnlineModelId === model) : (conn?.modelId === model);
-                        const statusColor = getModelStatusColor(model, isActive);
-                        const borderClass = getModelGlowEffect(model, isActive);
-                        
-                        return (
-                          <div 
-                            key={model}
-                            className={cn(
-                              "relative flex flex-col p-4 rounded-none border transition-all duration-300 group overflow-hidden bg-white",
-                              isActive ? "ring-2 ring-primary border-transparent" : borderClass,
-                              "hover:shadow-lg"
-                            )}
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight break-all flex-1 pr-2">
-                                {model.replace('googleai/', '')}
-                              </span>
-                              <div className={cn("h-2.5 w-2.5 rounded-none shrink-0", statusColor, isActive && "animate-pulse shadow-[0_0_8px_currentColor]")} />
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {caps.map((cap, i) => (
-                                <div key={i} className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded-none border border-slate-100">
-                                  <div className={cn("h-1 w-1 rounded-none", cap.glow, "animate-pulse")} />
-                                  <span className={cn("text-[7px] font-black uppercase tracking-widest", cap.color)}>
-                                    {cap.label}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            <Button 
-                              size="sm"
-                              variant={isActive ? "default" : "outline"}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {availableModels.length > 0 ? availableModels.map(model => {
+                          const caps = getModelCapabilities(model);
+                          const isActive = aiMode === 'online' ? (activeOnlineModelId === model) : (conn?.modelId === model);
+                          const statusColor = getModelStatusColor(model, isActive);
+                          const borderClass = getModelGlowEffect(model, isActive);
+                          
+                          return (
+                            <div 
+                              key={model}
                               className={cn(
-                                "h-8 w-full text-[8px] font-black uppercase rounded-none transition-all gap-2",
-                                isActive 
-                                  ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
-                                  : "text-slate-900 border-slate-200 hover:bg-slate-50 hover:border-slate-900"
+                                "relative flex flex-col p-4 rounded-none border transition-all duration-300 group overflow-hidden bg-white",
+                                isActive ? "ring-2 ring-primary border-transparent" : borderClass,
+                                "hover:shadow-lg"
                               )}
-                              onClick={(e) => handleLoadModel(model, e)}
-                              disabled={isModelLoading && isActive}
                             >
-                              {isModelLoading && isActive ? (
-                                <Loader2 className="animate-spin h-3 w-3" />
-                              ) : (
-                                <Zap size={10} className={isActive ? "fill-white" : ""} />
-                              )}
-                              {isActive ? "Orchestration Active" : "Energize Node"}
-                            </Button>
+                              <div className="flex items-start justify-between mb-3">
+                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight break-all flex-1 pr-2">
+                                  {model.replace('googleai/', '')}
+                                </span>
+                                <div className={cn("h-2.5 w-2.5 rounded-none shrink-0", statusColor, isActive && "animate-pulse shadow-[0_0_8px_currentColor]")} />
+                              </div>
+                              
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {caps.map((cap, i) => (
+                                  <div key={i} className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded-none border border-slate-100">
+                                    <div className={cn("h-1 w-1 rounded-none", cap.glow, "animate-pulse")} />
+                                    <span className={cn("text-[7px] font-black uppercase tracking-widest", cap.color)}>
+                                      {cap.label}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              
+                              <Button 
+                                size="sm"
+                                variant={isActive ? "default" : "outline"}
+                                className={cn(
+                                  "h-8 w-full text-[8px] font-black uppercase rounded-none transition-all gap-2",
+                                  isActive 
+                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+                                    : "text-slate-900 border-slate-200 hover:bg-slate-50 hover:border-slate-900"
+                                )}
+                                onClick={(e) => handleLoadModel(model, e)}
+                                disabled={isModelLoading && isActive}
+                              >
+                                {isModelLoading && isActive ? (
+                                  <Loader2 className="animate-spin h-3 w-3" />
+                                ) : (
+                                  <Zap size={10} className={isActive ? "fill-white" : ""} />
+                                )}
+                                {isActive ? "Orchestration Active" : "Energize Node"}
+                              </Button>
+                            </div>
+                          );
+                        }) : (
+                          <div className="col-span-full py-8 text-center border-2 border-dashed border-slate-100">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No models detected on this node.</p>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               )}
             </Card>

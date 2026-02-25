@@ -189,6 +189,8 @@ export const useAppStore = create<AppState>()(
       setRole: (role) => set({ currentUserRole: role }),
       setAiMode: (mode) => {
         set({ aiMode: mode });
+        // Purge models before refreshing to ensure state purity
+        set({ availableModels: [] });
         get().refreshModels();
       },
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
@@ -206,9 +208,13 @@ export const useAppStore = create<AppState>()(
         try {
           const isOnline = await testConnectionAction(activeConn.baseUrl, activeConn.apiKey);
           set({ connectionStatus: isOnline ? 'online' : 'offline' });
-          if (isOnline) await get().refreshModels();
+          if (isOnline) {
+            await get().refreshModels();
+          } else {
+            set({ availableModels: [] });
+          }
         } catch (e) {
-          set({ connectionStatus: 'offline' });
+          set({ connectionStatus: 'offline', availableModels: [] });
         }
       },
 
@@ -217,8 +223,16 @@ export const useAppStore = create<AppState>()(
           set({ availableModels: GEMINI_MODELS });
           return;
         }
+        
+        // In Offline mode, only refresh if the connection status is online
+        if (get().connectionStatus !== 'online') {
+          set({ availableModels: [] });
+          return;
+        }
+
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return;
+        
         try {
           const models = await fetchModelsAction(activeConn.baseUrl, activeConn.apiKey);
           set({ availableModels: models.map(m => m.id) });
