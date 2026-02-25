@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -36,8 +35,7 @@ import {
   User
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
-import { useUser, useAuth } from "@/firebase";
-import { signOut } from "firebase/auth";
+import { useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
@@ -49,7 +47,6 @@ import {
 import Link from "next/link";
 import { LibraryEditor } from "@/components/library/library-editor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 
 export function AppSidebar() {
@@ -71,8 +68,6 @@ export function AppSidebar() {
 
   const { isMobile, setOpenMobile } = useSidebar();
   const { user } = useUser();
-  const auth = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
 
   const customPersonas = personas.filter(p => p.isCustom);
   const customFrameworks = frameworks.filter(f => f.isCustom);
@@ -86,7 +81,7 @@ export function AppSidebar() {
   };
 
   const handleCreateSession = () => {
-    const id = createSession(activeWorkspaceId || 'ws-1');
+    createSession(activeWorkspaceId || 'ws-1');
     if (isMobile) setOpenMobile(false);
   };
 
@@ -103,14 +98,12 @@ export function AppSidebar() {
     if (type === 'linguistic') applyLinguisticControl(activeSessionId, itemId);
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
+  const handleSidebarControlClick = () => {
+    if (isMobile) setOpenMobile(false);
   };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-primary/10 bg-white/50 backdrop-blur-xl">
-      <ProfileDialog isOpen={isProfileOpen} onOpenChange={setIsProfileOpen} />
-      
       <SidebarHeader className="p-6 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pt-6">
         <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
           <div className="flex items-center gap-3 group group-data-[collapsible=icon]:gap-0">
@@ -138,7 +131,7 @@ export function AppSidebar() {
               {user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                 <SidebarMenuItem>
                   <Link href="/admin">
-                    <SidebarMenuButton tooltip="Admin Panel" className="bg-primary/5 text-primary rounded-none">
+                    <SidebarMenuButton tooltip="Admin Panel" className="bg-primary/5 text-primary rounded-none" onClick={handleSidebarControlClick}>
                       <ShieldAlert size={18} />
                       <span className="font-bold text-sm">Admin Control</span>
                     </SidebarMenuButton>
@@ -333,39 +326,23 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-2 space-y-2 border-t border-primary/5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" className="rounded-none hover:bg-primary/5 transition-all h-14 border border-primary/10 bg-white">
-                  <div className="flex items-center gap-3 w-full">
-                    <Avatar className="h-8 w-8 rounded-none border border-primary/20 shrink-0">
-                      <AvatarImage src={user?.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
-                      <AvatarFallback className="rounded-none bg-primary/10 text-primary font-black"><User size={16} /></AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col text-left overflow-hidden group-data-[collapsible=icon]:hidden">
-                      <span className="text-[10px] font-black uppercase text-slate-900 truncate leading-none mb-1">{user?.displayName || user?.email?.split('@')[0]}</span>
-                      <div className="flex items-center gap-1.5">
-                        <div className="h-1 w-1 bg-emerald-500 rounded-none animate-pulse" />
-                        <span className="text-[7px] font-bold uppercase tracking-widest text-primary">{currentUserRole} Node</span>
-                      </div>
+            <ProfileDialog>
+              <SidebarMenuButton size="lg" className="rounded-none hover:bg-primary/5 transition-all h-14 border border-primary/10 bg-white" onClick={handleSidebarControlClick}>
+                <div className="flex items-center gap-3 w-full">
+                  <Avatar className="h-8 w-8 rounded-none border border-primary/20 shrink-0">
+                    <AvatarImage src={user?.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
+                    <AvatarFallback className="rounded-none bg-primary/10 text-primary font-black"><User size={16} /></AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col text-left overflow-hidden group-data-[collapsible=icon]:hidden">
+                    <span className="text-[10px] font-black uppercase text-slate-900 truncate leading-none mb-1">{user?.displayName || user?.email?.split('@')[0]}</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1 w-1 bg-emerald-500 rounded-none animate-pulse" />
+                      <span className="text-[7px] font-bold uppercase tracking-widest text-primary">{currentUserRole} Node</span>
                     </div>
                   </div>
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end" className="rounded-none border-2 border-primary/20 shadow-2xl p-1 w-56 bg-white z-[200]">
-                <div className="px-3 py-2 border-b-2 border-primary/5 mb-1 bg-slate-50">
-                  <p className="text-[8px] font-black uppercase tracking-widest text-primary mb-0.5">Identity Protocol</p>
-                  <p className="text-[10px] font-bold text-slate-900 truncate">{user?.email}</p>
                 </div>
-                <DropdownMenuItem onClick={() => setIsProfileOpen(true)} className="text-[9px] font-black uppercase tracking-widest text-slate-900 focus:bg-primary/5 cursor-pointer rounded-none p-3 gap-2">
-                  <UserCircle size={14} className="text-primary" />
-                  Configure Identity
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-[9px] font-black uppercase tracking-widest text-rose-600 focus:bg-rose-50 focus:text-rose-700 cursor-pointer rounded-none p-3 gap-2">
-                  <LogOut size={14} />
-                  Terminate Session
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </SidebarMenuButton>
+            </ProfileDialog>
           </SidebarMenuItem>
         </SidebarMenu>
 
@@ -373,6 +350,7 @@ export function AppSidebar() {
           <Button 
             variant="outline"
             tooltip="System Control"
+            onClick={handleSidebarControlClick}
             className="w-full h-12 bg-white border-primary/10 text-slate-900 shadow-xl shadow-primary/5 hover:bg-primary/5 hover:border-primary/30 rounded-none transition-all gap-3 px-0 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:mx-auto"
           >
             <Settings2 size={18} className="shrink-0 text-primary" />

@@ -7,7 +7,8 @@ import {
   DialogHeader, 
   DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useUser, useFirestore, useAuth } from "@/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
+import { updateProfile, updatePassword, signOut } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 import { 
   User, 
@@ -27,21 +28,26 @@ import {
   Fingerprint,
   FileText,
   ShieldCheck,
-  Lock
+  Lock,
+  LogOut,
+  AlertCircle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 interface ProfileDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  children?: React.ReactNode;
 }
 
-export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
+export function ProfileDialog({ children }: ProfileDialogProps) {
   const { user } = useUser();
   const db = useFirestore();
   const auth = useAuth();
+  const router = useRouter();
   
+  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     displayName: "",
@@ -95,22 +101,32 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
         try {
           await updatePassword(user, formData.newPassword);
         } catch (e: any) {
-          toast({ variant: "destructive", title: "Security Node Error", description: "Password update requires a fresh login." });
+          toast({ variant: "destructive", title: "Security Node Error", description: "Credential refresh required." });
         }
       }
 
       const userRef = doc(db, "users", user.uid);
-      await setDoc(userRef, {
+      const userData = {
         displayName: formData.displayName,
         username: formData.username,
         mobile: formData.mobile,
         bio: formData.bio,
         photoURL: formData.photoURL,
         updatedAt: Date.now()
-      }, { merge: true });
+      };
 
-      toast({ title: "Neural Identity Synchronized", description: "Your core parameters have been persisted." });
-      onOpenChange(false);
+      setDoc(userRef, userData, { merge: true })
+        .catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'write',
+            requestResourceData: userData,
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        });
+
+      toast({ title: "Neural Identity Synchronized", description: "Identity nodes persisted." });
+      setIsOpen(false);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Sync Failure", description: error.message });
     } finally {
@@ -118,9 +134,21 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/auth/login");
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Termination Failure" });
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] sm:max-w-2xl border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl w-[95vw] sm:max-w-2xl border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh] z-[200]">
         <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-4">
             <div className="relative group">
@@ -243,17 +271,25 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
         </div>
 
         <DialogFooter className="p-6 bg-slate-50 border-t border-primary/5 shrink-0 flex flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-emerald-600">
+          <Button 
+            variant="outline" 
+            onClick={handleLogout}
+            className="h-12 px-6 rounded-none border-rose-200 text-rose-600 font-bold uppercase tracking-widest text-[9px] hover:bg-rose-50 gap-2"
+          >
+            <LogOut size={14} />
+            Terminate
+          </Button>
+          <div className="hidden sm:flex items-center gap-2 text-emerald-600">
             <ShieldCheck size={16} />
-            <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none">Signal Secured via AES-256</span>
+            <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none">Signal Secured</span>
           </div>
           <Button 
             onClick={handleSave}
             disabled={isLoading}
-            className="h-12 px-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-2xl shadow-primary/20 gap-2"
+            className="h-12 flex-1 sm:flex-none px-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-2xl shadow-primary/20 gap-2"
           >
             {isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : <Save size={16} />}
-            Commit Changes
+            Commit Node
           </Button>
         </DialogFooter>
       </DialogContent>
