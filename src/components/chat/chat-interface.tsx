@@ -260,12 +260,12 @@ export function ChatInterface() {
     { 
       title: "First Principles Analysis", 
       prompt: "Analyze the following using First Principles thinking: ",
-      icon: <Brain className="text-primary h-4 w-4 sm:h-5 sm:w-5" />
+      icon: <Brain className="text-primary h-5 w-5" />
     },
     { 
       title: "Technical STRIDE Audit", 
       prompt: "Perform a STRIDE threat model on this system architecture: ",
-      icon: <Shield className="text-destructive h-4 w-4 sm:h-5 sm:w-5" />
+      icon: <Shield className="text-destructive h-5 w-5" />
     }
   ];
 
@@ -414,8 +414,8 @@ export function ChatInterface() {
         </ScrollArea>
 
         <div className="flex-shrink-0 p-3 sm:p-6 bg-white border-t-2 border-border z-30">
-          <div className="mx-auto max-w-4xl">
-            <div className="grid grid-cols-6 gap-1 sm:gap-2 w-full mb-3">
+          <div className="mx-auto max-w-4xl border-2 border-border rounded-2xl overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
+            <div className="grid grid-cols-6 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
               {[
                 { id: 'webSearch', icon: <Search size={12} />, title: 'Grounding' },
                 { id: 'reasoning', icon: <Brain size={12} />, title: 'Thinking' },
@@ -434,32 +434,32 @@ export function ChatInterface() {
                     key={tool.id} 
                     onClick={() => toggleTool(session.id, tool.id as any)} 
                     className={cn(
-                      "flex flex-col items-center justify-center py-1.5 sm:py-2 rounded-lg border-2 transition-all active:scale-95",
+                      "flex flex-col items-center justify-center py-1.5 transition-all active:scale-95",
                       isActive 
-                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
-                        : "bg-white text-slate-950 border-border hover:border-primary"
+                        ? "bg-primary text-white" 
+                        : "bg-transparent text-slate-900 hover:bg-primary/5"
                     )}
                   >
                     <div className="mb-0.5">{tool.icon}</div>
-                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter leading-none">{tool.title}</span>
+                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-tighter leading-none">{tool.title}</span>
                   </button>
                 );
               })}
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white hover:bg-slate-50 transition-all rounded-2xl p-1.5 border-2 border-border shadow-2xl focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/5">
-              <Button type="button" variant="ghost" size="icon" onClick={handleMicToggle} className={cn("h-11 w-11 transition-all rounded-xl shrink-0 active:scale-90", isListening ? "text-white bg-destructive animate-pulse" : "text-slate-950 hover:bg-primary/10")}>
-                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white p-1">
+              <Button type="button" variant="ghost" size="icon" onClick={handleMicToggle} className={cn("h-10 w-10 transition-all rounded-xl shrink-0 active:scale-90", isListening ? "text-white bg-destructive animate-pulse" : "text-slate-950 hover:bg-primary/10")}>
+                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
               </Button>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
                 placeholder={isListening ? "SAMPLING AUDIO NODE..." : "Input command sequence..."}
-                className="h-11 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black focus-visible:ring-0 placeholder:text-slate-500 placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest"
+                className="h-10 w-full border-none bg-transparent px-2 sm:px-4 text-[14px] sm:text-[15px] font-black focus-visible:ring-0 placeholder:text-slate-500 placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest"
               />
-              <Button type="submit" disabled={!input.trim() || isTyping} className="h-11 w-11 rounded-xl bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105 active:scale-90 transition-all shrink-0">
-                <Send size={20} />
+              <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-90 transition-all shrink-0">
+                <Send size={18} />
               </Button>
             </form>
           </div>
