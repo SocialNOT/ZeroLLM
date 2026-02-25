@@ -246,11 +246,9 @@ export function ChatInterface() {
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
                   {currentTime.toLocaleDateString('en-IN', { weekday: 'long' }).toUpperCase()}
                 </span>
-                <div className="bg-primary text-white px-1 py-0 rounded border-2 border-primary shadow-lg shadow-primary/10">
-                  <span className="text-[9px] sm:text-[11px] font-black font-mono tracking-tighter">
-                    {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
-                  </span>
-                </div>
+                <span className="text-[9px] sm:text-[11px] font-black font-mono tracking-tighter text-slate-900">
+                  {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                </span>
                 <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
                   {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}
                 </span>
