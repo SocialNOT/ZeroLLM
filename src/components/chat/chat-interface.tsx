@@ -274,7 +274,7 @@ export function ChatInterface() {
 
   return (
     <Sheet>
-      <div className="flex h-svh w-full flex-col overflow-hidden bg-background relative border-border">
+      <div className="flex h-full w-full flex-col overflow-hidden bg-background relative border-border">
         
         {isGuest && (
           <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/5 z-30">
