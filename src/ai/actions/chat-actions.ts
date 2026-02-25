@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -14,7 +15,7 @@ export async function generateChatTitle(text: string): Promise<string> {
   try {
     const { text: title } = await ai.generate({
       prompt: `Create a concise, professional 3-4 word title for an AI chat session based on this first message: "${text}". Provide ONLY the title text, no quotes or periods.`,
-      config: { maxTokens: 10 }
+      config: { maxOutputTokens: 10 }
     });
     
     return title?.trim() || text.substring(0, 20) + "...";

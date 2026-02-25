@@ -134,7 +134,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       config: {
         temperature: input.temperature,
         topP: input.topP,
-        maxTokens: input.maxTokens,
+        maxOutputTokens: input.maxTokens,
       },
     });
 
