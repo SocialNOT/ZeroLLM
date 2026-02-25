@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -142,16 +141,16 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-white/20 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border">
+      <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border">
         <div className="flex flex-col max-h-[75vh]">
-          <header className="p-4 sm:p-6 bg-white/50 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <header className="p-4 sm:p-6 bg-white/50 border-b border-primary/5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
                 <Settings2 size={18} />
               </div>
               <div>
                 <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-none">Node Command Panel</DialogTitle>
-                <DialogDescription className="text-slate-400 font-bold text-[8px] uppercase tracking-widest mt-1">
+                <DialogDescription className="text-primary font-bold text-[8px] uppercase tracking-widest mt-1">
                   Orchestrate engine protocols and secure cognitive nodes.
                 </DialogDescription>
               </div>
@@ -170,7 +169,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-4 space-y-4">
             
             <div className="px-2">
-              <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-2 block">Neural Orchestration Mode</Label>
+              <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1 mb-2 block">Neural Orchestration Mode</Label>
               <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
                 <button 
                   onClick={() => setAiMode('online')}
@@ -196,11 +195,11 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             </div>
 
             <Card className={cn(
-              "border-slate-100 bg-white shadow-sm rounded-2xl overflow-hidden transition-all duration-500",
+              "border-primary/5 bg-white shadow-sm rounded-2xl overflow-hidden transition-all duration-500",
               activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
             )}>
               <div 
-                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 transition-colors cursor-pointer group"
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 transition-colors cursor-pointer group"
                 onClick={() => setActiveCard('engine')}
               >
                 <div className="flex items-center gap-3">
@@ -211,7 +210,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                     <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">
                       {aiMode === 'online' ? 'Cloud Infrastructure' : 'Engine Node'}
                     </h3>
-                    <span className="text-[7px] text-slate-400 font-bold uppercase mt-1">
+                    <span className="text-[7px] text-primary font-bold uppercase mt-1">
                       {aiMode === 'online' ? 'Gemini 2.5 Flash Energized' : `Network Protocol: ${connectionStatus === 'online' ? 'Synchronized' : 'Offline'}`}
                     </span>
                   </div>
@@ -235,33 +234,33 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                   {aiMode === 'offline' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                       <div className="space-y-1">
-                        <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Base API URL</Label>
+                        <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">Base API URL</Label>
                         <Input 
                           value={urlInput} 
                           onChange={(e) => setUrlInput(e.target.value)}
-                          className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                          className="rounded-xl border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
                           placeholder="http://localhost:11434/v1"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">API Secret Token (Optional)</Label>
+                        <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">API Secret Token (Optional)</Label>
                         <Input 
                           type="password"
                           value={tokenInput} 
                           onChange={(e) => setTokenInput(e.target.value)}
-                          className="rounded-xl border-slate-100 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
+                          className="rounded-xl border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
                           placeholder="sk-..."
                         />
                       </div>
                     </div>
                   ) : (
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4 mt-2">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-primary/5 flex items-center gap-4 mt-2">
                       <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
                         <Globe size={20} />
                       </div>
                       <div>
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Google Cloud Handshake</h4>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase">Latency optimized via Genkit node</p>
+                        <p className="text-[8px] font-bold text-primary uppercase">Latency optimized via Genkit node</p>
                       </div>
                     </div>
                   )}
@@ -272,7 +271,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                         <Cpu size={12} className="text-primary" />
                         <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine</span>
                       </div>
-                      <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-slate-100 text-slate-400">
+                      <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary">
                         {aiMode === 'online' ? '1 Active Node' : `${availableModels.length} Indexed Models`}
                       </Badge>
                     </div>
@@ -289,7 +288,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                             key={model}
                             className={cn(
                               "relative flex flex-col p-3 rounded-2xl border transition-all duration-300 group overflow-hidden bg-white cursor-default",
-                              isActive ? "ring-2 ring-primary border-transparent" : "border-slate-100 hover:bg-slate-50",
+                              isActive ? "ring-2 ring-primary border-transparent" : "border-primary/5 hover:bg-primary/5",
                               glowClass
                             )}
                           >
@@ -311,7 +310,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                               variant={isActive ? "default" : "outline"}
                               className={cn(
                                 "h-6 w-full text-[7px] font-bold uppercase rounded-lg transition-all",
-                                isActive ? "bg-primary text-white" : "text-slate-400 border-slate-100 hover:bg-white hover:text-primary"
+                                isActive ? "bg-primary text-white" : "text-primary border-primary/10 hover:bg-primary/5 hover:text-primary"
                               )}
                               onClick={(e) => aiMode === 'offline' && handleLoadModel(model, e)}
                               disabled={(isModelLoading && isActive) || aiMode === 'online'}
@@ -330,7 +329,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Card 
                 className={cn(
-                  "border-slate-100 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
+                  "border-primary/5 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
                   activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-80 grayscale-[0.5]"
                 )}
                 onClick={() => setActiveCard('shield')}
@@ -347,16 +346,16 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                   </div>
                   {activeCard === 'shield' && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                        <span className="text-[8px] font-bold text-slate-400 uppercase">AES-256 Protocol</span>
+                      <div className="p-2 rounded-xl bg-slate-50 border border-emerald-500/10 flex items-center justify-between">
+                        <span className="text-[8px] font-bold text-emerald-600 uppercase">AES-256 Protocol</span>
                         <Badge className="h-4 text-[7px] bg-emerald-500">Active</Badge>
                       </div>
                       <div className="space-y-1 px-1">
-                        <div className="flex justify-between text-[7px] font-bold uppercase text-slate-400">
+                        <div className="flex justify-between text-[7px] font-bold uppercase text-emerald-600">
                           <span>Signal Integrity</span>
                           <span>99.9%</span>
                         </div>
-                        <Progress value={99.9} className="h-1 bg-slate-100" />
+                        <Progress value={99.9} className="h-1 bg-emerald-500/10" />
                       </div>
                     </div>
                   )}
@@ -365,30 +364,30 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
               <Card 
                 className={cn(
-                  "border-slate-100 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
+                  "border-primary/5 bg-white shadow-sm rounded-2xl transition-all duration-500 cursor-pointer overflow-hidden",
                   activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
                 )}
                 onClick={() => setActiveCard('vault')}
               >
                 <div className="p-3 sm:p-4 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-600">
+                    <div className="h-8 w-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
                       <Database size={16} className={cn(activeCard === 'vault' && "animate-pulse")} />
                     </div>
                     <div className="flex flex-col">
                       <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Vault</h3>
-                      <span className="text-[7px] text-rose-500 font-bold uppercase mt-1">Index: Optimized</span>
+                      <span className="text-[7px] text-accent font-bold uppercase mt-1">Index: Optimized</span>
                     </div>
                   </div>
                   {activeCard === 'vault' && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
-                          <span className="text-[7px] font-bold text-slate-400 uppercase">Segments</span>
+                        <div className="p-2 rounded-xl bg-slate-50 border border-accent/10 flex flex-col items-center">
+                          <span className="text-[7px] font-bold text-accent uppercase">Segments</span>
                           <span className="text-[10px] font-bold text-slate-800">1,428</span>
                         </div>
-                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center">
-                          <span className="text-[7px] font-bold text-slate-400 uppercase">Latency</span>
+                        <div className="p-2 rounded-xl bg-slate-50 border border-accent/10 flex flex-col items-center">
+                          <span className="text-[7px] font-bold text-accent uppercase">Latency</span>
                           <span className="text-[10px] font-bold text-slate-800">{latency}</span>
                         </div>
                       </div>
@@ -399,8 +398,8 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <footer className="p-3 sm:p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-center shrink-0">
-            <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2">
+          <footer className="p-3 sm:p-4 bg-slate-50 border-t border-primary/5 flex items-center justify-center shrink-0">
+            <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary flex items-center gap-2">
               <Zap size={10} className="text-primary" fill="currentColor" />
               Signals Encapsulated • ZeroGPT Core
             </p>

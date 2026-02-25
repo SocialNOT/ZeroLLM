@@ -94,20 +94,20 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white/50 backdrop-blur-xl">
+    <Sidebar collapsible="icon" className="border-r border-primary/10 bg-white/50 backdrop-blur-xl">
       <SidebarHeader className="p-6 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pt-6">
         <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
           <div className="flex items-center gap-3 group group-data-[collapsible=icon]:gap-0">
-            <div className="flex h-11 w-11 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-primary to-indigo-600 shadow-xl shadow-primary/20 text-white shrink-0 group-hover:scale-105 transition-transform">
+            <div className="flex h-11 w-11 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-primary to-accent shadow-xl shadow-primary/20 text-white shrink-0 group-hover:scale-105 transition-transform">
               <Zap size={24} fill="currentColor" className="animate-pulse" />
             </div>
             <div className="flex flex-col overflow-hidden transition-all group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
               <span className="logo-shimmer font-headline text-2xl font-bold tracking-tighter leading-none whitespace-nowrap">ZEROGPT</span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-60 whitespace-nowrap">Engine Node</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold opacity-100 whitespace-nowrap">Engine Node</span>
             </div>
           </div>
           {isMobile && (
-            <Button variant="ghost" size="icon" className="md:hidden text-slate-400 rounded-full hover:bg-slate-100 hover:text-slate-900" onClick={() => setOpenMobile(false)}>
+            <Button variant="ghost" size="icon" className="md:hidden text-slate-900 rounded-full hover:bg-primary/5" onClick={() => setOpenMobile(false)}>
               <X size={20} />
             </Button>
           )}
@@ -116,7 +116,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-4 group-data-[collapsible=icon]:px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Library</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-900 mb-2">Library</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
@@ -135,7 +135,7 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip="My Personas">
-                      <UserCircle size={18} className="text-slate-400" />
+                      <UserCircle size={18} className="text-primary" />
                       <span className="font-bold text-sm">Personas</span>
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
@@ -153,12 +153,12 @@ export function AppSidebar() {
                             <div className="flex items-center justify-between">
                               <SidebarMenuSubButton 
                                 onClick={() => handleApplyItem('persona', p.id)}
-                                className="text-[11px] font-medium uppercase tracking-wider"
+                                className="text-[11px] font-black uppercase tracking-wider text-slate-900"
                               >
                                 {p.name}
                               </SidebarMenuSubButton>
                               <LibraryEditor mode="edit" type="persona" item={p}>
-                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-slate-400 hover:text-primary transition-opacity">
+                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-primary hover:scale-110 transition-all">
                                   <Edit2 size={10} />
                                 </button>
                               </LibraryEditor>
@@ -167,7 +167,7 @@ export function AppSidebar() {
                         ))
                       ) : (
                         <SidebarMenuSubItem>
-                          <span className="text-[10px] text-slate-400 px-2 italic">No custom personas</span>
+                          <span className="text-[10px] text-slate-400 px-2 italic font-bold">No custom personas</span>
                         </SidebarMenuSubItem>
                       )}
                     </SidebarMenuSub>
@@ -180,7 +180,7 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip="My Frameworks">
-                      <Layers size={18} className="text-slate-400" />
+                      <Layers size={18} className="text-primary" />
                       <span className="font-bold text-sm">Frameworks</span>
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
@@ -198,12 +198,12 @@ export function AppSidebar() {
                             <div className="flex items-center justify-between">
                               <SidebarMenuSubButton 
                                 onClick={() => handleApplyItem('framework', f.id)}
-                                className="text-[11px] font-medium uppercase tracking-wider"
+                                className="text-[11px] font-black uppercase tracking-wider text-slate-900"
                               >
                                 {f.name}
                               </SidebarMenuSubButton>
                               <LibraryEditor mode="edit" type="framework" item={f}>
-                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-slate-400 hover:text-primary transition-opacity">
+                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-primary hover:scale-110 transition-all">
                                   <Edit2 size={10} />
                                 </button>
                               </LibraryEditor>
@@ -212,7 +212,7 @@ export function AppSidebar() {
                         ))
                       ) : (
                         <SidebarMenuSubItem>
-                          <span className="text-[10px] text-slate-400 px-2 italic">No custom frameworks</span>
+                          <span className="text-[10px] text-slate-400 px-2 italic font-bold">No custom frameworks</span>
                         </SidebarMenuSubItem>
                       )}
                     </SidebarMenuSub>
@@ -225,7 +225,7 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip="My Controls">
-                      <Type size={18} className="text-slate-400" />
+                      <Type size={18} className="text-primary" />
                       <span className="font-bold text-sm">Controls</span>
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
@@ -243,12 +243,12 @@ export function AppSidebar() {
                             <div className="flex items-center justify-between">
                               <SidebarMenuSubButton 
                                 onClick={() => handleApplyItem('linguistic', c.id)}
-                                className="text-[11px] font-medium uppercase tracking-wider"
+                                className="text-[11px] font-black uppercase tracking-wider text-slate-900"
                               >
                                 {c.name}
                               </SidebarMenuSubButton>
                               <LibraryEditor mode="edit" type="linguistic" item={c}>
-                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-slate-400 hover:text-primary transition-opacity">
+                                <button className="opacity-0 group-hover/subitem:opacity-100 p-1 text-primary hover:scale-110 transition-all">
                                   <Edit2 size={10} />
                                 </button>
                               </LibraryEditor>
@@ -257,7 +257,7 @@ export function AppSidebar() {
                         ))
                       ) : (
                         <SidebarMenuSubItem>
-                          <span className="text-[10px] text-slate-400 px-2 italic">No custom controls</span>
+                          <span className="text-[10px] text-slate-400 px-2 italic font-bold">No custom controls</span>
                         </SidebarMenuSubItem>
                       )}
                     </SidebarMenuSub>
@@ -270,7 +270,7 @@ export function AppSidebar() {
 
         <SidebarGroup className="mt-8">
           <div className="mb-4 flex items-center justify-between px-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center">
-            <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Chronicle</SidebarGroupLabel>
+            <SidebarGroupLabel className="p-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-900">Chronicle</SidebarGroupLabel>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -293,22 +293,22 @@ export function AppSidebar() {
                         "group/btn relative h-10 rounded-xl px-3 mb-1 transition-all",
                         activeSessionId === session.id 
                           ? "bg-primary/5 text-primary font-bold shadow-sm" 
-                          : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                          : "text-slate-900 hover:bg-primary/5"
                       )}
                     >
-                      <MessageSquare size={16} className={activeSessionId === session.id ? "text-primary" : "text-slate-400"} />
-                      <span className="ml-3 truncate font-bold text-[11px] uppercase tracking-wider pr-6 group-data-[collapsible=icon]:hidden">{session.title}</span>
+                      <MessageSquare size={16} className={activeSessionId === session.id ? "text-primary" : "text-slate-900"} />
+                      <span className="ml-3 truncate font-black text-[11px] uppercase tracking-wider pr-6 group-data-[collapsible=icon]:hidden">{session.title}</span>
                     </SidebarMenuButton>
                     <SidebarMenuAction
                       onClick={(e) => handleDeleteSession(e, session.id)}
-                      className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg z-50 transition-colors group-data-[collapsible=icon]:hidden"
+                      className="text-destructive hover:bg-destructive/5 rounded-lg z-50 transition-colors group-data-[collapsible=icon]:hidden"
                     >
                       <Trash2 size={12} />
                     </SidebarMenuAction>
                   </SidebarMenuItem>
                 ))
               ) : (
-                <div className="mx-2 px-4 py-8 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center border-2 border-dashed border-slate-100 rounded-[1.5rem] group-data-[collapsible=icon]:hidden">
+                <div className="mx-2 px-4 py-8 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center border-2 border-dashed border-primary/10 rounded-[1.5rem] group-data-[collapsible=icon]:hidden">
                   No active threads
                 </div>
               )}
@@ -322,9 +322,9 @@ export function AppSidebar() {
           <Button 
             variant="outline"
             tooltip="System Control"
-            className="w-full h-12 bg-white border-slate-100 text-slate-700 shadow-xl shadow-slate-200/50 hover:bg-slate-50 hover:text-primary hover:border-primary/30 rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto"
+            className="w-full h-12 bg-white border-primary/10 text-slate-900 shadow-xl shadow-primary/5 hover:bg-primary/5 hover:border-primary/30 rounded-2xl transition-all gap-3 px-0 group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto"
           >
-            <Settings2 size={18} className="shrink-0" />
+            <Settings2 size={18} className="shrink-0 text-primary" />
             <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
           </Button>
         </SettingsDialog>

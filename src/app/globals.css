@@ -35,14 +35,14 @@
     --sidebar-ring: 225 100% 30%;
   }
 
-  /* Vivid Light Themes */
-  .theme-0 { --primary: 28 100% 50%; --accent: 124 77% 29%; --background: 28 100% 99%; }
-  .theme-1 { --primary: 25 100% 45%; --accent: 45 100% 40%; --background: 45 100% 99%; }
-  .theme-2 { --primary: 220 100% 45%; --accent: 185 100% 35%; --background: 220 100% 99%; }
-  .theme-3 { --primary: 142 76% 30%; --accent: 35 60% 35%; --background: 142 100% 99%; }
-  .theme-4 { --primary: 0 100% 45%; --accent: 215 25% 20%; --background: 0 100% 99%; }
-  .theme-5 { --primary: 270 100% 55%; --accent: 320 100% 45%; --background: 270 100% 99%; }
-  .theme-6 { --primary: 75 100% 40%; --accent: 170 100% 30%; --background: 75 100% 99%; }
+  /* Vivid Light Themes with Sidebar support */
+  .theme-0 { --primary: 28 100% 50%; --accent: 124 77% 29%; --background: 28 100% 99%; --sidebar-primary: 28 100% 50%; }
+  .theme-1 { --primary: 25 100% 45%; --accent: 45 100% 40%; --background: 45 100% 99%; --sidebar-primary: 25 100% 45%; }
+  .theme-2 { --primary: 220 100% 45%; --accent: 185 100% 35%; --background: 220 100% 99%; --sidebar-primary: 220 100% 45%; }
+  .theme-3 { --primary: 142 76% 30%; --accent: 35 60% 35%; --background: 142 100% 99%; --sidebar-primary: 142 76% 30%; }
+  .theme-4 { --primary: 0 100% 45%; --accent: 215 25% 20%; --background: 0 100% 99%; --sidebar-primary: 0 100% 45%; }
+  .theme-5 { --primary: 270 100% 55%; --accent: 320 100% 45%; --background: 270 100% 99%; --sidebar-primary: 270 100% 55%; }
+  .theme-6 { --primary: 75 100% 40%; --accent: 170 100% 30%; --background: 75 100% 99%; --sidebar-primary: 75 100% 40%; }
 }
 
 @layer base {

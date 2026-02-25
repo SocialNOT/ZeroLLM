@@ -131,8 +131,8 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-xl w-[95vw] sm:w-full border-white/20 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
-        <DialogHeader className="p-6 border-b border-slate-100 bg-white/50 shrink-0">
+      <DialogContent className="max-w-xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-[3rem] p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
+        <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
               <Zap size={20} />
@@ -141,7 +141,7 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
               <DialogTitle className="font-headline text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
                 {dialogTitle}
               </DialogTitle>
-              <DialogDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+              <DialogDescription className="text-[8px] font-bold uppercase tracking-widest text-primary mt-1">
                 Configure your custom neural protocol and system instructions. Node will be persisted locally.
               </DialogDescription>
             </div>
@@ -151,48 +151,48 @@ export function LibraryEditor({ children, mode, type, item }: LibraryEditorProps
         <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5 text-left">
-              <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Protocol Identifier</Label>
+              <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">Protocol Identifier</Label>
               <Input 
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g. Tactical Strategist"
-                className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
+                className="rounded-xl border-primary/10 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
             <div className="space-y-1.5 text-left">
-              <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Category Cluster</Label>
+              <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">Category Cluster</Label>
               <Input 
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 placeholder="Custom"
-                className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
+                className="rounded-xl border-primary/10 bg-slate-50 h-10 text-xs font-bold focus:ring-primary/20"
               />
             </div>
           </div>
 
           <div className="space-y-1.5 text-left">
-            <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Descriptive Telemetry</Label>
+            <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">Descriptive Telemetry</Label>
             <Input 
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
               placeholder="Brief overview of protocol behavior..."
-              className="rounded-xl border-slate-100 bg-slate-50 h-10 text-xs font-medium focus:ring-primary/20"
+              className="rounded-xl border-primary/10 bg-slate-50 h-10 text-xs font-medium focus:ring-primary/20"
             />
           </div>
 
           <div className="space-y-1.5 text-left">
-            <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">{labels[type].content}</Label>
+            <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1">{labels[type].content}</Label>
             <Textarea 
               value={formData.content}
               onChange={(e) => setFormData({...formData, content: e.target.value})}
               placeholder="Enter core system instructions and behavioral constraints..."
-              className="rounded-2xl border-slate-100 bg-slate-50 min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
+              className="rounded-2xl border-primary/10 bg-slate-50 min-h-[200px] font-mono text-xs leading-relaxed p-4 focus:ring-primary/20 resize-none"
             />
           </div>
         </div>
 
-        <DialogFooter className="p-6 bg-slate-50/50 border-t border-slate-100 shrink-0 flex flex-row items-center justify-between sm:justify-between gap-4">
-          <div className="flex items-center gap-2 text-amber-600">
+        <DialogFooter className="p-6 bg-slate-50/50 border-t border-primary/5 shrink-0 flex flex-row items-center justify-between sm:justify-between gap-4">
+          <div className="flex items-center gap-2 text-primary">
             <AlertCircle size={14} className="shrink-0" />
             <span className="text-[8px] font-bold uppercase tracking-wider italic leading-none hidden sm:inline">Local Node Persisted</span>
           </div>
