@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -60,13 +59,12 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
         displayName: user.displayName || "",
         email: user.email || "",
         photoURL: user.photoURL || "",
-        username: "", // To be filled from Firestore
+        username: "",
         mobile: "",
         bio: "",
         newPassword: ""
       });
 
-      // Fetch extended data from Firestore
       const fetchProfile = async () => {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
@@ -88,14 +86,11 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
     if (!user) return;
     setIsLoading(true);
     try {
-      // 1. Update Auth Profile
       await updateProfile(user, {
         displayName: formData.displayName,
         photoURL: formData.photoURL
       });
 
-      // 2. Update sensitive fields if changed (requires recent login logic usually handled by reauth)
-      // For MVP, we'll try and notify if it fails
       if (formData.newPassword) {
         try {
           await updatePassword(user, formData.newPassword);
@@ -104,7 +99,6 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
         }
       }
 
-      // 3. Update Firestore Document
       const userRef = doc(db, "users", user.uid);
       await setDoc(userRef, {
         displayName: formData.displayName,
@@ -126,7 +120,7 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[90vh]">
+      <DialogContent className="max-w-2xl w-[95vw] sm:max-w-2xl border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh]">
         <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-4">
             <div className="relative group">
@@ -144,7 +138,7 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
               <DialogTitle className="font-headline text-xl font-bold text-slate-900 tracking-tight leading-tight">
                 Identity Configuration
               </DialogTitle>
-              <DialogDescription className="text-[8px] font-bold uppercase tracking-widest text-primary mt-1">
+              <DialogDescription className="text-primary font-bold text-[8px] uppercase tracking-widest mt-1">
                 Refine your <span className="font-black">Neural Telemetry</span> and credentials.
               </DialogDescription>
             </div>
