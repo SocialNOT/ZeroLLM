@@ -19,7 +19,12 @@ import {
   Search,
   Brain,
   Expand,
-  Zap
+  Zap,
+  Microscope,
+  ShieldCheck,
+  Activity,
+  LineChart,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -89,13 +94,8 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
     }
   };
 
-  const handleDeepDive = () => {
-    toast({ title: "Energizing Deep Dive Node", description: "Orchestrating multi-step reasoning..." });
-    // In a real app, this would trigger a specific AI flow
-  };
-
-  const handleFactCheck = () => {
-    toast({ title: "Signal Verification Active", description: "Scanning knowledge nodes for claim proof..." });
+  const handleRefineNode = (type: string) => {
+    toast({ title: `Energizing ${type} Node`, description: "Orchestrating targeted response refinement..." });
   };
 
   const operatorName = isAssistant 
@@ -175,54 +175,48 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}
         </div>
 
-        {/* Footer Interaction Bar */}
-        <div className="px-4 py-2.5 border-t-2 border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {isAssistant && !isError && (
-              <>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90" onClick={handleSpeech}>
-                  {isPlaying ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={16} />}
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90" onClick={onRegenerate}>
-                  <RefreshCw size={16} />
-                </Button>
-                
-                <div className="h-4 w-[2px] bg-slate-200 mx-1" />
-
-                <Button onClick={handleDeepDive} variant="ghost" size="sm" className="h-8 rounded-none border-2 border-transparent hover:border-primary/20 text-[9px] font-black uppercase tracking-widest gap-1.5 px-2 text-primary">
-                  <Brain size={12} />
-                  Deep Dive
-                </Button>
-                <Button onClick={handleFactCheck} variant="ghost" size="sm" className="h-8 rounded-none border-2 border-transparent hover:border-primary/20 text-[9px] font-black uppercase tracking-widest gap-1.5 px-2 text-primary">
-                  <Search size={12} />
-                  Fact Check
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90">
-                      {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Languages size={16} />}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="rounded-none p-1.5 shadow-2xl border-2 border-primary/20 bg-white min-w-[160px] z-[100]">
-                    <div className="px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-primary border-b-2 border-primary/10 mb-1.5">Target Language Node</div>
-                    {['Hindi', 'Bengali', 'Spanish', 'French', 'Japanese', 'German'].map(l => (
-                      <DropdownMenuItem key={l} onClick={() => handleTranslate(l)} className="text-[11px] font-black uppercase tracking-widest rounded-none px-3 py-3 cursor-pointer text-primary hover:bg-primary hover:text-white transition-colors">
-                        {l}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none border-2 border-transparent hover:border-primary/20 transition-all active:scale-90 text-primary hover:bg-primary/10" onClick={handleCopy}>
-              {isCopied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-center px-3 py-1.5 rounded-none border-2 border-primary bg-primary text-white font-mono text-[10px] font-black tracking-tighter leading-none shadow-sm">
-            {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}
-          </div>
+        {/* High-Fidelity 3x4 Interaction Grid */}
+        <div className="grid grid-cols-3 divide-x-2 divide-slate-100 border-t-2 border-slate-100 bg-slate-50">
+          {isAssistant && !isError ? (
+            <>
+              {[
+                { id: 'voice', icon: <Volume2 size={12} />, title: 'Voice', action: handleSpeech },
+                { id: 'regen', icon: <RefreshCw size={12} />, title: 'Regen', action: onRegenerate },
+                { id: 'think', icon: <Brain size={12} />, title: 'Deep Dive', action: () => handleRefineNode('Thinking') },
+                { id: 'verify', icon: <Search size={12} />, title: 'Fact Check', action: () => handleRefineNode('Verification') },
+                { id: 'academic', icon: <Microscope size={12} />, title: 'Research', action: () => handleRefineNode('Academic') },
+                { id: 'optimize', icon: <Zap size={12} />, title: 'Optimize', action: () => handleRefineNode('Performance') },
+                { id: 'explain', icon: <Activity size={12} />, title: 'Explain', action: () => handleRefineNode('Cognitive') },
+                { id: 'audit', icon: <ShieldCheck size={12} />, title: 'Security', action: () => handleRefineNode('Safety') },
+                { id: 'logic', icon: <LineChart size={12} />, title: 'Logic Trace', action: () => handleRefineNode('Logical') },
+                { id: 'translate', icon: <Languages size={12} />, title: 'Translate', action: () => handleRefineNode('Linguistic') },
+                { id: 'copy', icon: <Copy size={12} />, title: 'Copy Node', action: handleCopy },
+              ].map(btn => (
+                <button 
+                  key={btn.id}
+                  onClick={btn.action}
+                  className="flex flex-col items-center justify-center py-3 hover:bg-primary/5 transition-colors border-b-2 border-slate-100 group"
+                >
+                  <div className="text-primary group-hover:scale-110 transition-transform mb-1">{btn.icon}</div>
+                  <span className="text-[7px] font-black uppercase tracking-widest text-primary/60 group-hover:text-primary">{btn.title}</span>
+                </button>
+              ))}
+              <div className="flex flex-col items-center justify-center py-3 bg-primary text-white border-b-2 border-primary">
+                <Clock size={12} className="mb-1" />
+                <span className="text-[8px] font-black font-mono tracking-tighter">
+                  {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </span>
+              </div>
+            </>
+          ) : (
+            <button 
+              onClick={handleCopy}
+              className="col-span-3 flex items-center justify-center py-4 hover:bg-slate-100 transition-colors gap-3"
+            >
+              <Copy size={14} className="text-slate-900" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Synchronize Node Data</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

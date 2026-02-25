@@ -99,6 +99,8 @@ export interface ChatSession {
     analysisEnabled?: boolean;
     planningEnabled?: boolean;
     researchEnabled?: boolean;
+    summaryEnabled?: boolean;
+    creativeEnabled?: boolean;
   };
 }
 

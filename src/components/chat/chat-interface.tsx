@@ -28,7 +28,8 @@ import {
   Loader2,
   LineChart,
   Milestone,
-  Microscope
+  Microscope,
+  Sparkles
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -485,7 +486,8 @@ export function ChatInterface() {
 
         <div className="flex-shrink-0 p-2 sm:p-6 bg-white border-t-2 border-border z-30">
           <div className="mx-auto max-w-4xl border-2 border-border rounded-none overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
-            <div className="grid grid-cols-5 sm:grid-cols-10 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
+            {/* High-Fidelity 3x4 Bento Tool Grid */}
+            <div className="grid grid-cols-3 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
               {[
                 { id: 'webSearch', icon: <Search size={10} />, title: 'Ground' },
                 { id: 'reasoning', icon: <Brain size={10} />, title: 'Think' },
@@ -496,7 +498,9 @@ export function ChatInterface() {
                 { id: 'code', icon: <Terminal size={10} />, title: 'Code' },
                 { id: 'analysis', icon: <LineChart size={10} />, title: 'Logic' },
                 { id: 'planning', icon: <Milestone size={10} />, title: 'Strategy' },
-                { id: 'knowledge', icon: <Database size={10} />, title: 'Vault' }
+                { id: 'knowledge', icon: <Database size={10} />, title: 'Vault' },
+                { id: 'summary', icon: <Activity size={10} />, title: 'Abstract' },
+                { id: 'creative', icon: <Sparkles size={10} />, title: 'Novelty' }
               ].map(tool => {
                 const settingKey = tool.id === 'webSearch' ? 'webSearchEnabled' : 
                                  tool.id === 'reasoning' ? 'reasoningEnabled' : 
@@ -508,14 +512,14 @@ export function ChatInterface() {
                     key={tool.id} 
                     onClick={() => toggleTool(session.id, tool.id as any)} 
                     className={cn(
-                      "flex flex-col items-center justify-center py-1.5 sm:py-2 transition-all active:scale-95 min-w-0 rounded-none",
+                      "flex flex-col items-center justify-center py-2.5 sm:py-3 transition-all active:scale-95 min-w-0 rounded-none border-b-2 border-border last:border-b-0 nth-[10]:border-b-0 nth-[11]:border-b-0 nth-[12]:border-b-0",
                       isActive 
                         ? "bg-primary text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]" 
                         : "bg-transparent text-slate-900 hover:bg-primary/10"
                     )}
                   >
                     <div className="mb-0.5">{tool.icon}</div>
-                    <span className="text-[5px] sm:text-[7px] font-black uppercase tracking-tighter leading-none truncate w-full px-0.5 text-center">{tool.title}</span>
+                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter leading-none truncate w-full px-0.5 text-center">{tool.title}</span>
                   </button>
                 );
               })}

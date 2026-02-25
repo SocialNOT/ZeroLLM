@@ -81,7 +81,7 @@ interface AppState {
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
-  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge' | 'vision' | 'analysis' | 'planning' | 'research') => void;
+  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge' | 'vision' | 'analysis' | 'planning' | 'research' | 'summary' | 'creative') => void;
   checkSessionExpiry: () => void;
   
   // Theme Actions
@@ -348,7 +348,9 @@ export const useAppStore = create<AppState>()(
             visionEnabled: false,
             analysisEnabled: false,
             planningEnabled: false,
-            researchEnabled: false
+            researchEnabled: false,
+            summaryEnabled: false,
+            creativeEnabled: false
           }
         };
         set((state) => ({ 
@@ -466,6 +468,8 @@ export const useAppStore = create<AppState>()(
             if (tool === 'analysis') settings.analysisEnabled = !settings.analysisEnabled;
             if (tool === 'planning') settings.planningEnabled = !settings.planningEnabled;
             if (tool === 'research') settings.researchEnabled = !settings.researchEnabled;
+            if (tool === 'summary') settings.summaryEnabled = !settings.summaryEnabled;
+            if (tool === 'creative') settings.creativeEnabled = !settings.creativeEnabled;
             
             const enabledTools: string[] = [];
             if (settings.webSearchEnabled) enabledTools.push('web_search');
@@ -476,6 +480,8 @@ export const useAppStore = create<AppState>()(
             if (settings.analysisEnabled) enabledTools.push('analysis');
             if (settings.planningEnabled) enabledTools.push('planning');
             if (settings.researchEnabled) enabledTools.push('research');
+            if (settings.summaryEnabled) enabledTools.push('summary');
+            if (settings.creativeEnabled) enabledTools.push('creative');
 
             return { ...s, settings: { ...settings, enabledTools } };
           })
