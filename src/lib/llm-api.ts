@@ -58,7 +58,7 @@ export async function performWebSearch(query: string): Promise<string> {
   const cx = process.env.GOOGLE_SEARCH_CX;
 
   if (!apiKey || !cx) {
-    return "[DIAGNOSTIC ERROR]: Google Search Node not configured in environment. Please ensure GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CX are established.";
+    return "[DIAGNOSTIC ERROR]: Google Search Node not configured in environment credentials.";
   }
 
   if (!query || query.trim().length < 2) {
@@ -82,14 +82,14 @@ export async function performWebSearch(query: string): Promise<string> {
     const items = data.items || [];
 
     if (items.length === 0) {
-      return "Zero search results acquired for this signal. No real-time data found for the current query.";
+      return "Zero search results acquired for this query. No real-time data found.";
     }
 
     const results = items.slice(0, 5).map((item: any, idx: number) => (
-      `[Source ${idx + 1}]\nTitle: ${item.title}\nLink: ${item.link}\nSnippet: ${item.snippet}`
+      `[Source ${idx + 1}] ${item.title}\nLink: ${item.link}\nSummary: ${item.snippet}`
     )).join('\n\n');
 
-    return `[REAL-TIME WEB DATA ACQUIRED]\n\n${results}`;
+    return `[REAL-TIME DATA RETRIEVED]\n\n${results}`;
   } catch (error: any) {
     return `[SEARCH EXCEPTION]: ${error.message || 'Signal interruption during web search sequence.'}`;
   }

@@ -96,26 +96,25 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
 
     let combinedSystemPrompt = input.systemPrompt;
     
-    // Explicit tool use instruction for Web Grounding
+    // Forced Grounding Protocol for Gemini
     if (input.webSearchEnabled) {
-      combinedSystemPrompt += "\n\n[WEB SEARCH NODE ACTIVE]\nYou have access to real-time internet data via the 'web_search' tool. If the user asks about current events, news, sports scores, or any factual information that might have changed since your training cutoff, you MUST use the 'web_search' tool first. Do not guess, and do not apologize for not knowing until you have tried searching.";
+      combinedSystemPrompt += "\n\n[INSTRUCTION: WEB GROUNDING NODE ACTIVE]\nYou have access to the 'web_search' tool which retrieves live data from Google Search. For any factual query post-2023, or current events (e.g. yesterday's sports), you MUST call 'web_search' first. Do not apologize for lack of access; simply trigger the tool. Your response must be informed by the retrieved snippets.";
     }
 
     if (input.reasoningEnabled) {
-      combinedSystemPrompt += "\n\n[REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process before providing the final answer. Use a step-by-step logical approach.";
+      combinedSystemPrompt += "\n\n[REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";
     }
 
-    // Grounding-First Logic for Custom Engines (Fallback)
+    // GROUNDING-FIRST FOR OFFLINE ENGINES
     if (input.baseUrl && !input.baseUrl.includes('genkit')) {
       let finalMessages = [
         { role: 'system' as const, content: combinedSystemPrompt },
         ...(input.history || []).map(m => ({ role: m.role as any, content: m.content })),
       ];
 
-      // Perform real search if grounding is enabled
       if (input.webSearchEnabled) {
         const searchResults = await performWebSearch(input.userMessage);
-        finalMessages[0].content += `\n\n[WEB GROUNDING DATA ACQUIRED]\nUse the following verified information to inform your response:\n\n${searchResults}`;
+        finalMessages[0].content += `\n\n[VERIFIED WEB DATA ACQUIRED]\n${searchResults}`;
       }
 
       finalMessages.push({ role: 'user' as const, content: input.userMessage });
@@ -132,7 +131,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       );
     }
 
-    // ONLINE MODE (Cloud Gemini via Genkit)
+    // ONLINE MODE (Gemini via Genkit Tool Loop)
     const { text } = await ai.generate({
       system: combinedSystemPrompt,
       prompt: input.userMessage,
@@ -148,9 +147,6 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     return text || "No response generated.";
   } catch (error: any) {
     console.error("Neural Orchestration Error:", error);
-    if (error.message?.includes("No models loaded") || error.message?.includes("404")) {
-      return "ERROR: Engine node unavailable. Please establish connection or re-load model.";
-    }
-    return `ERROR: ${error.message || 'Node connection failure'}.`;
+    return `ERROR: ${error.message || 'Signal interruption during orchestration'}.`;
   }
 }
