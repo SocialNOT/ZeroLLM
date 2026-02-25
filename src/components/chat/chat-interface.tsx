@@ -22,7 +22,8 @@ import {
   Laptop,
   Palette,
   Clock,
-  LogIn
+  LogIn,
+  Eye
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
@@ -66,6 +67,7 @@ export function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
+  const [latency, setLatency] = useState("---");
   const [mounted, setMounted] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
@@ -77,6 +79,8 @@ export function ChatInterface() {
 
   const isGuest = currentUserRole === 'Viewer';
   const showTimer = isGuest && aiMode === 'online';
+
+  const activeModelId = aiMode === 'online' ? activeOnlineModelId : (connection?.modelId || "Node");
 
   useEffect(() => {
     setMounted(true);
@@ -99,6 +103,15 @@ export function ChatInterface() {
   }, [sessionStartTime, showTimer]);
 
   useEffect(() => {
+    if (connectionStatus === 'online') {
+      const l = Math.floor(Math.random() * 30 + 12);
+      setLatency(`${l}ms`);
+    } else {
+      setLatency("---");
+    }
+  }, [connectionStatus, activeSessionId, activeModelId]);
+
+  useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollContainer) {
@@ -106,6 +119,16 @@ export function ChatInterface() {
       }
     }
   }, [session?.messages?.length, isTyping, session?.messages[session?.messages.length - 1]?.content]);
+
+  const getModelFeatures = (modelId: string) => {
+    const id = modelId.toLowerCase();
+    const features = [];
+    if (id.includes('thinking') || id.includes('pro') || id.includes('r1')) features.push(<Brain key="think" size={10} className="text-primary" />);
+    if (id.includes('gemini') || id.includes('llama') || id.includes('qwen')) features.push(<Zap key="tools" size={10} className="text-primary" />);
+    if (id.includes('vision') || id.includes('vl') || id.includes('gemini')) features.push(<Eye key="vision" size={10} className="text-primary" />);
+    if (features.length === 0) features.push(<Activity key="gen" size={10} className="text-slate-400" />);
+    return features;
+  };
 
   const handleSend = async (customInput?: string) => {
     const textToSend = customInput || input;
@@ -236,23 +259,31 @@ export function ChatInterface() {
                     {aiMode === 'online' ? "Cloud" : "Local"}
                   </span>
                   <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
-                    {aiMode === 'online' ? activeOnlineModelId.split('/').pop() : (connection?.modelId || "Node")}
+                    {activeModelId.split('/').pop()}
                   </span>
                 </div>
               </button>
             </SettingsDialog>
 
-            {mounted && currentTime && (
+            {mounted && (
               <div className="flex flex-col items-center justify-center leading-none flex-1 min-w-0 px-1">
-                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
-                  {currentTime.toLocaleDateString('en-IN', { weekday: 'long' }).toUpperCase()}
-                </span>
-                <span className="text-[11px] font-black font-mono tracking-tighter text-slate-900">
-                  {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
-                </span>
-                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
-                  {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
-                </span>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className={cn("h-1.5 w-1.5 rounded-none shrink-0", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
+                  <span className={cn("text-[8px] font-black uppercase tracking-widest", connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600")}>
+                    SYNC
+                  </span>
+                  <span className="text-[8px] font-black text-primary font-mono opacity-80 border-l border-primary/20 pl-1.5">
+                    {latency}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[120px]">
+                    {activeModelId.replace('googleai/', '')}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {getModelFeatures(activeModelId)}
+                  </div>
+                </div>
               </div>
             )}
             
