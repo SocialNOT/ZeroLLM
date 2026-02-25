@@ -98,7 +98,7 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
     
     // Forced Grounding Protocol for Gemini
     if (input.webSearchEnabled) {
-      combinedSystemPrompt += "\n\n[INSTRUCTION: WEB GROUNDING NODE ACTIVE]\nYou have access to the 'web_search' tool which retrieves live data from Google Search. For any factual query post-2023, or current events (e.g. yesterday's sports), you MUST call 'web_search' first. Do not apologize for lack of access; simply trigger the tool. Your response must be informed by the retrieved snippets.";
+      combinedSystemPrompt += "\n\n[CRITICAL INSTRUCTION: WEB GROUNDING ACTIVE]\nYou have direct access to the 'web_search' tool which retrieves live data from Google Search. For ANY factual query post-2023, current events (e.g. yesterday's sports), or specific data you don't have in your weights, you MUST trigger 'web_search' immediately. Do NOT apologize for lack of access; simply use the tool. Your response must be informed by the retrieved verified snippets.";
     }
 
     if (input.reasoningEnabled) {

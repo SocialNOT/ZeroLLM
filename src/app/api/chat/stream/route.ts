@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         const searchResults = await performWebSearch(lastUserMsg);
         
         // Inject grounding context into the system prompt (first message)
-        const groundingPrefix = `\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nThe following verified search results have been retrieved from the internet. Use them to answer the user accurately. If info is missing, inform the user you searched but found limited data.\n\n${searchResults}`;
+        const groundingPrefix = `\n\n[SYSTEM: WEB GROUNDING ACTIVE]\nThe following verified search results have been retrieved from the internet. Use them to answer the user accurately with real-time data. If info is missing, inform the user you searched but found limited data. DO NOT CLAIM YOU CANNOT ACCESS THE WEB.\n\n${searchResults}`;
 
         if (activeMessages.length > 0 && activeMessages[0].role === 'system') {
           activeMessages[0] = {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
           };
         } else {
           activeMessages = [
-            { role: 'system', content: `[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access.${groundingPrefix}` },
+            { role: 'system', content: `[SYSTEM: COGNITIVE OVERRIDE] You are a highly capable AI assistant with real-time web access. You must use the provided data to answer correctly.${groundingPrefix}` },
             ...messages
           ];
         }
