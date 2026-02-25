@@ -28,6 +28,10 @@ interface AppState {
   showInfoSidebar: boolean;
   aiMode: AiMode;
   
+  // Modal States
+  isProfileOpen: boolean;
+  isSettingsOpen: boolean;
+  
   // Theme Engine
   activeTheme: 'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6;
   
@@ -36,6 +40,8 @@ interface AppState {
   isSessionLocked: boolean;
   
   // Actions
+  setIsProfileOpen: (open: boolean) => void;
+  setIsSettingsOpen: (open: boolean) => void;
   addWorkspace: (w: Workspace) => void;
   setActiveWorkspace: (id: string) => void;
   addConnection: (c: ModelConnection) => void;
@@ -123,10 +129,16 @@ export const useAppStore = create<AppState>()(
       activeParameterTab: 'frameworks',
       showInfoSidebar: false,
       
+      isProfileOpen: false,
+      isSettingsOpen: false,
+      
       activeTheme: 'auto',
       
       sessionStartTime: null,
       isSessionLocked: false,
+
+      setIsProfileOpen: (open) => set({ isProfileOpen: open }),
+      setIsSettingsOpen: (open) => set({ isSettingsOpen: open }),
 
       addWorkspace: (w) => set((state) => ({ workspaces: [...state.workspaces, w] })),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -422,7 +434,6 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => set({ activeTheme: theme }),
       cycleTheme: () => set((state) => {
         const order: Array<'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6> = ['auto', 0, 1, 2, 3, 4, 5, 6];
-        // Ensure robust index finding even with numeric hydration quirks
         const currentVal = state.activeTheme === 'auto' ? 'auto' : Number(state.activeTheme);
         const currentIdx = order.indexOf(currentVal as any);
         const nextIdx = (currentIdx + 1) % order.length;
@@ -433,7 +444,6 @@ export const useAppStore = create<AppState>()(
         const { sessionStartTime, currentUserRole, isSessionLocked, aiMode } = get();
         if (!sessionStartTime) return;
         
-        // Offline Mode is always free and unlimited for authenticated users
         if (aiMode === 'offline') {
           if (isSessionLocked) set({ isSessionLocked: false });
           return;
@@ -460,7 +470,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     { 
-      name: 'zerogpt-storage-v13',
+      name: 'zerogpt-storage-v14',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {

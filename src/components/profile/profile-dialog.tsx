@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,8 +8,7 @@ import {
   DialogHeader, 
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogTrigger
+  DialogFooter
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,25 +29,21 @@ import {
   FileText,
   ShieldCheck,
   Lock,
-  LogOut,
-  AlertCircle
+  LogOut
 } from "lucide-react";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/store/use-app-store";
 
-interface ProfileDialogProps {
-  children?: React.ReactNode;
-}
-
-export function ProfileDialog({ children }: ProfileDialogProps) {
+export function ProfileDialog() {
   const { user } = useUser();
   const db = useFirestore();
   const auth = useAuth();
   const router = useRouter();
+  const { isProfileOpen, setIsProfileOpen } = useAppStore();
   
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     displayName: "",
@@ -60,7 +56,7 @@ export function ProfileDialog({ children }: ProfileDialogProps) {
   });
 
   useEffect(() => {
-    if (isOpen && user) {
+    if (isProfileOpen && user) {
       setFormData({
         displayName: user.displayName || "",
         email: user.email || "",
@@ -86,7 +82,7 @@ export function ProfileDialog({ children }: ProfileDialogProps) {
       };
       fetchProfile();
     }
-  }, [isOpen, user, db]);
+  }, [isProfileOpen, user, db]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -126,7 +122,7 @@ export function ProfileDialog({ children }: ProfileDialogProps) {
         });
 
       toast({ title: "Neural Identity Synchronized", description: "Identity nodes persisted." });
-      setIsOpen(false);
+      setIsProfileOpen(false);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Sync Failure", description: error.message });
     } finally {
@@ -137,6 +133,7 @@ export function ProfileDialog({ children }: ProfileDialogProps) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      setIsProfileOpen(false);
       router.push("/auth/login");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Termination Failure" });
@@ -144,10 +141,7 @@ export function ProfileDialog({ children }: ProfileDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
       <DialogContent className="max-w-2xl w-[95vw] sm:max-w-2xl border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border flex flex-col max-h-[85vh] z-[200]">
         <DialogHeader className="p-6 border-b border-primary/5 bg-white/50 shrink-0">
           <div className="flex items-center gap-4">

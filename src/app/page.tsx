@@ -13,6 +13,8 @@ import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { Loader2, Sliders, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProfileDialog } from "@/components/profile/profile-dialog";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 
 export default function Home() {
   const { 
@@ -85,6 +87,9 @@ export default function Home() {
       <div className="sleek-animated-border-container h-full w-full">
         <div className="app-surface flex h-full w-full">
           <SidebarProvider>
+            {/* Stable Root Modals */}
+            <ProfileDialog />
+            <SettingsDialog />
             <SessionGuard />
             
             {/* STAGE 2: Engine Handshake */}

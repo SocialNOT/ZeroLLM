@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -31,14 +32,12 @@ import {
   Trash2,
   ShieldAlert,
   Edit2,
-  LogOut,
   User
 } from "lucide-react";
 import { useAppStore } from "@/store/use-app-store";
 import { useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SettingsDialog } from "@/components/settings/settings-dialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -47,7 +46,6 @@ import {
 import Link from "next/link";
 import { LibraryEditor } from "@/components/library/library-editor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ProfileDialog } from "@/components/profile/profile-dialog";
 
 export function AppSidebar() {
   const { 
@@ -63,7 +61,9 @@ export function AppSidebar() {
     applyPersona,
     applyFramework,
     applyLinguisticControl,
-    currentUserRole
+    currentUserRole,
+    setIsProfileOpen,
+    setIsSettingsOpen
   } = useAppStore();
 
   const { isMobile, setOpenMobile } = useSidebar();
@@ -98,8 +98,14 @@ export function AppSidebar() {
     if (type === 'linguistic') applyLinguisticControl(activeSessionId, itemId);
   };
 
-  const handleSidebarControlClick = () => {
+  const handleProfileClick = () => {
     if (isMobile) setOpenMobile(false);
+    setIsProfileOpen(true);
+  };
+
+  const handleSettingsClick = () => {
+    if (isMobile) setOpenMobile(false);
+    setIsSettingsOpen(true);
   };
 
   return (
@@ -131,7 +137,7 @@ export function AppSidebar() {
               {user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                 <SidebarMenuItem>
                   <Link href="/admin">
-                    <SidebarMenuButton tooltip="Admin Panel" className="bg-primary/5 text-primary rounded-none" onClick={handleSidebarControlClick}>
+                    <SidebarMenuButton tooltip="Admin Panel" className="bg-primary/5 text-primary rounded-none" onClick={() => isMobile && setOpenMobile(false)}>
                       <ShieldAlert size={18} />
                       <span className="font-bold text-sm">Admin Control</span>
                     </SidebarMenuButton>
@@ -326,37 +332,37 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-2 space-y-2 border-t border-primary/5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <ProfileDialog>
-              <SidebarMenuButton size="lg" className="rounded-none hover:bg-primary/5 transition-all h-14 border border-primary/10 bg-white" onClick={handleSidebarControlClick}>
-                <div className="flex items-center gap-3 w-full">
-                  <Avatar className="h-8 w-8 rounded-none border border-primary/20 shrink-0">
-                    <AvatarImage src={user?.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
-                    <AvatarFallback className="rounded-none bg-primary/10 text-primary font-black"><User size={16} /></AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col text-left overflow-hidden group-data-[collapsible=icon]:hidden">
-                    <span className="text-[10px] font-black uppercase text-slate-900 truncate leading-none mb-1">{user?.displayName || user?.email?.split('@')[0]}</span>
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-1 w-1 bg-emerald-500 rounded-none animate-pulse" />
-                      <span className="text-[7px] font-bold uppercase tracking-widest text-primary">{currentUserRole} Node</span>
-                    </div>
+            <SidebarMenuButton 
+              size="lg" 
+              className="rounded-none hover:bg-primary/5 transition-all h-14 border border-primary/10 bg-white" 
+              onClick={handleProfileClick}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <Avatar className="h-8 w-8 rounded-none border border-primary/20 shrink-0">
+                  <AvatarImage src={user?.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.email}`} />
+                  <AvatarFallback className="rounded-none bg-primary/10 text-primary font-black"><User size={16} /></AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col text-left overflow-hidden group-data-[collapsible=icon]:hidden">
+                  <span className="text-[10px] font-black uppercase text-slate-900 truncate leading-none mb-1">{user?.displayName || user?.email?.split('@')[0]}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-1 w-1 bg-emerald-500 rounded-none animate-pulse" />
+                    <span className="text-[7px] font-bold uppercase tracking-widest text-primary">{currentUserRole} Node</span>
                   </div>
                 </div>
-              </SidebarMenuButton>
-            </ProfileDialog>
+              </div>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <SettingsDialog>
-          <Button 
-            variant="outline"
-            tooltip="System Control"
-            onClick={handleSidebarControlClick}
-            className="w-full h-12 bg-white border-primary/10 text-slate-900 shadow-xl shadow-primary/5 hover:bg-primary/5 hover:border-primary/30 rounded-none transition-all gap-3 px-0 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:mx-auto"
-          >
-            <Settings2 size={18} className="shrink-0 text-primary" />
-            <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
-          </Button>
-        </SettingsDialog>
+        <Button 
+          variant="outline"
+          tooltip="System Control"
+          onClick={handleSettingsClick}
+          className="w-full h-12 bg-white border-primary/10 text-slate-900 shadow-xl shadow-primary/5 hover:bg-primary/5 hover:border-primary/30 rounded-none transition-all gap-3 px-0 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:mx-auto"
+        >
+          <Settings2 size={18} className="shrink-0 text-primary" />
+          <span className="font-bold text-[10px] uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">System Control</span>
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );

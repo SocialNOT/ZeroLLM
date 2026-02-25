@@ -6,7 +6,6 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogTrigger,
   DialogDescription
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -33,7 +32,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-export function SettingsDialog({ children }: { children: React.ReactNode }) {
+export function SettingsDialog() {
   const { 
     connections, 
     activeConnectionId, 
@@ -45,7 +44,9 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     triggerModelLoad,
     isModelLoading,
     aiMode,
-    setAiMode
+    setAiMode,
+    isSettingsOpen,
+    setIsSettingsOpen
   } = useAppStore();
   
   const conn = connections.find(c => c.id === activeConnectionId);
@@ -53,6 +54,13 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const [tokenInput, setTokenInput] = useState(conn?.apiKey || "");
   const [latency, setLatency] = useState("---");
   const [activeCard, setActiveCard] = useState<'engine' | 'shield' | 'vault'>('engine');
+
+  useEffect(() => {
+    if (isSettingsOpen && conn) {
+      setUrlInput(conn.baseUrl);
+      setTokenInput(conn.apiKey || "");
+    }
+  }, [isSettingsOpen, conn]);
 
   useEffect(() => {
     if (connectionStatus === 'online') {
@@ -85,22 +93,18 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     const id = modelId.toLowerCase();
     const caps = [];
     
-    // Tools logic
     if (id.includes('llama') || id.includes('qwen') || id.includes('gemma') || id.includes('liquid') || id.includes('gemini')) {
       caps.push({ label: 'Tool Calling', color: 'text-blue-600', glow: 'bg-blue-500' });
     }
     
-    // Thinking logic
     if (id.includes('deepseek') || id.includes('r1') || id.includes('thinking') || id.includes('gemini-2.0-pro')) {
       caps.push({ label: 'Deep Think', color: 'text-purple-600', glow: 'bg-purple-500' });
     }
     
-    // Vision logic
     if (id.includes('vision') || id.includes('vl') || id.includes('gemini')) {
       caps.push({ label: 'Vision', color: 'text-pink-600', glow: 'bg-pink-500' });
     }
     
-    // RAG logic
     if (id.includes('rag') || id.includes('nomic') || id.includes('embed')) {
       caps.push({ label: 'RAG Native', color: 'text-emerald-600', glow: 'bg-emerald-500' });
     }
@@ -131,10 +135,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
       <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border">
         <div className="flex flex-col max-h-[85vh]">
           <header className="p-4 sm:p-6 bg-white/50 border-b border-primary/5 flex items-center justify-between shrink-0">
