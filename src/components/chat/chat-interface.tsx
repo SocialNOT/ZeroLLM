@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -292,35 +293,35 @@ export function ChatInterface() {
         </div>
 
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
-          <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8">
+          <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8 h-full">
             {session.messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 sm:py-12 text-center space-y-6 sm:space-y-10 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
-                <div className="space-y-4">
+              <div className="flex flex-1 flex-col items-center justify-center py-4 sm:py-8 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
+                <div className="space-y-3">
                   <div className="space-y-1">
-                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tighter leading-none uppercase px-4">Neural Node Synchronized</h2>
-                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-primary mt-2">Establish command sequence to begin orchestration</p>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter leading-none uppercase px-4">Neural Node Synchronized</h2>
+                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-primary mt-1">Establish command sequence to begin orchestration</p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 w-full max-w-xl px-2">
+                <div className="flex flex-col gap-2 w-full max-w-lg px-2">
                   {starters.map((starter, idx) => (
                     <button 
                       key={idx} 
                       onClick={() => setInput(starter.prompt)} 
                       className={cn(
-                        "group flex items-center gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
+                        "group flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
                         idx === 0 ? "delay-[100ms]" : idx === 1 ? "delay-[200ms]" : idx === 2 ? "delay-[300ms]" : "delay-[400ms]"
                       )}
                     >
-                      <div className="p-2 rounded-lg bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
-                        <Zap size={14} />
+                      <div className="p-1.5 rounded-lg bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
+                        <Zap size={12} />
                       </div>
                       <div className="flex flex-col min-w-0 overflow-hidden">
-                        <span className="text-[10px] sm:text-[12px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1 truncate">{starter.title}</span>
-                        <p className="text-[8px] sm:text-[10px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
+                        <span className="text-[9px] sm:text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1 truncate">{starter.title}</span>
+                        <p className="text-[7px] sm:text-[9px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
                       </div>
                       <div className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                        <ChevronRight size={16} />
+                        <ChevronRight size={14} />
                       </div>
                     </button>
                   ))}
