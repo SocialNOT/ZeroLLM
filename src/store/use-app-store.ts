@@ -408,9 +408,15 @@ export const useAppStore = create<AppState>()(
       }),
 
       checkSessionExpiry: () => {
-        const { sessionStartTime, currentUserRole, isSessionLocked } = get();
+        const { sessionStartTime, currentUserRole, isSessionLocked, aiMode } = get();
         if (!sessionStartTime) return;
         
+        // Offline Mode is always free and unlimited for authenticated users
+        if (aiMode === 'offline') {
+          if (isSessionLocked) set({ isSessionLocked: false });
+          return;
+        }
+
         if (currentUserRole !== 'Viewer') {
           if (isSessionLocked) set({ isSessionLocked: false });
           return;
@@ -432,7 +438,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     { 
-      name: 'zerogpt-storage-v11',
+      name: 'zerogpt-storage-v12',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {

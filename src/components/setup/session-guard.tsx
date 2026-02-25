@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from "react";
@@ -17,26 +18,30 @@ import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 
 export function SessionGuard() {
-  const { isSessionLocked, checkSessionExpiry, lockSession, currentUserRole } = useAppStore();
+  const { isSessionLocked, checkSessionExpiry, lockSession, currentUserRole, aiMode } = useAppStore();
   const { user } = useUser();
   const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     // Identity monitor logic: Poll for Diurnal Reset synchronicity every 30 seconds.
+    // Constraints only apply to Online Cloud nodes.
     const interval = setInterval(() => {
-      checkSessionExpiry();
+      if (aiMode === 'online') {
+        checkSessionExpiry();
+      }
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [checkSessionExpiry]);
+  }, [checkSessionExpiry, aiMode]);
 
   const handleReauth = async () => {
     await signOut(auth);
     router.push("/auth/login");
   };
 
-  if (!user || !isSessionLocked) return null;
+  // Guard logic: Session is never locked in Offline mode
+  if (!user || !isSessionLocked || aiMode === 'offline') return null;
 
   return (
     <Dialog open={true}>
@@ -57,7 +62,7 @@ export function SessionGuard() {
             </DialogTitle>
             <DialogDescription className="text-xs font-medium text-slate-400 max-w-[280px] mx-auto leading-relaxed">
               {currentUserRole === 'Viewer' 
-                ? "Your Guest identity node has reached its daily 1-hour limit. Please re-energize your session or wait for the Diurnal Reset at midnight."
+                ? "Your Guest identity node has reached its daily 1-hour limit for Cloud Orchestration. Please upgrade your session or switch to Local Node for unlimited access."
                 : "Your security node requires re-authentication to maintain signal integrity."}
             </DialogDescription>
           </div>

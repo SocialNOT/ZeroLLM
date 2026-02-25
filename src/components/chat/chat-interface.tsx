@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -74,6 +75,7 @@ export function ChatInterface() {
   const connection = connections.find(c => c.id === activeConnectionId) || connections[0];
 
   const isGuest = currentUserRole === 'Viewer';
+  const showTimer = isGuest && aiMode === 'online';
 
   useEffect(() => {
     setMounted(true);
@@ -82,7 +84,7 @@ export function ChatInterface() {
       const now = new Date();
       setCurrentTime(now);
       
-      if (isGuest && sessionStartTime) {
+      if (showTimer && sessionStartTime) {
         const ONE_HOUR = 3600000;
         const expiryTime = sessionStartTime + ONE_HOUR;
         const remaining = Math.max(0, expiryTime - now.getTime());
@@ -93,7 +95,7 @@ export function ChatInterface() {
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [sessionStartTime, isGuest]);
+  }, [sessionStartTime, showTimer]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -202,7 +204,7 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
-        {isGuest && (
+        {showTimer && (
           <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/10 z-30">
             <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-full border-2 border-primary">
               <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none">TTL:</span>
@@ -211,7 +213,7 @@ export function ChatInterface() {
             </div>
             <Link href="/auth/login">
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
-                <span className="text-[7px] font-black uppercase tracking-widest leading-none">Sign In</span>
+                <span className="text-[7px] font-black uppercase tracking-widest leading-none">Upgrade</span>
                 <LogIn size={10} />
               </div>
             </Link>
@@ -296,7 +298,7 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
           <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8 h-full">
             {session.messages.length === 0 ? (
-              <div className="flex flex-1 flex-col items-center justify-center py-4 sm:py-8 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full">
+              <div className="flex flex-1 flex-col items-center justify-center py-4 sm:py-8 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full overflow-hidden">
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter leading-none uppercase px-4">Neural Node Synchronized</h2>
