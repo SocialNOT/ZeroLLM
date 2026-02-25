@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -15,34 +16,20 @@ import { useAppStore } from "@/store/use-app-store";
 import { 
   Settings2, 
   Server, 
-  Shield, 
-  Database, 
-  Cpu, 
   RefreshCw, 
   Loader2, 
-  Wifi, 
-  WifiOff, 
   Zap, 
-  Key,
-  Activity,
-  Lock,
-  Box,
-  Fingerprint,
-  ChevronDown,
+  Cpu,
   Terminal,
   Brain,
   Eye,
   Microscope,
-  Layers,
-  ArrowUpRight,
-  Sparkles,
-  ShieldCheck,
-  ActivitySquare,
+  Globe,
   Cloud,
   Laptop,
-  Globe
+  ShieldCheck,
+  Database
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -102,32 +89,36 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const getModelCapabilities = (modelId: string) => {
     const id = modelId.toLowerCase();
     const caps = [];
+    
+    // Tools logic
     if (id.includes('llama') || id.includes('qwen') || id.includes('gemma') || id.includes('liquid') || id.includes('gemini')) {
-      caps.push({ label: 'Tools', icon: <Terminal size={8} /> });
+      caps.push({ label: 'Tool Calling', color: 'text-blue-600', glow: 'bg-blue-500' });
     }
+    
+    // Thinking logic
     if (id.includes('deepseek') || id.includes('r1') || id.includes('o1') || id.includes('gemini')) {
-      caps.push({ label: 'Thinking', icon: <Brain size={8} /> });
+      caps.push({ label: 'Deep Think', color: 'text-purple-600', glow: 'bg-purple-500' });
     }
+    
+    // Vision logic
     if (id.includes('vision') || id.includes('vl') || id.includes('gemini')) {
-      caps.push({ label: 'Vision', icon: <Eye size={8} /> });
+      caps.push({ label: 'Vision', color: 'text-pink-600', glow: 'bg-pink-500' });
     }
-    if (id.includes('rag') || id.includes('nomic')) {
-      caps.push({ label: 'RAG', icon: <Microscope size={8} /> });
+    
+    // RAG logic
+    if (id.includes('rag') || id.includes('nomic') || id.includes('embed')) {
+      caps.push({ label: 'RAG Native', color: 'text-emerald-600', glow: 'bg-emerald-500' });
     }
-    return caps.length > 0 ? caps : [{ label: 'General', icon: <Zap size={8} /> }];
+
+    if (caps.length === 0) {
+      caps.push({ label: 'General Logic', color: 'text-primary', glow: 'bg-primary' });
+    }
+    
+    return caps;
   };
 
-  const getModelGlow = (modelId: string) => {
-    const id = modelId.toLowerCase();
-    if (id.includes('gemini')) return "hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] border-primary/20";
-    if (id.includes('deepseek') || id.includes('r1')) return "hover:shadow-[0_0_15px_rgba(147,51,234,0.3)] border-purple-500/20";
-    if (id.includes('llama')) return "hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] border-blue-500/20";
-    if (id.includes('qwen')) return "hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] border-orange-500/20";
-    if (id.includes('vision') || id.includes('vl')) return "hover:shadow-[0_0_15px_rgba(236,72,153,0.3)] border-pink-500/20";
-    return "hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] border-emerald-500/20";
-  };
-
-  const getModelPulse = (modelId: string) => {
+  const getModelStatusColor = (modelId: string, isActive: boolean) => {
+    if (!isActive) return "bg-slate-200";
     const id = modelId.toLowerCase();
     if (id.includes('gemini')) return "bg-primary";
     if (id.includes('deepseek') || id.includes('r1')) return "bg-purple-500";
@@ -136,13 +127,21 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     return "bg-emerald-500";
   };
 
+  const getModelGlowEffect = (modelId: string, isActive: boolean) => {
+    if (!isActive) return "border-slate-100";
+    const id = modelId.toLowerCase();
+    if (id.includes('gemini')) return "border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]";
+    if (id.includes('deepseek') || id.includes('r1')) return "border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.1)]";
+    return "border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]";
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
       <DialogContent className="max-w-2xl w-[95vw] sm:w-full border-primary/10 bg-white/95 backdrop-blur-3xl shadow-[0_30px_100px_rgba(0,0,0,0.1)] rounded-none p-0 overflow-hidden outline-none gap-0 border">
-        <div className="flex flex-col max-h-[75vh]">
+        <div className="flex flex-col max-h-[85vh]">
           <header className="p-4 sm:p-6 bg-white/50 border-b border-primary/5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-none bg-primary text-white shadow-lg shadow-primary/20">
@@ -276,46 +275,58 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {(aiMode === 'online' ? ['gemini-2.5-flash'] : availableModels).map(model => {
                         const caps = getModelCapabilities(model);
-                        const glowClass = getModelGlow(model);
-                        const pulseColor = getModelPulse(model);
                         const isActive = aiMode === 'online' ? true : (conn?.modelId === model);
+                        const statusColor = getModelStatusColor(model, isActive);
+                        const borderClass = getModelGlowEffect(model, isActive);
                         
                         return (
                           <div 
                             key={model}
                             className={cn(
-                              "relative flex flex-col p-3 rounded-none border transition-all duration-300 group overflow-hidden bg-white cursor-default",
-                              isActive ? "ring-2 ring-primary border-transparent" : "border-primary/5 hover:bg-primary/5",
-                              glowClass
+                              "relative flex flex-col p-4 rounded-none border transition-all duration-300 group overflow-hidden bg-white",
+                              isActive ? "ring-2 ring-primary border-transparent" : borderClass,
+                              "hover:shadow-lg"
                             )}
                           >
-                            <div className="flex items-start justify-between mb-2">
-                              <div className={cn("h-1.5 w-1.5 rounded-none mt-1", pulseColor, isActive && "animate-ping")} />
-                              <div className="flex gap-1">
-                                {caps.slice(0, 2).map((cap, i) => (
-                                  <div key={i} title={cap.label} className="text-slate-300 group-hover:text-primary transition-colors">
-                                    {cap.icon}
-                                  </div>
-                                ))}
-                              </div>
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight truncate flex-1 pr-2">
+                                {model}
+                              </span>
+                              <div className={cn("h-2.5 w-2.5 rounded-none shrink-0", statusColor, isActive && "animate-pulse shadow-[0_0_8px_currentColor]")} />
                             </div>
                             
-                            <span className="text-[9px] font-bold text-slate-700 truncate mb-3 group-hover:text-primary transition-colors">{model}</span>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {caps.map((cap, i) => (
+                                <div key={i} className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded-none border border-slate-100">
+                                  <div className={cn("h-1 w-1 rounded-none", cap.glow, "animate-pulse")} />
+                                  <span className={cn("text-[7px] font-black uppercase tracking-widest", cap.color)}>
+                                    {cap.label}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                             
                             <Button 
                               size="sm"
                               variant={isActive ? "default" : "outline"}
                               className={cn(
-                                "h-6 w-full text-[7px] font-bold uppercase rounded-none transition-all",
-                                isActive ? "bg-primary text-white" : "text-primary border-primary/10 hover:bg-primary/5 hover:text-primary"
+                                "h-8 w-full text-[8px] font-black uppercase rounded-none transition-all gap-2",
+                                isActive 
+                                  ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+                                  : "text-slate-900 border-slate-200 hover:bg-slate-50 hover:border-slate-900"
                               )}
                               onClick={(e) => aiMode === 'offline' && handleLoadModel(model, e)}
                               disabled={(isModelLoading && isActive) || aiMode === 'online'}
                             >
-                              {isModelLoading && isActive ? <Loader2 className="animate-spin h-2 w-2" /> : isActive ? "Active" : "Energize"}
+                              {isModelLoading && isActive ? (
+                                <Loader2 className="animate-spin h-3 w-3" />
+                              ) : (
+                                <Zap size={10} className={isActive ? "fill-white" : ""} />
+                              )}
+                              {isActive ? "Orchestration Active" : "Energize Node"}
                             </Button>
                           </div>
                         );
