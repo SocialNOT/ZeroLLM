@@ -125,7 +125,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
-        <Card className="border-none bg-white shadow-[0_30px_90px_rgba(0,0,0,0.08)] rounded-[2.5rem] overflow-hidden">
+        <Card className="border-none bg-white shadow-[0_30px_90px_rgba(0,0,0,0.08)] rounded-none overflow-hidden">
           <CardHeader className="pb-2 pt-10 text-center">
             <div className="mb-6">
               <h1 className="logo-shimmer font-headline text-4xl font-black tracking-tighter leading-none select-none">
@@ -136,7 +136,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <CardTitle className="text-lg font-bold text-slate-900 mt-4">
+            <CardTitle className="text-lg font-bold text-slate-900 mt-4 uppercase">
               {isRegistering ? "Establish Identity" : "Energize Session"}
             </CardTitle>
             <CardDescription className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
@@ -147,34 +147,34 @@ export default function LoginPage() {
           <CardContent className="space-y-3">
             <form onSubmit={handleEmailAuth} className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Identifier</Label>
+                <Label className="text-[8px] font-black uppercase tracking-widest text-slate-900 ml-1">Email Identifier</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-900" size={12} />
                   <Input 
                     type="email" 
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="name@node.com"
-                    className="pl-9 rounded-xl border-slate-100 bg-slate-50 text-[11px] font-bold h-10" 
+                    className="pl-9 rounded-none border-slate-900 bg-slate-50 text-[11px] font-bold h-10 placeholder:text-slate-300" 
                   />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Access Key</Label>
+                <Label className="text-[8px] font-black uppercase tracking-widest text-slate-900 ml-1">Access Key</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-900" size={12} />
                   <Input 
                     type="password" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    className="pl-9 rounded-xl border-slate-100 bg-slate-50 text-[11px] font-bold h-10" 
+                    className="pl-9 rounded-none border-slate-900 bg-slate-50 text-[11px] font-bold h-10 placeholder:text-slate-300" 
                   />
                 </div>
               </div>
-              <Button disabled={isLoading} className="w-full h-10 rounded-xl font-bold uppercase tracking-widest text-[9px] gap-2 shadow-lg shadow-primary/10">
+              <Button disabled={isLoading} className="w-full h-10 rounded-none font-bold uppercase tracking-widest text-[9px] gap-2 shadow-lg shadow-primary/10">
                 {isLoading ? <Loader2 className="animate-spin h-3 w-3" /> : <LogIn size={14} />}
                 {isRegistering ? "Create Node" : "Authenticate"}
               </Button>
@@ -186,7 +186,7 @@ export default function LoginPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <Button onClick={handleGoogleAuth} variant="outline" className="h-10 rounded-xl font-bold uppercase tracking-widest text-[8px] gap-2 border-slate-100 px-2">
+              <Button onClick={handleGoogleAuth} variant="outline" className="h-10 rounded-none font-bold uppercase tracking-widest text-[8px] gap-2 border-slate-900 px-2 text-slate-900">
                 <svg className="h-3 w-3" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -195,14 +195,14 @@ export default function LoginPage() {
                 </svg>
                 Google
               </Button>
-              <Button onClick={handleGuestAuth} variant="outline" className="h-10 rounded-xl font-bold uppercase tracking-widest text-[8px] gap-2 border-slate-100 px-2">
-                <UserCircle size={14} className="text-slate-400" />
+              <Button onClick={handleGuestAuth} variant="outline" className="h-10 rounded-none font-bold uppercase tracking-widest text-[8px] gap-2 border-slate-900 px-2 text-slate-900">
+                <UserCircle size={14} className="text-slate-900" />
                 Guest Node
               </Button>
             </div>
           </CardContent>
           
-          <CardFooter className="bg-slate-50/50 border-t border-slate-100 flex justify-center py-3">
+          <CardFooter className="bg-slate-50 border-t border-slate-100 flex justify-center py-3">
             <button 
               onClick={() => setIsRegistering(!isRegistering)}
               className="text-[8px] font-bold uppercase tracking-widest text-primary hover:underline"
@@ -212,16 +212,16 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
 
-        <div className="text-center opacity-60">
+        <div className="text-center opacity-100">
           <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-            <span className="text-slate-400">Node crafted by</span>
+            <span className="text-slate-900">Node crafted by</span>
             <a 
               href="https://www.eastindiaautomation.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="animate-color-shift inline-block"
+              className="logo-shimmer inline-block font-black"
             >
-              Rajib Singh
+              ProfessorAI
             </a>
           </p>
         </div>

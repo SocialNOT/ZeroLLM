@@ -36,19 +36,19 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // Login Guard: Direct to login if no user session found
+  // IDENTITY GUARD: Absolute redirection to authentication node if signal is lost
   useEffect(() => {
     if (mounted && !authLoading && !user) {
       router.push('/auth/login');
     }
   }, [user, authLoading, mounted, router]);
 
-  // Initial Sequence Logic
+  // INITIAL SEQUENCE: Orchestrate engine setup and protocol alignment
   useEffect(() => {
     if (isConfigured && mounted && user) {
       checkConnection();
       
-      // If offline mode is energized for the first time, show control step
+      // Control Step only energized for local environments
       if (aiMode === 'offline' && !showControlStep && sessions.length === 0) {
         setShowControlStep(true);
       }
@@ -64,12 +64,14 @@ export default function Home() {
   if (!mounted || authLoading || !user) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-white">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary animate-pulse">Syncing Core Identity...</p>
+        </div>
       </div>
     );
   }
 
-  // Determine actual theme class
   let themeClass = "";
   if (activeTheme === 'auto') {
     const day = (new Date().getDay() + 6) % 7; 
@@ -85,35 +87,35 @@ export default function Home() {
           <SidebarProvider>
             <SessionGuard />
             
-            {/* Stage 2: Engine Handshake */}
+            {/* STAGE 2: Engine Handshake */}
             {!isConfigured && <SetupOverlay />}
 
-            {/* Stage 3: Protocol Tuning (Offline Only) */}
+            {/* STAGE 3: Protocol Tuning (Offline Nodes Only) */}
             {isConfigured && showControlStep && aiMode === 'offline' && (
               <div className="fixed inset-0 z-[110] flex items-center justify-center bg-white/95 backdrop-blur-3xl p-4">
                 <div className="max-w-sm w-full space-y-8 animate-in fade-in zoom-in duration-500 text-center">
                   <div className="space-y-2">
-                    <div className="h-16 w-16 bg-primary/5 rounded-2xl mx-auto flex items-center justify-center text-primary border-2 border-primary/10">
+                    <div className="h-16 w-16 bg-primary/5 rounded-none mx-auto flex items-center justify-center text-primary border-2 border-primary/10">
                       <Sliders size={32} />
                     </div>
                     <h2 className="text-2xl font-black tracking-tighter text-slate-900 uppercase">Protocol Tuning</h2>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Configure Identity & Architecture for Offline Node</p>
                   </div>
                   
-                  <div className="p-6 bg-slate-50 border-2 border-slate-100 rounded-[2.5rem] text-left space-y-4">
+                  <div className="p-6 bg-slate-50 border-2 border-slate-900 rounded-none text-left space-y-4">
                     <div className="space-y-1">
                       <span className="text-[8px] font-black uppercase text-primary">Status</span>
-                      <p className="text-[11px] font-bold text-slate-900 leading-tight">Local Engine energized. Persistence requires protocol alignment.</p>
+                      <p className="text-[11px] font-bold text-slate-900 leading-tight uppercase">Local Engine Energized. Persistence requires protocol alignment.</p>
                     </div>
                     <div className="space-y-1">
                       <span className="text-[8px] font-black uppercase text-primary">Access</span>
-                      <p className="text-[11px] font-bold text-slate-900 leading-tight">Unlimited Local Compute active. No temporal constraints detected.</p>
+                      <p className="text-[11px] font-bold text-slate-900 leading-tight uppercase">Unlimited Local Compute Active. No temporal constraints detected.</p>
                     </div>
                   </div>
 
                   <Button 
                     onClick={() => setShowControlStep(false)}
-                    className="w-full h-14 rounded-2xl bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-primary/20 hover:scale-105 transition-all gap-3"
+                    className="w-full h-14 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-primary/20 hover:scale-105 transition-all gap-3"
                   >
                     Enter Command Hub
                     <ChevronRight size={16} />
@@ -122,7 +124,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Stage 4: Neural Dashboard */}
+            {/* STAGE 4: Neural Command Hub */}
             <div className="flex h-full w-full overflow-hidden bg-background">
               <AppSidebar />
               <SidebarInset className="flex flex-col h-full overflow-hidden bg-transparent">
@@ -131,14 +133,14 @@ export default function Home() {
                 </main>
                 <footer className="flex-shrink-0 w-full py-1.5 bg-background border-t border-border/50 text-center z-40 select-none">
                   <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-                    <span className="text-foreground/80">Made with ❤️ by</span>
+                    <span className="text-foreground/80">Beta Orchestration Node by</span>
                     <a 
                       href="https://www.eastindiaautomation.com" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="logo-shimmer hover:scale-105 transition-transform inline-block"
+                      className="logo-shimmer hover:scale-105 transition-transform inline-block font-black"
                     >
-                      Rajib Singh
+                      ProfessorAI
                     </a>
                   </p>
                 </footer>
