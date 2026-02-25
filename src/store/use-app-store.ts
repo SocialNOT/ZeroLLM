@@ -12,6 +12,7 @@ interface AppState {
   activeWorkspaceId: string | null;
   connections: ModelConnection[];
   activeConnectionId: string | null;
+  activeOnlineModelId: string;
   personas: Persona[];
   frameworks: Framework[];
   linguisticControls: LinguisticControl[];
@@ -40,6 +41,7 @@ interface AppState {
   addConnection: (c: ModelConnection) => void;
   updateConnection: (id: string, c: Partial<ModelConnection>) => void;
   setActiveConnection: (id: string | null) => void;
+  setActiveOnlineModel: (id: string) => void;
   
   addPersona: (p: Persona) => void;
   updatePersona: (id: string, updates: Partial<Persona>) => void;
@@ -81,6 +83,13 @@ interface AppState {
   cycleTheme: () => void;
 }
 
+const GEMINI_MODELS = [
+  'googleai/gemini-2.5-flash',
+  'googleai/gemini-2.0-flash',
+  'googleai/gemini-2.0-flash-thinking-exp',
+  'googleai/gemini-2.0-pro-exp-02-05'
+];
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -91,6 +100,7 @@ export const useAppStore = create<AppState>()(
       activeWorkspaceId: 'ws-1',
       connections: [],
       activeConnectionId: null,
+      activeOnlineModelId: 'googleai/gemini-2.5-flash',
       
       personas: PERSONAS,
       frameworks: FRAMEWORKS,
@@ -137,6 +147,8 @@ export const useAppStore = create<AppState>()(
         get().checkConnection();
       },
 
+      setActiveOnlineModel: (id) => set({ activeOnlineModelId: id }),
+
       addPersona: (p) => set((state) => ({ personas: [...state.personas, { ...p, id: `p-${Date.now()}`, isCustom: true }] })),
       updatePersona: (id, updates) => set((state) => ({
         personas: state.personas.map(p => p.id === id ? { ...p, ...updates } : p)
@@ -169,6 +181,7 @@ export const useAppStore = create<AppState>()(
       checkConnection: async () => {
         if (get().aiMode === 'online') {
           set({ connectionStatus: 'online' });
+          await get().refreshModels();
           return;
         }
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
@@ -186,7 +199,7 @@ export const useAppStore = create<AppState>()(
 
       refreshModels: async () => {
         if (get().aiMode === 'online') {
-          set({ availableModels: ['gemini-2.5-flash'] });
+          set({ availableModels: GEMINI_MODELS });
           return;
         }
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
@@ -198,7 +211,10 @@ export const useAppStore = create<AppState>()(
       },
 
       triggerModelLoad: async (modelId) => {
-        if (get().aiMode === 'online') return true;
+        if (get().aiMode === 'online') {
+          get().setActiveOnlineModel(modelId);
+          return true;
+        }
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
         if (!activeConn) return false;
         set({ isModelLoading: true });
@@ -215,7 +231,13 @@ export const useAppStore = create<AppState>()(
 
       completeInitialSetup: async (baseUrl, modelId, apiKey, mode = 'online') => {
         if (mode === 'online') {
-          set({ aiMode: 'online', isConfigured: true, connectionStatus: 'online' });
+          set({ 
+            aiMode: 'online', 
+            isConfigured: true, 
+            connectionStatus: 'online',
+            activeOnlineModelId: modelId || GEMINI_MODELS[0]
+          });
+          await get().refreshModels();
           return true;
         }
         const id = 'default-conn';
@@ -254,7 +276,7 @@ export const useAppStore = create<AppState>()(
           workspaceId,
           title: 'New Conversation',
           messages: [],
-          activeModelId: get().activeConnectionId || '',
+          activeModelId: get().aiMode === 'online' ? get().activeOnlineModelId : (get().activeConnectionId || ''),
           personaId: get().personas[0]?.id || '',
           settings: {
             temperature: 0.7,
@@ -438,7 +460,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     { 
-      name: 'zerogpt-storage-v12',
+      name: 'zerogpt-storage-v13',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -50,6 +51,7 @@ export function ChatInterface() {
     linguisticControls,
     connections,
     activeConnectionId,
+    activeOnlineModelId,
     currentUserRole,
     connectionStatus,
     setActiveParameterTab,
@@ -142,7 +144,7 @@ export function ChatInterface() {
 
       const responseText = await personaDrivenChat({
         baseUrl: aiMode === 'online' ? 'genkit' : (connection?.baseUrl || ''),
-        modelId: aiMode === 'online' ? 'gemini-2.5-flash' : (connection?.modelId || ''),
+        modelId: aiMode === 'online' ? activeOnlineModelId : (connection?.modelId || ''),
         systemPrompt: combinedSystemPrompt,
         userMessage: textToSend,
         temperature: session.settings.temperature,
@@ -234,7 +236,7 @@ export function ChatInterface() {
                     {aiMode === 'online' ? "Cloud" : "Local"}
                   </span>
                   <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
-                    {aiMode === 'online' ? "Gemini" : (connection?.modelId || "Node")}
+                    {aiMode === 'online' ? activeOnlineModelId.split('/').pop() : (connection?.modelId || "Node")}
                   </span>
                 </div>
               </button>
@@ -242,13 +244,13 @@ export function ChatInterface() {
 
             {mounted && currentTime && (
               <div className="flex flex-col items-center justify-center leading-none flex-1 min-w-0 px-1">
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
                   {currentTime.toLocaleDateString('en-IN', { weekday: 'long' }).toUpperCase()}
                 </span>
-                <span className="text-[9px] sm:text-[11px] font-black font-mono tracking-tighter text-slate-900">
+                <span className="text-[11px] font-black font-mono tracking-tighter text-slate-900">
                   {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                 </span>
-                <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary mt-0.5">
                   {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}
                 </span>
               </div>

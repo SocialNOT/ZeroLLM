@@ -20,10 +20,6 @@ import {
   Loader2, 
   Zap, 
   Cpu,
-  Terminal,
-  Brain,
-  Eye,
-  Microscope,
   Globe,
   Cloud,
   Laptop,
@@ -41,6 +37,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
   const { 
     connections, 
     activeConnectionId, 
+    activeOnlineModelId,
     updateConnection, 
     availableModels, 
     connectionStatus, 
@@ -75,8 +72,6 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
   const handleLoadModel = async (modelId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (conn) updateConnection(conn.id, { modelId });
-    
     const success = await triggerModelLoad(modelId);
     if (success) {
       toast({
@@ -96,7 +91,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     }
     
     // Thinking logic
-    if (id.includes('deepseek') || id.includes('r1') || id.includes('o1') || id.includes('gemini')) {
+    if (id.includes('deepseek') || id.includes('r1') || id.includes('thinking') || id.includes('gemini-2.0-pro')) {
       caps.push({ label: 'Deep Think', color: 'text-purple-600', glow: 'bg-purple-500' });
     }
     
@@ -195,7 +190,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
 
             <Card className={cn(
               "border-primary/5 bg-white shadow-sm rounded-none overflow-hidden transition-all duration-500",
-              activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
+              activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-100"
             )}>
               <div 
                 className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 transition-colors cursor-pointer group"
@@ -210,7 +205,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                       {aiMode === 'online' ? 'Cloud Infrastructure' : 'Engine Node'}
                     </h3>
                     <span className="text-[7px] text-primary font-bold uppercase mt-1">
-                      {aiMode === 'online' ? 'Gemini 2.5 Flash Energized' : `Network Protocol: ${connectionStatus === 'online' ? 'Synchronized' : 'Offline'}`}
+                      {aiMode === 'online' ? `${availableModels.length} Cloud Nodes Active` : `Network Protocol: ${connectionStatus === 'online' ? 'Synchronized' : 'Offline'}`}
                     </span>
                   </div>
                 </div>
@@ -268,17 +263,17 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center justify-between px-1">
                       <div className="flex items-center gap-2">
                         <Cpu size={12} className="text-primary" />
-                        <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine</span>
+                        <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine Selection</span>
                       </div>
                       <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary rounded-none">
-                        {aiMode === 'online' ? '1 Active Node' : `${availableModels.length} Indexed Models`}
+                        {availableModels.length} Indexed Models
                       </Badge>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {(aiMode === 'online' ? ['gemini-2.5-flash'] : availableModels).map(model => {
+                      {availableModels.map(model => {
                         const caps = getModelCapabilities(model);
-                        const isActive = aiMode === 'online' ? true : (conn?.modelId === model);
+                        const isActive = aiMode === 'online' ? (activeOnlineModelId === model) : (conn?.modelId === model);
                         const statusColor = getModelStatusColor(model, isActive);
                         const borderClass = getModelGlowEffect(model, isActive);
                         
@@ -291,9 +286,9 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                               "hover:shadow-lg"
                             )}
                           >
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight truncate flex-1 pr-2">
-                                {model}
+                            <div className="flex items-start justify-between mb-3">
+                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight break-all flex-1 pr-2">
+                                {model.replace('googleai/', '')}
                               </span>
                               <div className={cn("h-2.5 w-2.5 rounded-none shrink-0", statusColor, isActive && "animate-pulse shadow-[0_0_8px_currentColor]")} />
                             </div>
@@ -318,8 +313,8 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                                   ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                                   : "text-slate-900 border-slate-200 hover:bg-slate-50 hover:border-slate-900"
                               )}
-                              onClick={(e) => aiMode === 'offline' && handleLoadModel(model, e)}
-                              disabled={(isModelLoading && isActive) || aiMode === 'online'}
+                              onClick={(e) => handleLoadModel(model, e)}
+                              disabled={isModelLoading && isActive}
                             >
                               {isModelLoading && isActive ? (
                                 <Loader2 className="animate-spin h-3 w-3" />
@@ -341,7 +336,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               <Card 
                 className={cn(
                   "border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden",
-                  activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-80 grayscale-[0.5]"
+                  activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-100"
                 )}
                 onClick={() => setActiveCard('shield')}
               >
@@ -376,7 +371,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
               <Card 
                 className={cn(
                   "border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden",
-                  activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-80 grayscale-[0.5]"
+                  activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-100"
                 )}
                 onClick={() => setActiveCard('vault')}
               >

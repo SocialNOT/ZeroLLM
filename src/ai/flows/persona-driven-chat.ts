@@ -1,3 +1,4 @@
+
 "use server";
 
 import { z } from 'genkit';
@@ -57,8 +58,14 @@ export async function personaDrivenChat(input: PersonaChatInput): Promise<string
       combinedSystemPrompt += "\n\n[SYSTEM: REASONING PROTOCOL ACTIVE]\nYou MUST show your thinking process step-by-step before providing the final answer.";
     }
 
-    // ORCHESTRATION VIA GENKIT (Gemini 2.5 Flash Node)
+    // Determine target model - ensure genkit-friendly naming if using cloud node
+    const targetModel = input.baseUrl === 'genkit' 
+      ? (input.modelId.startsWith('googleai/') ? input.modelId : `googleai/${input.modelId}`) as any
+      : undefined;
+
+    // ORCHESTRATION VIA GENKIT
     const { text } = await ai.generate({
+      model: targetModel, // Pass dynamic model ID
       system: combinedSystemPrompt,
       prompt: input.userMessage,
       history: (input.history || []).map(m => ({ role: m.role, content: [{ text: m.content }] })),
