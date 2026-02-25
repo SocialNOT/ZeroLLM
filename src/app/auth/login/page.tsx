@@ -214,7 +214,7 @@ export default function LoginPage() {
 
         <div className="text-center opacity-100">
           <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-            <span className="text-slate-900">Node crafted by</span>
+            <span className="text-slate-900">Made with ❤️</span>
             <a 
               href="https://www.eastindiaautomation.com" 
               target="_blank" 

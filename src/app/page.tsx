@@ -59,7 +59,7 @@ export default function Home() {
         setActiveSession(sessions[0].id);
       }
     }
-  }, [isConfigured, sessions.length, activeWorkspaceId, mounted, activeSessionId, createSession, setActiveSession, checkConnection, user, aiMode]);
+  }, [isConfigured, sessions.length, activeWorkspaceId, mounted, activeSessionId, createSession, setActiveSession, checkConnection, user, aiMode, showControlStep]);
 
   if (!mounted || authLoading || !user) {
     return (
@@ -133,7 +133,7 @@ export default function Home() {
                 </main>
                 <footer className="flex-shrink-0 w-full py-1.5 bg-background border-t border-border/50 text-center z-40 select-none">
                   <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-                    <span className="text-foreground/80">Node crafted by</span>
+                    <span className="text-foreground/80">Made with ❤️</span>
                     <a 
                       href="https://www.eastindiaautomation.com" 
                       target="_blank" 

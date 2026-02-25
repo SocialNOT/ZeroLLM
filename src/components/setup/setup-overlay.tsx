@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -244,12 +245,12 @@ export function SetupOverlay() {
 
         <div className="mt-6 text-center opacity-60">
           <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-            <span className="text-slate-400">Node crafted by</span>
+            <span className="text-slate-400">Made with ❤️</span>
             <a 
               href="https://www.eastindiaautomation.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="animate-color-shift inline-block"
+              className="logo-shimmer inline-block font-black"
             >
               Rajib Singh
             </a>
