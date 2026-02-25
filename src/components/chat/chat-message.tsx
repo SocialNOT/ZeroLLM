@@ -95,14 +95,14 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
-        "flex flex-col w-full max-w-[100%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all",
+        "flex flex-col w-full max-w-[95%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all",
         isAssistant 
           ? isError 
             ? "border-rose-600 bg-rose-50 shadow-rose-200/50" 
             : "border-primary bg-white shadow-primary/10" 
           : "border-accent bg-primary text-white shadow-accent/20"
       )}>
-        {/* Terminal Header Bar (Optimized for Responsiveness) */}
+        {/* Terminal Header Bar */}
         <div className={cn(
           "flex items-center gap-2 sm:gap-3 px-3 py-2 border-b-2 font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-widest select-none overflow-hidden shrink-0",
           isAssistant 
@@ -122,7 +122,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         {/* Cognitive Payload Body */}
         <div className="p-4 sm:p-6 relative overflow-hidden min-w-0">
           <div className={cn(
-            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap overflow-hidden",
+            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words break-all whitespace-pre-wrap overflow-hidden",
             isAssistant ? "text-slate-900" : "text-white"
           )}>
             {isAssistant && !isError ? (
@@ -137,7 +137,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                   li: ({...props}) => <li className="marker:text-primary marker:font-black pl-1" {...props} />,
                   strong: ({...props}) => <strong className="font-black text-primary bg-primary/5 px-1 rounded" {...props} />,
                   code: ({node, inline, children, ...props}: any) => {
-                    if (inline) return <code className="bg-primary/10 px-1.5 py-0.5 rounded text-[11px] font-mono text-primary font-black border-2 border-primary/20" {...props}>{children}</code>;
+                    if (inline) return <code className="bg-primary/10 px-1.5 py-0.5 rounded text-[11px] font-mono text-primary font-black border-2 border-primary/20 break-all" {...props}>{children}</code>;
                     return (
                       <div className="my-4 rounded-xl border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl group/code min-w-0">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-white/20">
@@ -157,7 +157,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 {message.content}
               </ReactMarkdown>
             ) : (
-              <div className="font-black break-words">{message.content}</div>
+              <div className="font-black break-words break-all">{message.content}</div>
             )}
           </div>
           
