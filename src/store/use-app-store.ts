@@ -188,28 +188,30 @@ export const useAppStore = create<AppState>()(
       setActiveSession: (id) => set({ activeSessionId: id }),
       setRole: (role) => set({ currentUserRole: role }),
       setAiMode: (mode) => {
-        set({ aiMode: mode });
-        // Purge models before refreshing to ensure state purity
-        set({ availableModels: [] });
-        get().refreshModels();
+        set({ aiMode: mode, connectionStatus: 'checking', availableModels: [] });
+        get().checkConnection();
       },
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       
       checkConnection: async () => {
         if (get().aiMode === 'online') {
-          set({ connectionStatus: 'online' });
-          await get().refreshModels();
+          set({ connectionStatus: 'online', availableModels: GEMINI_MODELS });
           return;
         }
+        
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
-        if (!activeConn) return;
+        if (!activeConn) {
+          set({ connectionStatus: 'offline', availableModels: [] });
+          return;
+        }
 
         set({ connectionStatus: 'checking' });
         try {
           const isOnline = await testConnectionAction(activeConn.baseUrl, activeConn.apiKey);
           set({ connectionStatus: isOnline ? 'online' : 'offline' });
           if (isOnline) {
-            await get().refreshModels();
+            const models = await fetchModelsAction(activeConn.baseUrl, activeConn.apiKey);
+            set({ availableModels: models.map(m => m.id) });
           } else {
             set({ availableModels: [] });
           }
@@ -219,18 +221,19 @@ export const useAppStore = create<AppState>()(
       },
 
       refreshModels: async () => {
-        if (get().aiMode === 'online') {
+        const { aiMode, connectionStatus, activeConnectionId, connections } = get();
+        
+        if (aiMode === 'online') {
           set({ availableModels: GEMINI_MODELS });
           return;
         }
         
-        // In Offline mode, only refresh if the connection status is online
-        if (get().connectionStatus !== 'online') {
+        if (connectionStatus !== 'online') {
           set({ availableModels: [] });
           return;
         }
 
-        const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
+        const activeConn = connections.find(c => c.id === activeConnectionId);
         if (!activeConn) return;
         
         try {
@@ -266,11 +269,12 @@ export const useAppStore = create<AppState>()(
             aiMode: 'online', 
             isConfigured: true, 
             connectionStatus: 'online',
-            activeOnlineModelId: modelId || GEMINI_MODELS[0]
+            activeOnlineModelId: modelId || GEMINI_MODELS[0],
+            availableModels: GEMINI_MODELS
           });
-          await get().refreshModels();
           return true;
         }
+        
         const id = 'default-conn';
         set({ connectionStatus: 'checking' });
         try {
@@ -285,6 +289,7 @@ export const useAppStore = create<AppState>()(
             contextWindow: 4096,
             status: isOnline ? 'online' : 'offline'
           };
+          
           set({ 
             connections: [newConn], 
             activeConnectionId: id,
@@ -292,23 +297,31 @@ export const useAppStore = create<AppState>()(
             aiMode: 'offline',
             connectionStatus: isOnline ? 'online' : 'offline'
           });
-          if (isOnline) await get().refreshModels();
+          
+          if (isOnline) {
+            const models = await fetchModelsAction(baseUrl, apiKey);
+            set({ availableModels: models.map(m => m.id) });
+          }
+          
           return isOnline;
         } catch (err) {
-          set({ connectionStatus: 'offline' });
+          set({ connectionStatus: 'offline', availableModels: [] });
           return false;
         }
       },
 
       createSession: (workspaceId) => {
         const id = Math.random().toString(36).substring(7);
+        const { aiMode, activeOnlineModelId, activeConnectionId, connections, personas } = get();
+        const activeConn = connections.find(c => c.id === activeConnectionId);
+        
         const newSession: ChatSession = {
           id,
           workspaceId,
           title: 'New Conversation',
           messages: [],
-          activeModelId: get().aiMode === 'online' ? get().activeOnlineModelId : (get().activeConnectionId || ''),
-          personaId: get().personas[0]?.id || '',
+          activeModelId: aiMode === 'online' ? activeOnlineModelId : (activeConn?.modelId || ''),
+          personaId: personas[0]?.id || '',
           settings: {
             temperature: 0.7,
             topP: 0.9,
@@ -489,7 +502,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     { 
-      name: 'zerogpt-storage-v14',
+      name: 'zerogpt-storage-v15',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {

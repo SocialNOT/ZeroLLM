@@ -5,7 +5,7 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle,
+  DialogTitle, 
   DialogDescription
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -73,7 +73,7 @@ export function SettingsDialog() {
     }
   }, [connectionStatus]);
 
-  const handleRefresh = async (e?: React.MouseEvent) => {
+  const handleConnect = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (conn) {
       updateConnection(conn.id, { baseUrl: urlInput, apiKey: tokenInput });
@@ -226,12 +226,12 @@ export function SettingsDialog() {
                     </span>
                   </div>
                 </div>
-                {activeCard === 'engine' && aiMode === 'offline' && connectionStatus === 'online' && (
+                {activeCard === 'engine' && aiMode === 'offline' && (
                   <Button 
                     size="sm" 
                     variant="secondary" 
                     className="h-7 text-[8px] font-bold uppercase rounded-none gap-1.5 px-2"
-                    onClick={handleRefresh}
+                    onClick={handleConnect}
                     disabled={connectionStatus === 'checking'}
                   >
                     {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={10} />}
@@ -267,7 +267,7 @@ export function SettingsDialog() {
                       </div>
                       
                       <Button 
-                        onClick={() => handleRefresh()}
+                        onClick={() => handleConnect()}
                         disabled={connectionStatus === 'checking'}
                         className="w-full h-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] gap-2"
                       >
@@ -275,7 +275,7 @@ export function SettingsDialog() {
                         {connectionStatus === 'online' ? "Establish New Neural Connection" : "Connect to Local Engine"}
                       </Button>
 
-                      {connectionStatus !== 'online' && (
+                      {connectionStatus === 'offline' && (
                         <div className="p-4 bg-rose-50 border border-rose-100 flex items-center gap-3">
                           <WifiOff size={16} className="text-rose-500" />
                           <p className="text-[9px] font-bold text-rose-600 uppercase">Handshake Required. Establish connection to index local models.</p>

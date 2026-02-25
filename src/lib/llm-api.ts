@@ -1,3 +1,4 @@
+
 /**
  * Professional LLM Utility for local/remote engine interactions.
  * Optimized for server-side execution to bypass browser CORS/Mixed Content.
@@ -21,6 +22,15 @@ function normalizeUrl(url: string): string {
 async function safeJsonParse(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
+    // Some engines might return JSON with incorrect content type, try anyway if status OK
+    if (response.ok) {
+      try {
+        const text = await response.text();
+        return JSON.parse(text);
+      } catch (e) {
+        return null;
+      }
+    }
     return null;
   }
   try {
@@ -95,8 +105,10 @@ export async function testConnection(baseUrl: string, apiKey?: string): Promise<
   if (!baseUrl || baseUrl.length < 5) return false;
   const normalizedBase = normalizeUrl(baseUrl);
   
+  // High-fidelity endpoint testing sequence
   const endpoints = [
     joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models'),
+    joinPath(normalizedBase, '/api/tags'), // Ollama native
     normalizedBase
   ];
 
@@ -105,7 +117,7 @@ export async function testConnection(baseUrl: string, apiKey?: string): Promise<
       const response = await fetch(url, {
         method: 'GET',
         headers: getHeaders(apiKey),
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(4000)
       });
       if (response.ok) return true;
     } catch (e) {}
@@ -116,43 +128,55 @@ export async function testConnection(baseUrl: string, apiKey?: string): Promise<
 export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLMModel[]> {
   if (!baseUrl) return [];
   const normalizedBase = normalizeUrl(baseUrl);
-  const url = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models');
   
+  // Try OpenAI compatible first
+  const v1Url = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models');
   try {
-    const response = await fetch(url, {
+    const response = await fetch(v1Url, {
       method: 'GET',
       headers: getHeaders(apiKey),
       signal: AbortSignal.timeout(5000)
     });
     
     const data = await safeJsonParse(response);
-    if (!data) return [];
-    
-    if (data.data && Array.isArray(data.data)) return data.data;
-    if (data.models && Array.isArray(data.models)) return data.models.map((m: any) => ({ id: m.name || m.id }));
-    if (Array.isArray(data)) return data.map((m: any) => ({ id: m.id || m.name }));
+    if (data && data.data && Array.isArray(data.data)) return data.data;
+    if (data && data.models && Array.isArray(data.models)) return data.models.map((m: any) => ({ id: m.name || m.id }));
   } catch (e) {}
+
+  // Fallback to Ollama native
+  const ollamaUrl = joinPath(normalizedBase, '/api/tags');
+  try {
+    const response = await fetch(ollamaUrl, {
+      method: 'GET',
+      headers: getHeaders(apiKey),
+      signal: AbortSignal.timeout(5000)
+    });
+    const data = await safeJsonParse(response);
+    if (data && data.models && Array.isArray(data.models)) {
+      return data.models.map((m: any) => ({ id: m.name || m.id }));
+    }
+  } catch (e) {}
+
   return [];
 }
 
 export async function loadModel(baseUrl: string, modelId: string, apiKey?: string): Promise<boolean> {
   if (!baseUrl || !modelId) return false;
   const base = normalizeUrl(baseUrl).replace(/\/v1$/, '');
-  const loadUrl = joinPath(base, '/api/v1/models/load');
   
+  // LM Studio specific load endpoint
+  const loadUrl = joinPath(base, '/api/v1/models/load');
   try {
     const response = await fetch(loadUrl, {
       method: 'POST',
       headers: getHeaders(apiKey),
       body: JSON.stringify({ model_key: modelId }),
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(10000)
     });
-    
-    if (response.status === 404) return true;
-    
+    if (response.status === 404) return true; // Endpoint not existing usually means auto-load is on
     return response.ok;
   } catch (e) {
-    return true; 
+    return true; // Silent success if endpoint is missing (standard behavior for many engines)
   }
 }
 
