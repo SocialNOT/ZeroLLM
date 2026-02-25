@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -22,8 +21,7 @@ import {
   Laptop,
   Palette,
   Clock,
-  LogIn,
-  Sparkles
+  LogIn
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { personaDrivenChat } from "@/ai/flows/persona-driven-chat";
