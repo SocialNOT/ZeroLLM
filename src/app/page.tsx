@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -44,8 +43,6 @@ export default function Home() {
   // Determine actual theme class
   let themeClass = "";
   if (activeTheme === 'auto') {
-    // 0 is Sunday, 1 is Monday in JS getDay()
-    // We want Monday to be index 0
     const day = (new Date().getDay() + 6) % 7; 
     themeClass = `theme-${day}`;
   } else {
@@ -53,34 +50,36 @@ export default function Home() {
   }
 
   return (
-    <div className={cn("h-svh w-full overflow-hidden", themeClass)}>
-      <SidebarProvider>
-        <SessionGuard />
-        {!isConfigured && <SetupOverlay />}
-        <div className="flex h-svh w-full overflow-hidden bg-background">
-          <div className="relative flex h-full w-full overflow-hidden sleek-animated-border rounded-none bg-card">
-            <AppSidebar />
-            <SidebarInset className="flex flex-col h-full overflow-hidden bg-transparent">
-              <main className="flex-1 overflow-hidden relative">
-                <ChatInterface />
-              </main>
-              <footer className="flex-shrink-0 w-full py-2 bg-card/50 backdrop-blur-md border-t border-border text-center z-40 select-none">
-                <p className="text-[9px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-                  <span className="text-foreground/60">Made with ❤️ by</span>
-                  <a 
-                    href="https://www.eastindiaautomation.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="logo-shimmer hover:scale-105 transition-transform inline-block"
-                  >
-                    Rajib Singh
-                  </a>
-                </p>
-              </footer>
-            </SidebarInset>
-          </div>
+    <div className={cn("h-svh w-full overflow-hidden transition-colors duration-500", themeClass)}>
+      <div className="sleek-animated-border-container h-full w-full">
+        <div className="app-surface flex h-full w-full">
+          <SidebarProvider>
+            <SessionGuard />
+            {!isConfigured && <SetupOverlay />}
+            <div className="flex h-full w-full overflow-hidden bg-background">
+              <AppSidebar />
+              <SidebarInset className="flex flex-col h-full overflow-hidden bg-transparent">
+                <main className="flex-1 overflow-hidden relative">
+                  <ChatInterface />
+                </main>
+                <footer className="flex-shrink-0 w-full py-1.5 bg-background border-t border-border/50 text-center z-40 select-none">
+                  <p className="text-[8px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+                    <span className="text-foreground/80">Made with ❤️ by</span>
+                    <a 
+                      href="https://www.eastindiaautomation.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="logo-shimmer hover:scale-105 transition-transform inline-block"
+                    >
+                      Rajib Singh
+                    </a>
+                  </p>
+                </footer>
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
         </div>
-      </SidebarProvider>
+      </div>
     </div>
   );
 }
