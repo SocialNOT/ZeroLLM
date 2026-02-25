@@ -295,8 +295,11 @@ export function ChatInterface() {
                   <span className={cn("text-[8px] font-black uppercase tracking-widest", connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600")}>
                     SYNC
                   </span>
-                  <span className="text-[8px] font-black text-primary font-mono opacity-80 border-l border-primary/20 pl-1.5">
+                  <span className="text-[8px] font-black text-primary font-mono opacity-80 border-l border-primary/20 pl-1.5 flex items-center gap-1.5">
                     {latency}
+                    <span className="text-[6px] font-black text-white bg-primary px-1 rounded-none py-0.5 tracking-widest">
+                      {aiMode === 'online' ? 'CLOUD' : 'LOCAL'}
+                    </span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
