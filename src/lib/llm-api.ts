@@ -1,6 +1,7 @@
 /**
  * Professional LLM Utility for local/remote engine interactions.
  * Optimized for server-side execution to bypass browser CORS/Mixed Content.
+ * Includes Dual-Stack IPv4 fallback for localhost handshake reliability.
  */
 
 export interface LLMModel {
@@ -13,7 +14,7 @@ function normalizeUrl(url: string): string {
   if (!url) return '';
   let normalized = url.trim();
   // Remove trailing slashes and common API suffixes for base testing
-  normalized = normalized.replace(/\/+$/, '').replace(/\/v1$/, '');
+  normalized = normalized.replace(/\/+$/, '').replace(/\/v1$/, '').replace(/\/api$/, '');
   
   if (!/^https?:\/\//i.test(normalized)) {
     normalized = `http://${normalized}`;
@@ -45,6 +46,31 @@ function getHeaders(apiKey?: string) {
     headers['Authorization'] = `Bearer ${apiKey.trim()}`;
   }
   return headers;
+}
+
+/**
+ * Enhanced Fetch with Dual-Stack Fallback for Localhost
+ */
+async function resilientFetch(url: string, options: RequestInit): Promise<Response> {
+  const urls = [url];
+  if (url.includes('localhost')) {
+    urls.push(url.replace('localhost', '127.0.0.1'));
+  }
+
+  let lastError: any = null;
+  for (const targetUrl of urls) {
+    try {
+      const response = await fetch(targetUrl, {
+        ...options,
+        signal: AbortSignal.timeout(5000)
+      });
+      if (response.ok) return response;
+    } catch (e) {
+      lastError = e;
+      continue;
+    }
+  }
+  throw lastError || new Error("Connection refused on all nodes.");
 }
 
 /**
@@ -86,17 +112,13 @@ export async function testConnection(baseUrl: string, apiKey?: string): Promise<
   const endpoints = [
     joinPath(base, '/api/tags'),
     joinPath(base, '/v1/models'),
-    joinPath(base, '/api/v1/models'), // LM Studio specific
+    joinPath(base, '/api/v1/models'),
     base
   ];
 
   for (const url of endpoints) {
     try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: getHeaders(apiKey),
-        signal: AbortSignal.timeout(5000)
-      });
+      const response = await resilientFetch(url, { method: 'GET', headers: getHeaders(apiKey) });
       if (response.ok) return true;
     } catch (e) {
       continue;
@@ -111,10 +133,9 @@ export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLM
   
   // 1. Try OpenAI Compatible /v1/models (Standard)
   try {
-    const response = await fetch(joinPath(base, '/v1/models'), {
+    const response = await resilientFetch(joinPath(base, '/v1/models'), {
       method: 'GET',
-      headers: getHeaders(apiKey),
-      signal: AbortSignal.timeout(5000)
+      headers: getHeaders(apiKey)
     });
     const data = await safeJsonParse(response);
     if (data && data.data && Array.isArray(data.data)) return data.data;
@@ -122,10 +143,9 @@ export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLM
 
   // 2. Try LM Studio specific /api/v1/models
   try {
-    const response = await fetch(joinPath(base, '/api/v1/models'), {
+    const response = await resilientFetch(joinPath(base, '/api/v1/models'), {
       method: 'GET',
-      headers: getHeaders(apiKey),
-      signal: AbortSignal.timeout(5000)
+      headers: getHeaders(apiKey)
     });
     const data = await safeJsonParse(response);
     if (data && data.data && Array.isArray(data.data)) return data.data;
@@ -133,10 +153,9 @@ export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLM
 
   // 3. Try Ollama /api/tags
   try {
-    const response = await fetch(joinPath(base, '/api/tags'), {
+    const response = await resilientFetch(joinPath(base, '/api/tags'), {
       method: 'GET',
-      headers: getHeaders(apiKey),
-      signal: AbortSignal.timeout(5000)
+      headers: getHeaders(apiKey)
     });
     const data = await safeJsonParse(response);
     if (data && data.models && Array.isArray(data.models)) {
@@ -151,26 +170,19 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
   if (!baseUrl || !modelId) return false;
   const base = normalizeUrl(baseUrl);
   
-  // LM Studio specific load endpoint requirements
-  // Synchronize both 'model' and 'model_key' to ensure 100% compatibility with all versions
   try {
-    const response = await fetch(joinPath(base, '/api/v1/models/load'), {
+    const response = await resilientFetch(joinPath(base, '/api/v1/models/load'), {
       method: 'POST',
       headers: getHeaders(apiKey),
       body: JSON.stringify({ 
         model: modelId, 
         model_key: modelId 
-      }),
-      signal: AbortSignal.timeout(15000)
+      })
     });
     
     if (response.ok) return true;
-    
-    // Check if it's just a 404 (endpoint doesn't exist on this engine version)
-    if (response.status === 404) return true;
+    if (response.status === 404) return true; // Endpoint doesn't exist, assume JIT loading
 
-    const err = await safeJsonParse(response);
-    console.error("Model Load Protocol Error:", err);
     return false;
   } catch (e) {
     return true; // Silent success for engines without load endpoints
