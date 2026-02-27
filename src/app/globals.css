@@ -15,7 +15,7 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 0 0% 0%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 0 0% 10%; /* FORCE HIGH CONTRAST */
+    --muted-foreground: 0 0% 10%;
     --accent: 120 100% 20%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 25%;
@@ -35,7 +35,6 @@
     --sidebar-ring: 225 100% 30%;
   }
 
-  /* Vivid Light Themes with Sidebar support */
   .theme-0 { --primary: 28 100% 50%; --accent: 124 77% 29%; --background: 28 100% 99%; --sidebar-primary: 28 100% 50%; }
   .theme-1 { --primary: 25 100% 45%; --accent: 45 100% 40%; --background: 45 100% 99%; --sidebar-primary: 25 100% 45%; }
   .theme-2 { --primary: 220 100% 45%; --accent: 185 100% 35%; --background: 220 100% 99%; --sidebar-primary: 220 100% 45%; }
@@ -65,7 +64,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: logo-shimmer 3s linear infinite;
+  animation: logo-shimmer 8s linear infinite;
 }
 
 @keyframes logo-shimmer {
@@ -91,12 +90,12 @@
   background: conic-gradient(
     from 0deg,
     transparent,
-    hsl(var(--primary)),
-    hsl(var(--accent)),
-    hsl(var(--primary)),
+    hsl(var(--primary) / 0.1),
+    hsl(var(--accent) / 0.15),
+    hsl(var(--primary) / 0.1),
     transparent
   );
-  animation: border-rotate 4s linear infinite;
+  animation: border-rotate 60s linear infinite;
   z-index: 0;
 }
 
@@ -110,15 +109,22 @@
   z-index: 1;
   width: 100%;
   height: 100%;
-  background: var(--background);
+  background: radial-gradient(circle at 50% 50%, hsl(var(--background)), hsl(var(--muted) / 0.2));
+  background-size: 200% 200%;
+  animation: atmospheric-flow 20s ease-in-out infinite;
   overflow: hidden;
 }
 
+@keyframes atmospheric-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-primary/40 rounded-full hover:bg-primary/60 transition-colors;
+  @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -134,7 +140,7 @@
   to { transform: rotate(360deg); }
 }
 .animate-spin-slow {
-  animation: spin-slow 12s linear infinite;
+  animation: spin-slow 20s linear infinite;
 }
 
 .break-words {
@@ -145,11 +151,6 @@
 
 .break-all {
   word-break: break-all;
-}
-
-.staggered-entry {
-  animation: slide-in 0.5s ease-out forwards;
-  opacity: 0;
 }
 
 @keyframes slide-in {
@@ -163,5 +164,5 @@
 }
 
 .animate-marquee {
-  animation: marquee 80s linear infinite;
+  animation: marquee 120s linear infinite;
 }

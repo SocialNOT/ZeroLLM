@@ -60,7 +60,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      "flex w-full px-2 animate-in fade-in slide-in-from-bottom-3 duration-500 min-w-0",
+      "flex w-full px-2 animate-in fade-in slide-in-from-bottom-3 duration-700 min-w-0",
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
@@ -148,7 +148,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                     key={btn.id}
                     onClick={btn.action}
                     className={cn(
-                      "flex flex-col items-center justify-center py-2 hover:bg-primary/5 group",
+                      "flex flex-col items-center justify-center py-2 hover:bg-primary/5 group transition-colors",
                       idx < 6 && "border-b-2 border-slate-100"
                     )}
                   >

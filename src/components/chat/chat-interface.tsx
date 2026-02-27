@@ -16,7 +16,6 @@ import {
   Calculator,
   Terminal,
   Database,
-  ChevronRight,
   ChevronUp,
   ChevronDown,
   Activity,
@@ -62,7 +61,6 @@ export function ChatInterface() {
     activeOnlineModelId,
     currentUserRole,
     connectionStatus,
-    setActiveParameterTab,
     toggleTool,
     sessionStartTime,
     cycleTheme,
@@ -73,7 +71,7 @@ export function ChatInterface() {
   
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isToolsExpanded, setIsToolsExpanded] = useState(true);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
   const [latency, setLatency] = useState("---");
@@ -319,7 +317,7 @@ export function ChatInterface() {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setIsSettingsOpen(true)}
-                  className="flex items-center gap-2 bg-slate-50 px-2 py-1 border-2 border-border active:scale-95"
+                  className="flex items-center gap-2 bg-slate-50 px-2 py-1 border-2 border-border active:scale-95 transition-all"
                 >
                   <div className={cn(
                     "h-6 w-6 flex items-center justify-center border-2",
@@ -354,7 +352,7 @@ export function ChatInterface() {
               </div>
               
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-8 w-8 rounded-none border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white")}>
+                <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-8 w-8 rounded-none border-2 border-border transition-all", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white")}>
                   {aiMode === 'online' ? <Cloud size={12} /> : <Laptop size={12} />}
                 </Button>
                 <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-8 w-8 rounded-none border-2 border-border">
@@ -372,20 +370,20 @@ export function ChatInterface() {
         </div>
 
         {/* VAULTED LOGIC CANVAS */}
-        <div className="flex-1 min-h-0 overflow-hidden relative p-2 sm:p-4 bg-slate-50/50">
+        <div className="flex-1 min-h-0 overflow-hidden relative p-2 sm:p-4 bg-slate-50/5">
           <div className="sleek-animated-border-container h-full w-full">
             <div className="app-surface h-full w-full flex flex-col overflow-hidden">
               <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
                 <div className="mx-auto flex w-full max-w-5xl flex-col py-6 px-4 sm:px-12">
                   {session.messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8 animate-in fade-in zoom-in duration-700">
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8 animate-in fade-in zoom-in duration-1000">
                       <div className="space-y-3">
                         <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Neural Node Synchronized</h2>
                         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Establish command sequence to begin orchestration</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {session.messages.map((msg) => (
                         <ChatMessage key={msg.id} message={msg} />
                       ))}
@@ -459,7 +457,7 @@ export function ChatInterface() {
                 type="button" 
                 onClick={toggleListening}
                 className={cn(
-                  "h-10 w-10 flex items-center justify-center",
+                  "h-10 w-10 flex items-center justify-center transition-all",
                   isListening ? "bg-rose-600 text-white animate-pulse" : "bg-slate-100 text-slate-900"
                 )}
               >
@@ -474,7 +472,7 @@ export function ChatInterface() {
                 className="h-10 border-none bg-transparent px-4 text-[15px] font-black text-slate-900 focus-visible:ring-0 placeholder:text-slate-400 placeholder:text-[9px] placeholder:tracking-widest rounded-none"
               />
 
-              <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-none bg-primary text-white shadow-xl shadow-primary/20 shrink-0">
+              <Button type="submit" disabled={!input.trim() || isTyping} className="h-10 w-10 rounded-none bg-primary text-white shadow-xl shadow-primary/20 shrink-0 transition-all active:scale-95">
                 {isTyping ? <Loader2 className="animate-spin size-4" /> : <Send size={18} />}
               </Button>
             </form>
