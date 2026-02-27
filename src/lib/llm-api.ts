@@ -139,16 +139,25 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
   if (!baseUrl || !modelId) return false;
   const base = normalizeUrl(baseUrl);
   
-  // Some engines require a load call (LM Studio)
+  // LM Studio specific load endpoint requirements
   try {
     const response = await fetch(joinPath(base, '/api/v1/models/load'), {
       method: 'POST',
       headers: getHeaders(apiKey),
-      body: JSON.stringify({ model_key: modelId }),
-      signal: AbortSignal.timeout(10000)
+      body: JSON.stringify({ 
+        model: modelId, // Required by current LM Studio versions
+        model_key: modelId // Backup for compatibility
+      }),
+      signal: AbortSignal.timeout(15000)
     });
-    return response.ok || response.status === 404; // 404 means load endpoint doesn't exist, assume success
+    
+    if (response.ok) return true;
+    
+    // Fallback error check
+    const err = await safeJsonParse(response);
+    console.error("Model Load Protocol Error:", err);
+    return response.status === 404; // Assume success if endpoint missing
   } catch (e) {
-    return true; // Silent success if endpoint is missing (standard for Ollama/OpenAI)
+    return true; // Silent success for engines without load endpoints
   }
 }

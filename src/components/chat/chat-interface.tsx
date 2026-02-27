@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
@@ -31,7 +30,8 @@ import {
   LineChart,
   Milestone,
   Microscope,
-  Sparkles
+  Sparkles,
+  Server
 } from "lucide-react";
 import { generateSpeech } from "@/ai/flows/speech-generation-flow";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -394,24 +394,27 @@ export function ChatInterface() {
 
           <div className="flex flex-col border-b-2 border-border px-2 py-2 sm:px-6 bg-white shadow-sm">
             <div className="flex items-center justify-between gap-1 mb-2">
-              <SettingsDialog>
-                <button className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-none border-2 border-border shadow-sm active:scale-95 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <button 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-none border-2 border-border shadow-sm active:scale-95"
+                >
                   <div className={cn(
                     "h-6 w-6 sm:h-7 sm:w-7 rounded-none flex items-center justify-center border-2 shrink-0",
                     connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
                   )}>
                     {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3" /> : <Activity className="h-3 w-3" />}
                   </div>
-                  <div className="flex flex-col items-start overflow-hidden leading-none">
-                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter text-primary truncate w-full">
+                  <div className="flex flex-col items-start overflow-hidden leading-none pr-2">
+                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter text-primary truncate">
                       {aiMode === 'online' ? "Cloud" : "Local"}
                     </span>
-                    <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
+                    <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate">
                       {activeModelId.split('/').pop()}
                     </span>
                   </div>
                 </button>
-              </SettingsDialog>
+              </div>
 
               {mounted && (
                 <button 
