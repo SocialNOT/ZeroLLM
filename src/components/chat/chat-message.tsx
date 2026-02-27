@@ -105,7 +105,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      "flex w-full mb-6 px-2 sm:px-0 animate-in fade-in slide-in-from-bottom-3 duration-500",
+      "flex w-full mb-6 px-2 sm:px-0 animate-in fade-in slide-in-from-bottom-3 duration-500 min-w-0",
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
@@ -132,27 +132,27 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           </div>
         </div>
 
-        {/* Message Body */}
+        {/* Message Body - CALIBRATED FOR HIGH-DENSITY SPACING */}
         <div className="p-4 sm:p-6 relative overflow-hidden min-w-0">
           <div className={cn(
-            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap text-slate-900",
+            "text-[13px] sm:text-[15px] leading-tight font-bold break-words whitespace-pre-wrap text-slate-900",
             isError && "break-all font-mono text-[11px] text-rose-600"
           )}>
             {isAssistant && !isError ? (
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  p: ({...props}) => <p className="mb-4 last:mb-0" {...props} />,
-                  h1: ({...props}) => <h1 className="text-xl font-black mb-4 mt-6 first:mt-0 text-primary border-b-2 border-primary/20 pb-1 uppercase tracking-tight" {...props} />,
-                  h2: ({...props}) => <h2 className="text-lg font-black mb-3 mt-5 first:mt-0 text-primary uppercase" {...props} />,
-                  ul: ({...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
-                  ol: ({...props}) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
+                  p: ({...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                  h1: ({...props}) => <h1 className="text-xl font-black mb-2 mt-4 first:mt-0 text-primary border-b-2 border-primary/20 pb-1 uppercase tracking-tight" {...props} />,
+                  h2: ({...props}) => <h2 className="text-lg font-black mb-1 mt-3 first:mt-0 text-primary uppercase" {...props} />,
+                  ul: ({...props}) => <ul className="list-disc pl-6 mb-2 space-y-1" {...props} />,
+                  ol: ({...props}) => <ol className="list-decimal pl-6 mb-2 space-y-1" {...props} />,
                   li: ({...props}) => <li className="marker:text-primary marker:font-black pl-1" {...props} />,
                   strong: ({...props}) => <strong className="font-black text-primary bg-primary/5 px-1 rounded" {...props} />,
                   code: ({node, inline, children, ...props}: any) => {
                     if (inline) return <code className="bg-primary/10 px-1.5 py-0.5 rounded text-[11px] font-mono text-primary font-black border-2 border-primary/20 break-all" {...props}>{children}</code>;
                     return (
-                      <div className="my-4 rounded-xl border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl min-w-0">
+                      <div className="my-2 rounded-none border-2 border-primary/30 bg-slate-950 p-4 overflow-x-auto custom-scrollbar shadow-xl min-w-0">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-white/20">
                           <span className="text-[10px] font-mono text-white font-black uppercase tracking-widest">Neural Code Node</span>
                           <Terminal size={12} className="text-white" />
@@ -161,10 +161,10 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                       </div>
                     );
                   },
-                  blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 py-2 italic my-4 text-slate-900 bg-primary/10 rounded-r-xl font-black shadow-sm" {...props} />,
-                  table: ({...props}) => <div className="overflow-x-auto my-5 rounded-xl border-2 border-primary/20 shadow-lg min-w-0 w-full"><table className="w-full text-left border-collapse" {...props} /></div>,
-                  th: ({...props}) => <th className="bg-primary/10 p-3 border-b-2 border-primary/20 font-black text-[11px] uppercase tracking-wider text-primary" {...props} />,
-                  td: ({...props}) => <td className="p-3 border-b border-primary/10 text-[12px] text-slate-900 font-bold" {...props} />,
+                  blockquote: ({...props}) => <blockquote className="border-l-4 border-primary pl-4 py-2 italic my-2 text-slate-900 bg-primary/10 rounded-r-none font-black shadow-sm" {...props} />,
+                  table: ({...props}) => <div className="overflow-x-auto my-3 rounded-none border-2 border-primary/20 shadow-lg min-w-0 w-full"><table className="w-full text-left border-collapse" {...props} /></div>,
+                  th: ({...props}) => <th className="bg-primary/10 p-2 border-b-2 border-primary/20 font-black text-[11px] uppercase tracking-wider text-primary" {...props} />,
+                  td: ({...props}) => <td className="p-2 border-b border-primary/10 text-[12px] text-slate-900 font-bold" {...props} />,
                 }}
               >
                 {message.content}
