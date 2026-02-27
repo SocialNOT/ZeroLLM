@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -24,7 +23,6 @@ import {
   Laptop,
   ShieldCheck,
   Database,
-  Link as LinkIcon,
   Wifi,
   WifiOff
 } from "lucide-react";
@@ -75,22 +73,23 @@ export function SettingsDialog() {
 
   const handleConnect = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (conn) {
+    if (!conn) return;
+
+    // Use explicit check with inputs to avoid race conditions with Zustand's async set
+    const isOnline = await checkConnection(urlInput, tokenInput);
+    
+    if (isOnline) {
       updateConnection(conn.id, { baseUrl: urlInput, apiKey: tokenInput });
-      await checkConnection();
-      
-      if (useAppStore.getState().connectionStatus === 'online') {
-        toast({
-          title: "Signal Synchronized",
-          description: "Local engine node established. Models indexed.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Handshake Failed",
-          description: "Could not reach local engine. Verify URL and signal.",
-        });
-      }
+      toast({
+        title: "Signal Synchronized",
+        description: "Local engine node established. Models indexed.",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Handshake Failed",
+        description: "Could not reach local engine. Verify URL and verify engine is running.",
+      });
     }
   };
 
@@ -108,46 +107,11 @@ export function SettingsDialog() {
   const getModelCapabilities = (modelId: string) => {
     const id = modelId.toLowerCase();
     const caps = [];
-    
-    if (id.includes('llama') || id.includes('qwen') || id.includes('gemma') || id.includes('liquid') || id.includes('gemini')) {
-      caps.push({ label: 'Tool Calling', color: 'text-blue-600', glow: 'bg-blue-500' });
-    }
-    
-    if (id.includes('deepseek') || id.includes('r1') || id.includes('thinking') || id.includes('gemini-2.0-pro')) {
-      caps.push({ label: 'Deep Think', color: 'text-purple-600', glow: 'bg-purple-500' });
-    }
-    
-    if (id.includes('vision') || id.includes('vl') || id.includes('gemini')) {
-      caps.push({ label: 'Vision', color: 'text-pink-600', glow: 'bg-pink-500' });
-    }
-    
-    if (id.includes('rag') || id.includes('nomic') || id.includes('embed')) {
-      caps.push({ label: 'RAG Native', color: 'text-emerald-600', glow: 'bg-emerald-500' });
-    }
-
-    if (caps.length === 0) {
-      caps.push({ label: 'General Logic', color: 'text-primary', glow: 'bg-primary' });
-    }
-    
+    if (id.includes('llama') || id.includes('qwen') || id.includes('gemini')) caps.push({ label: 'Tool Use', color: 'text-blue-600', glow: 'bg-blue-500' });
+    if (id.includes('deepseek') || id.includes('r1') || id.includes('thinking')) caps.push({ label: 'Deep Think', color: 'text-purple-600', glow: 'bg-purple-500' });
+    if (id.includes('vision') || id.includes('vl')) caps.push({ label: 'Vision', color: 'text-pink-600', glow: 'bg-pink-500' });
+    if (caps.length === 0) caps.push({ label: 'General Logic', color: 'text-primary', glow: 'bg-primary' });
     return caps;
-  };
-
-  const getModelStatusColor = (modelId: string, isActive: boolean) => {
-    if (!isActive) return "bg-slate-200";
-    const id = modelId.toLowerCase();
-    if (id.includes('gemini')) return "bg-primary";
-    if (id.includes('deepseek') || id.includes('r1')) return "bg-purple-500";
-    if (id.includes('llama')) return "bg-blue-500";
-    if (id.includes('qwen')) return "bg-orange-500";
-    return "bg-emerald-500";
-  };
-
-  const getModelGlowEffect = (modelId: string, isActive: boolean) => {
-    if (!isActive) return "border-slate-100";
-    const id = modelId.toLowerCase();
-    if (id.includes('gemini')) return "border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]";
-    if (id.includes('deepseek') || id.includes('r1')) return "border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.1)]";
-    return "border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]";
   };
 
   return (
@@ -178,62 +142,33 @@ export function SettingsDialog() {
           </header>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-4 space-y-4">
-            
             <div className="px-2">
               <Label className="text-[9px] font-black uppercase tracking-widest text-primary ml-1 mb-2 block">Neural Orchestration Mode</Label>
               <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-none border border-slate-200">
-                <button 
-                  onClick={() => setAiMode('online')}
-                  className={cn(
-                    "flex items-center justify-center gap-2 py-3 rounded-none text-[10px] font-black uppercase tracking-widest transition-all",
-                    aiMode === 'online' ? "bg-white text-primary shadow-md ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
-                  )}
-                >
-                  <Cloud size={16} />
-                  Cloud Node (Gemini)
+                <button onClick={() => setAiMode('online')} className={cn("flex items-center justify-center gap-2 py-3 rounded-none text-[10px] font-black uppercase tracking-widest transition-all", aiMode === 'online' ? "bg-white text-primary shadow-md ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600")}>
+                  <Cloud size={16} /> Cloud Node
                 </button>
-                <button 
-                  onClick={() => setAiMode('offline')}
-                  className={cn(
-                    "flex items-center justify-center gap-2 py-3 rounded-none text-[10px] font-black uppercase tracking-widest transition-all",
-                    aiMode === 'offline' ? "bg-white text-primary shadow-md ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600"
-                  )}
-                >
-                  <Laptop size={16} />
-                  Local Node (Custom)
+                <button onClick={() => setAiMode('offline')} className={cn("flex items-center justify-center gap-2 py-3 rounded-none text-[10px] font-black uppercase tracking-widest transition-all", aiMode === 'offline' ? "bg-white text-primary shadow-md ring-1 ring-black/5" : "text-slate-400 hover:text-slate-600")}>
+                  <Laptop size={16} /> Local Node
                 </button>
               </div>
             </div>
 
-            <Card className={cn(
-              "border-primary/5 bg-white shadow-sm rounded-none overflow-hidden transition-all duration-500",
-              activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-100"
-            )}>
-              <div 
-                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 transition-colors cursor-pointer group"
-                onClick={() => setActiveCard('engine')}
-              >
+            <Card className={cn("border-primary/5 bg-white shadow-sm rounded-none overflow-hidden transition-all duration-500", activeCard === 'engine' ? "ring-1 ring-primary/20" : "opacity-100")}>
+              <div className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 transition-colors cursor-pointer group" onClick={() => setActiveCard('engine')}>
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-none bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                     {aiMode === 'online' ? <Cloud size={16} /> : <Server size={16} className={cn(connectionStatus === 'online' && activeCard === 'engine' && "animate-pulse")} />}
                   </div>
                   <div className="flex flex-col">
-                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">
-                      {aiMode === 'online' ? 'Cloud Infrastructure' : 'Engine Node'}
-                    </h3>
+                    <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">{aiMode === 'online' ? 'Cloud Infrastructure' : 'Engine Node'}</h3>
                     <span className="text-[7px] text-primary font-bold uppercase mt-1">
                       {aiMode === 'online' ? `${availableModels.length} Cloud Nodes Active` : `Network Protocol: ${connectionStatus === 'online' ? 'Synchronized' : 'Offline'}`}
                     </span>
                   </div>
                 </div>
                 {activeCard === 'engine' && aiMode === 'offline' && (
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    className="h-7 text-[8px] font-bold uppercase rounded-none gap-1.5 px-2"
-                    onClick={handleConnect}
-                    disabled={connectionStatus === 'checking'}
-                  >
+                  <Button size="sm" variant="secondary" className="h-7 text-[8px] font-bold uppercase rounded-none gap-1.5 px-2" onClick={handleConnect} disabled={connectionStatus === 'checking'}>
                     {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-3 w-3" /> : <RefreshCw size={10} />}
                     Sync Node
                   </Button>
@@ -247,46 +182,27 @@ export function SettingsDialog() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">Base API URL</Label>
-                          <Input 
-                            value={urlInput} 
-                            onChange={(e) => setUrlInput(e.target.value)}
-                            className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
-                            placeholder="http://localhost:11434/v1"
-                          />
+                          <Input value={urlInput} onChange={(e) => setUrlInput(e.target.value)} className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20" placeholder="http://localhost:11434" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-[8px] font-bold text-primary uppercase tracking-widest ml-1">API Secret Token (Optional)</Label>
-                          <Input 
-                            type="password"
-                            value={tokenInput} 
-                            onChange={(e) => setTokenInput(e.target.value)}
-                            className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20"
-                            placeholder="sk-..."
-                          />
+                          <Input type="password" value={tokenInput} onChange={(e) => setTokenInput(e.target.value)} className="rounded-none border-primary/10 bg-slate-50 font-mono text-[10px] h-9 focus:ring-primary/20" placeholder="sk-..." />
                         </div>
                       </div>
-                      
-                      <Button 
-                        onClick={() => handleConnect()}
-                        disabled={connectionStatus === 'checking'}
-                        className="w-full h-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] gap-2"
-                      >
+                      <Button onClick={() => handleConnect()} disabled={connectionStatus === 'checking'} className="w-full h-10 rounded-none bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] gap-2">
                         {connectionStatus === 'checking' ? <Loader2 className="animate-spin h-4 w-4" /> : <Wifi size={14} />}
-                        {connectionStatus === 'online' ? "Establish New Neural Connection" : "Connect to Local Engine"}
+                        Establish Neural Handshake
                       </Button>
-
                       {connectionStatus === 'offline' && (
                         <div className="p-4 bg-rose-50 border border-rose-100 flex items-center gap-3">
                           <WifiOff size={16} className="text-rose-500" />
-                          <p className="text-[9px] font-bold text-rose-600 uppercase">Handshake Required. Establish connection to index local models.</p>
+                          <p className="text-[9px] font-bold text-rose-600 uppercase">Handshake Required. Note: For localhost, ensure the engine is reachable from this environment.</p>
                         </div>
                       )}
                     </div>
                   ) : (
                     <div className="p-4 bg-slate-50 rounded-none border border-primary/5 flex items-center gap-4 mt-2">
-                      <div className="h-10 w-10 rounded-none bg-primary/5 flex items-center justify-center text-primary">
-                        <Globe size={20} />
-                      </div>
+                      <div className="h-10 w-10 rounded-none bg-primary/5 flex items-center justify-center text-primary"><Globe size={20} /></div>
                       <div>
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Google Cloud Handshake</h4>
                         <p className="text-[8px] font-bold text-primary uppercase">Latency optimized via Genkit node</p>
@@ -297,75 +213,34 @@ export function SettingsDialog() {
                   {(aiMode === 'online' || connectionStatus === 'online') && (
                     <div className="space-y-3 pt-2">
                       <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2">
-                          <Cpu size={12} className="text-primary" />
-                          <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine Selection</span>
-                        </div>
-                        <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary rounded-none">
-                          {availableModels.length} Indexed Models
-                        </Badge>
+                        <div className="flex items-center gap-2"><Cpu size={12} className="text-primary" /><span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Compute Engine Selection</span></div>
+                        <Badge variant="outline" className="text-[7px] font-bold uppercase px-2 py-0 border-primary/10 text-primary rounded-none">{availableModels.length} Indexed Models</Badge>
                       </div>
-
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {availableModels.length > 0 ? availableModels.map(model => {
+                        {availableModels.map(model => {
                           const caps = getModelCapabilities(model);
                           const isActive = aiMode === 'online' ? (activeOnlineModelId === model) : (conn?.modelId === model);
-                          const statusColor = getModelStatusColor(model, isActive);
-                          const borderClass = getModelGlowEffect(model, isActive);
-                          
                           return (
-                            <div 
-                              key={model}
-                              className={cn(
-                                "relative flex flex-col p-4 rounded-none border transition-all duration-300 group overflow-hidden bg-white",
-                                isActive ? "ring-2 ring-primary border-transparent" : borderClass,
-                                "hover:shadow-lg"
-                              )}
-                            >
+                            <div key={model} className={cn("relative flex flex-col p-4 rounded-none border transition-all duration-300 group overflow-hidden bg-white", isActive ? "ring-2 ring-primary border-transparent" : "border-slate-100", "hover:shadow-lg")}>
                               <div className="flex items-start justify-between mb-3">
-                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight break-all flex-1 pr-2">
-                                  {model.replace('googleai/', '')}
-                                </span>
-                                <div className={cn("h-2.5 w-2.5 rounded-none shrink-0", statusColor, isActive && "animate-pulse shadow-[0_0_8px_currentColor]")} />
+                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight break-all flex-1 pr-2">{model.replace('googleai/', '')}</span>
+                                <div className={cn("h-2.5 w-2.5 rounded-none shrink-0", isActive ? "bg-primary animate-pulse" : "bg-slate-200")} />
                               </div>
-                              
                               <div className="flex flex-wrap gap-2 mb-4">
                                 {caps.map((cap, i) => (
                                   <div key={i} className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded-none border border-slate-100">
-                                    <div className={cn("h-1 w-1 rounded-none", cap.glow, "animate-pulse")} />
-                                    <span className={cn("text-[7px] font-black uppercase tracking-widest", cap.color)}>
-                                      {cap.label}
-                                    </span>
+                                    <div className={cn("h-1 w-1 rounded-none animate-pulse", cap.glow)} />
+                                    <span className={cn("text-[7px] font-black uppercase tracking-widest", cap.color)}>{cap.label}</span>
                                   </div>
                                 ))}
                               </div>
-                              
-                              <Button 
-                                size="sm"
-                                variant={isActive ? "default" : "outline"}
-                                className={cn(
-                                  "h-8 w-full text-[8px] font-black uppercase rounded-none transition-all gap-2",
-                                  isActive 
-                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
-                                    : "text-slate-900 border-slate-200 hover:bg-slate-50 hover:border-slate-900"
-                                )}
-                                onClick={(e) => handleLoadModel(model, e)}
-                                disabled={isModelLoading && isActive}
-                              >
-                                {isModelLoading && isActive ? (
-                                  <Loader2 className="animate-spin h-3 w-3" />
-                                ) : (
-                                  <Zap size={10} className={isActive ? "fill-white" : ""} />
-                                )}
+                              <Button size="sm" variant={isActive ? "default" : "outline"} className={cn("h-8 w-full text-[8px] font-black uppercase rounded-none gap-2", isActive ? "bg-primary text-white" : "text-slate-900")} onClick={(e) => handleLoadModel(model, e)} disabled={isModelLoading && isActive}>
+                                {isModelLoading && isActive ? <Loader2 className="animate-spin h-3 w-3" /> : <Zap size={10} />}
                                 {isActive ? "Orchestration Active" : "Energize Node"}
                               </Button>
                             </div>
                           );
-                        }) : (
-                          <div className="col-span-full py-8 text-center border-2 border-dashed border-slate-100">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No models detected on this node.</p>
-                          </div>
-                        )}
+                        })}
                       </div>
                     </div>
                   )}
@@ -374,69 +249,34 @@ export function SettingsDialog() {
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Card 
-                className={cn(
-                  "border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden",
-                  activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-100"
-                )}
-                onClick={() => setActiveCard('shield')}
-              >
+              <Card className={cn("border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden", activeCard === 'shield' ? "ring-1 ring-emerald-500/20" : "opacity-100")} onClick={() => setActiveCard('shield')}>
                 <div className="p-3 sm:p-4 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-none bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                      <ShieldCheck size={16} className={cn(activeCard === 'shield' && "animate-pulse")} />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Shield</h3>
-                      <span className="text-[7px] text-emerald-500 font-bold uppercase mt-1">Status: Operational</span>
-                    </div>
+                    <div className="h-8 w-8 rounded-none bg-emerald-500/10 flex items-center justify-center text-emerald-600"><ShieldCheck size={16} className={cn(activeCard === 'shield' && "animate-pulse")} /></div>
+                    <div className="flex flex-col"><h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Shield</h3><span className="text-[7px] text-emerald-500 font-bold uppercase mt-1">Status: Operational</span></div>
                   </div>
                   {activeCard === 'shield' && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="p-2 rounded-none bg-slate-50 border border-emerald-500/10 flex items-center justify-between">
-                        <span className="text-[8px] font-bold text-emerald-600 uppercase">AES-256 Protocol</span>
-                        <Badge className="h-4 text-[7px] bg-emerald-500 rounded-none">Active</Badge>
-                      </div>
+                      <div className="p-2 rounded-none bg-slate-50 border border-emerald-500/10 flex items-center justify-between"><span className="text-[8px] font-bold text-emerald-600 uppercase">AES-256 Protocol</span><Badge className="h-4 text-[7px] bg-emerald-500 rounded-none">Active</Badge></div>
                       <div className="space-y-1 px-1">
-                        <div className="flex justify-between text-[7px] font-bold uppercase text-emerald-600">
-                          <span>Signal Integrity</span>
-                          <span>99.9%</span>
-                        </div>
+                        <div className="flex justify-between text-[7px] font-bold uppercase text-emerald-600"><span>Signal Integrity</span><span>99.9%</span></div>
                         <Progress value={99.9} className="h-1 bg-emerald-500/10 rounded-none" />
                       </div>
                     </div>
                   )}
                 </div>
               </Card>
-
-              <Card 
-                className={cn(
-                  "border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden",
-                  activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-100"
-                )}
-                onClick={() => setActiveCard('vault')}
-              >
+              <Card className={cn("border-primary/5 bg-white shadow-sm rounded-none transition-all duration-500 cursor-pointer overflow-hidden", activeCard === 'vault' ? "ring-1 ring-primary/20" : "opacity-100")} onClick={() => setActiveCard('vault')}>
                 <div className="p-3 sm:p-4 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-none bg-accent/10 flex items-center justify-center text-accent">
-                      <Database size={16} className={cn(activeCard === 'vault' && "animate-pulse")} />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Vault</h3>
-                      <span className="text-[7px] text-accent font-bold uppercase mt-1">Index: Optimized</span>
-                    </div>
+                    <div className="h-8 w-8 rounded-none bg-accent/10 flex items-center justify-center text-accent"><Database size={16} className={cn(activeCard === 'vault' && "animate-pulse")} /></div>
+                    <div className="flex flex-col"><h3 className="font-bold text-[10px] text-slate-800 uppercase tracking-widest leading-none">Vault</h3><span className="text-[7px] text-accent font-bold uppercase mt-1">Index: Optimized</span></div>
                   </div>
                   {activeCard === 'vault' && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2 rounded-none bg-slate-50 border border-accent/10 flex flex-col items-center">
-                          <span className="text-[7px] font-bold text-accent uppercase">Segments</span>
-                          <span className="text-[10px] font-bold text-slate-800">1,428</span>
-                        </div>
-                        <div className="p-2 rounded-none bg-slate-50 border border-accent/10 flex flex-col items-center">
-                          <span className="text-[7px] font-bold text-accent uppercase">Latency</span>
-                          <span className="text-[10px] font-bold text-slate-800">{latency}</span>
-                        </div>
+                        <div className="p-2 rounded-none bg-slate-50 border border-accent/10 flex flex-col items-center"><span className="text-[7px] font-bold text-accent uppercase">Segments</span><span className="text-[10px] font-bold text-slate-800">1,428</span></div>
+                        <div className="p-2 rounded-none bg-slate-50 border border-accent/10 flex flex-col items-center"><span className="text-[7px] font-bold text-accent uppercase">Latency</span><span className="text-[10px] font-bold text-slate-800">{latency}</span></div>
                       </div>
                     </div>
                   )}
@@ -444,12 +284,8 @@ export function SettingsDialog() {
               </Card>
             </div>
           </div>
-
           <footer className="p-3 sm:p-4 bg-slate-50 border-t border-primary/5 flex items-center justify-center shrink-0">
-            <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary flex items-center gap-2">
-              <Zap size={10} className="text-primary" fill="currentColor" />
-              Signals Encapsulated • ZeroGPT Core
-            </p>
+            <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary flex items-center gap-2"><Zap size={10} className="text-primary" fill="currentColor" /> Signals Encapsulated • ZeroGPT Core</p>
           </footer>
         </div>
       </DialogContent>

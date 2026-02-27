@@ -1,4 +1,3 @@
-
 /**
  * Professional LLM Utility for local/remote engine interactions.
  * Optimized for server-side execution to bypass browser CORS/Mixed Content.
@@ -13,28 +12,18 @@ export interface LLMModel {
 function normalizeUrl(url: string): string {
   if (!url) return '';
   let normalized = url.trim();
+  // Remove trailing slashes and common API suffixes for base testing
+  normalized = normalized.replace(/\/+$/, '').replace(/\/v1$/, '');
+  
   if (!/^https?:\/\//i.test(normalized)) {
     normalized = `http://${normalized}`;
   }
-  return normalized.replace(/\/+$/, '');
+  return normalized;
 }
 
 async function safeJsonParse(response: Response): Promise<any> {
-  const contentType = response.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    // Some engines might return JSON with incorrect content type, try anyway if status OK
-    if (response.ok) {
-      try {
-        const text = await response.text();
-        return JSON.parse(text);
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
-  }
+  const text = await response.text();
   try {
-    const text = await response.text();
     return JSON.parse(text);
   } catch (e) {
     return null;
@@ -42,9 +31,9 @@ async function safeJsonParse(response: Response): Promise<any> {
 }
 
 function joinPath(base: string, path: string): string {
-  const normalizedBase = normalizeUrl(base);
+  const cleanBase = base.replace(/\/+$/, '');
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${normalizedBase}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
+  return `${cleanBase}${cleanPath}`;
 }
 
 function getHeaders(apiKey?: string) {
@@ -52,18 +41,16 @@ function getHeaders(apiKey?: string) {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   };
-  if (apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
+  if (apiKey && apiKey.trim()) {
+    headers['Authorization'] = `Bearer ${apiKey.trim()}`;
   }
   return headers;
 }
 
 /**
  * Performs a High-Fidelity Web Search via Serper API.
- * Injects real-time organic results into the cognitive stream.
  */
 export async function performWebSearch(query: string): Promise<string> {
-  // ENERGIZED KEY FOR REAL-TIME ORCHESTRATION
   const apiKey = '4da302c7314ac7c1831cf678ca75f18dd5b7c83f';
   if (!query || query.trim().length < 2) return "";
 
@@ -77,39 +64,29 @@ export async function performWebSearch(query: string): Promise<string> {
       body: JSON.stringify({ q: query, num: 5 }),
     });
 
-    if (!response.ok) {
-      return `[SIGNAL FAILURE]: Serper node unreachable (${response.status}).`;
-    }
+    if (!response.ok) return "";
 
     const data = await response.json();
     const results = data.organic?.map((r: any) => `- ${r.title}: ${r.snippet} (${r.link})`).join("\n") || "";
     const answer = data.answerBox?.answer || data.answerBox?.snippet || "";
     
-    if (!results && !answer) return "[SYSTEM]: Search returned zero relevant nodes.";
+    if (!results && !answer) return "";
 
-    return `
-[REAL-TIME WEB GROUNDING DATA]
-QUERY: ${query}
-${answer ? `DIRECT ANSWER: ${answer}` : ""}
-TOP ORGANIC SOURCES:
-${results}
-[END GROUNDING DATA]
-`;
-  } catch (error: any) {
-    console.error("Serper Search Error:", error);
-    return `[SEARCH ERROR]: Signal interruption during real-time retrieval.`;
+    return `\n[WEB GROUNDING DATA]\nQUERY: ${query}\n${answer ? `DIRECT: ${answer}\n` : ""}${results}\n[END GROUNDING]\n`;
+  } catch (error) {
+    return "";
   }
 }
 
 export async function testConnection(baseUrl: string, apiKey?: string): Promise<boolean> {
   if (!baseUrl || baseUrl.length < 5) return false;
-  const normalizedBase = normalizeUrl(baseUrl);
+  const base = normalizeUrl(baseUrl);
   
-  // High-fidelity endpoint testing sequence
+  // Test sequence: Ollama tags -> OpenAI models -> Base
   const endpoints = [
-    joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models'),
-    joinPath(normalizedBase, '/api/tags'), // Ollama native
-    normalizedBase
+    joinPath(base, '/api/tags'),
+    joinPath(base, '/v1/models'),
+    base
   ];
 
   for (const url of endpoints) {
@@ -117,36 +94,34 @@ export async function testConnection(baseUrl: string, apiKey?: string): Promise<
       const response = await fetch(url, {
         method: 'GET',
         headers: getHeaders(apiKey),
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(5000)
       });
       if (response.ok) return true;
-    } catch (e) {}
+    } catch (e) {
+      continue;
+    }
   }
   return false;
 }
 
 export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLMModel[]> {
   if (!baseUrl) return [];
-  const normalizedBase = normalizeUrl(baseUrl);
+  const base = normalizeUrl(baseUrl);
   
-  // Try OpenAI compatible first
-  const v1Url = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/models' : '/v1/models');
+  // 1. Try OpenAI Compatible /v1/models
   try {
-    const response = await fetch(v1Url, {
+    const response = await fetch(joinPath(base, '/v1/models'), {
       method: 'GET',
       headers: getHeaders(apiKey),
       signal: AbortSignal.timeout(5000)
     });
-    
     const data = await safeJsonParse(response);
     if (data && data.data && Array.isArray(data.data)) return data.data;
-    if (data && data.models && Array.isArray(data.models)) return data.models.map((m: any) => ({ id: m.name || m.id }));
   } catch (e) {}
 
-  // Fallback to Ollama native
-  const ollamaUrl = joinPath(normalizedBase, '/api/tags');
+  // 2. Try Ollama /api/tags
   try {
-    const response = await fetch(ollamaUrl, {
+    const response = await fetch(joinPath(base, '/api/tags'), {
       method: 'GET',
       headers: getHeaders(apiKey),
       signal: AbortSignal.timeout(5000)
@@ -162,57 +137,18 @@ export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLM
 
 export async function loadModel(baseUrl: string, modelId: string, apiKey?: string): Promise<boolean> {
   if (!baseUrl || !modelId) return false;
-  const base = normalizeUrl(baseUrl).replace(/\/v1$/, '');
+  const base = normalizeUrl(baseUrl);
   
-  // LM Studio specific load endpoint
-  const loadUrl = joinPath(base, '/api/v1/models/load');
+  // Some engines require a load call (LM Studio)
   try {
-    const response = await fetch(loadUrl, {
+    const response = await fetch(joinPath(base, '/api/v1/models/load'), {
       method: 'POST',
       headers: getHeaders(apiKey),
       body: JSON.stringify({ model_key: modelId }),
       signal: AbortSignal.timeout(10000)
     });
-    if (response.status === 404) return true; // Endpoint not existing usually means auto-load is on
-    return response.ok;
+    return response.ok || response.status === 404; // 404 means load endpoint doesn't exist, assume success
   } catch (e) {
-    return true; // Silent success if endpoint is missing (standard behavior for many engines)
-  }
-}
-
-export async function callChatCompletion(baseUrl: string, modelId: string, messages: any[], settings: any, apiKey?: string) {
-  if (!baseUrl) throw new Error("No engine URL provided.");
-  const normalizedBase = normalizeUrl(baseUrl);
-  const chatUrl = joinPath(normalizedBase, normalizedBase.includes('/v1') ? '/chat/completions' : '/v1/chat/completions');
-  
-  try {
-    const response = await fetch(chatUrl, {
-      method: 'POST',
-      headers: getHeaders(apiKey),
-      body: JSON.stringify({
-        model: modelId || "default",
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
-        temperature: settings.temperature,
-        top_p: settings.topP,
-        max_tokens: settings.maxTokens,
-        stream: false
-      })
-    });
-
-    if (!response.ok) {
-      if (response.status === 504) {
-        throw new Error("Node Gateway Timeout (504). The engine is unreachable or taking too long.");
-      }
-      const errorData = await safeJsonParse(response);
-      throw new Error(errorData?.error?.message || `Engine error (${response.status})`);
-    }
-
-    const data = await safeJsonParse(response);
-    if (!data) throw new Error('Received an incompatible non-JSON response from the server.');
-    
-    return data.choices?.[0]?.message?.content || "No response produced.";
-  } catch (err: any) {
-    if (err.name === 'AbortError') throw new Error("Node connection timed out.");
-    throw err;
+    return true; // Silent success if endpoint is missing (standard for Ollama/OpenAI)
   }
 }

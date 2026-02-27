@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ModelConnection, Persona, Workspace, ChatSession, Message, UserRole, ToolDefinition, Framework, LinguisticControl, AiMode } from '@/types';
@@ -51,15 +50,10 @@ interface AppState {
   
   addPersona: (p: Persona) => void;
   updatePersona: (id: string, updates: Partial<Persona>) => void;
-  deletePersona: (id: string) => void;
-  
   addFramework: (f: Framework) => void;
   updateFramework: (id: string, updates: Partial<Framework>) => void;
-  deletePersonaAsCustom: (id: string) => void;
-  
-  addFrameworkAsCustom: (f: Framework) => void;
-  updateFrameworkAsCustom: (id: string, updates: Partial<Framework>) => void;
-  deleteFrameworkAsCustom: (id: string) => void;
+  addLinguisticControl: (l: LinguisticControl) => void;
+  updateLinguisticControl: (id: string, updates: Partial<LinguisticControl>) => void;
 
   createSession: (workspaceId: string) => string;
   deleteSession: (id: string) => void;
@@ -76,12 +70,12 @@ interface AppState {
   setAiMode: (mode: AiMode) => void;
   setRole: (role: UserRole) => void;
   startSession: () => void;
-  checkConnection: () => Promise<void>;
+  checkConnection: (urlOverride?: string, keyOverride?: string) => Promise<boolean>;
   refreshModels: () => Promise<void>;
   triggerModelLoad: (modelId: string) => Promise<boolean>;
   setActiveParameterTab: (tab: string) => void;
   toggleInfoSidebar: () => void;
-  toggleTool: (sessionId: string, tool: 'webSearch' | 'reasoning' | 'voice' | 'calculator' | 'code' | 'knowledge' | 'vision' | 'analysis' | 'planning' | 'research' | 'summary' | 'creative') => void;
+  toggleTool: (sessionId: string, tool: string) => void;
   checkSessionExpiry: () => void;
   
   // Theme Actions
@@ -118,10 +112,8 @@ export const useAppStore = create<AppState>()(
       currentUserRole: 'User',
       aiMode: 'online',
       availableTools: [
-        { id: 'calculator', name: 'Calculator', description: 'Perform mathematical operations', icon: 'calculator' },
-        { id: 'web_search', name: 'Web Search', description: 'Search the internet for real-time info', icon: 'globe' },
-        { id: 'knowledge_search', name: 'RAG Agent', description: 'Query your local knowledge base', icon: 'database' },
-        { id: 'code_interpreter', name: 'Code Logic', description: 'Execute complex logic sandboxes', icon: 'terminal' }
+        { id: 'webSearch', name: 'Web Grounding', description: 'Real-time search', icon: 'search' },
+        { id: 'reasoning', name: 'Deep Reasoning', description: 'Chain of thought', icon: 'brain' }
       ],
       availableModels: [],
       connectionStatus: 'offline',
@@ -165,34 +157,15 @@ export const useAppStore = create<AppState>()(
       updatePersona: (id, updates) => set((state) => ({
         personas: state.personas.map(p => p.id === id ? { ...p, ...updates } : p)
       })),
-      deletePersona: (id) => set((state) => ({
-        personas: state.personas.filter(p => p.id !== id || !p.isCustom)
-      })),
-      deletePersonaAsCustom: (id) => set((state) => ({
-        personas: state.personas.filter(p => p.id !== id || !p.isCustom)
-      })),
 
       addFramework: (f) => set((state) => ({ frameworks: [...state.frameworks, { ...f, id: `f-${Date.now()}`, isCustom: true }] })),
       updateFramework: (id, updates) => set((state) => ({
         frameworks: state.frameworks.map(f => f.id === id ? { ...f, ...updates } : f)
       })),
-      deleteFramework: (id) => set((state) => ({
-        frameworks: state.frameworks.filter(f => f.id !== id || !f.isCustom)
-      })),
-      addFrameworkAsCustom: (f) => set((state) => ({ frameworks: [...state.frameworks, { ...f, id: `f-${Date.now()}`, isCustom: true }] })),
-      updateFrameworkAsCustom: (id, updates) => set((state) => ({
-        frameworks: state.frameworks.map(f => f.id === id ? { ...f, ...updates } : f)
-      })),
-      deleteFrameworkAsCustom: (id) => set((state) => ({
-        frameworks: state.frameworks.filter(f => f.id !== id || !f.isCustom)
-      })),
 
       addLinguisticControl: (l) => set((state) => ({ linguisticControls: [...state.linguisticControls, { ...l, id: `l-${Date.now()}`, isCustom: true }] })),
       updateLinguisticControl: (id, updates) => set((state) => ({
         linguisticControls: state.linguisticControls.map(l => l.id === id ? { ...l, ...updates } : l)
-      })),
-      deleteLinguisticControl: (id) => set((state) => ({
-        linguisticControls: state.linguisticControls.filter(l => l.id !== id || !l.isCustom)
       })),
 
       setActiveSession: (id) => set({ activeSessionId: id }),
@@ -203,55 +176,51 @@ export const useAppStore = create<AppState>()(
       },
       startSession: () => set({ sessionStartTime: Date.now(), isSessionLocked: false }),
       
-      checkConnection: async () => {
+      checkConnection: async (urlOverride, keyOverride) => {
         if (get().aiMode === 'online') {
           set({ connectionStatus: 'online', availableModels: GEMINI_MODELS });
-          return;
+          return true;
         }
         
         const activeConn = get().connections.find(c => c.id === get().activeConnectionId);
-        if (!activeConn) {
+        const url = urlOverride || activeConn?.baseUrl;
+        const key = keyOverride || activeConn?.apiKey;
+
+        if (!url) {
           set({ connectionStatus: 'offline', availableModels: [] });
-          return;
+          return false;
         }
 
         set({ connectionStatus: 'checking' });
         try {
-          const isOnline = await testConnectionAction(activeConn.baseUrl, activeConn.apiKey);
+          const isOnline = await testConnectionAction(url, key);
           set({ connectionStatus: isOnline ? 'online' : 'offline' });
           if (isOnline) {
-            const models = await fetchModelsAction(activeConn.baseUrl, activeConn.apiKey);
+            const models = await fetchModelsAction(url, key);
             set({ availableModels: models.map(m => m.id) });
+            return true;
           } else {
             set({ availableModels: [] });
+            return false;
           }
         } catch (e) {
           set({ connectionStatus: 'offline', availableModels: [] });
+          return false;
         }
       },
 
       refreshModels: async () => {
         const { aiMode, connectionStatus, activeConnectionId, connections } = get();
-        
         if (aiMode === 'online') {
           set({ availableModels: GEMINI_MODELS });
           return;
         }
-        
-        if (connectionStatus !== 'online') {
-          set({ availableModels: [] });
-          return;
-        }
-
         const activeConn = connections.find(c => c.id === activeConnectionId);
-        if (!activeConn) return;
-        
+        if (!activeConn || connectionStatus !== 'online') return;
         try {
           const models = await fetchModelsAction(activeConn.baseUrl, activeConn.apiKey);
           set({ availableModels: models.map(m => m.id) });
-        } catch (e) {
-          set({ availableModels: [] });
-        }
+        } catch (e) {}
       },
 
       triggerModelLoad: async (modelId) => {
@@ -312,7 +281,6 @@ export const useAppStore = create<AppState>()(
             const models = await fetchModelsAction(baseUrl, apiKey);
             set({ availableModels: models.map(m => m.id) });
           }
-          
           return isOnline;
         } catch (err) {
           set({ connectionStatus: 'offline', availableModels: [] });
@@ -341,16 +309,7 @@ export const useAppStore = create<AppState>()(
             enabledTools: [],
             webSearchEnabled: false,
             reasoningEnabled: false,
-            voiceResponseEnabled: false,
-            calculatorEnabled: false,
-            codeEnabled: false,
-            knowledgeEnabled: false,
-            visionEnabled: false,
-            analysisEnabled: false,
-            planningEnabled: false,
-            researchEnabled: false,
-            summaryEnabled: false,
-            creativeEnabled: false
+            voiceResponseEnabled: false
           }
         };
         set((state) => ({ 
@@ -363,21 +322,14 @@ export const useAppStore = create<AppState>()(
       deleteSession: (id) => set((state) => {
         const filteredSessions = state.sessions.filter(s => s.id !== id);
         let nextActiveId = state.activeSessionId;
-        
         if (state.activeSessionId === id) {
           nextActiveId = filteredSessions.length > 0 ? filteredSessions[0].id : null;
         }
-        
-        return {
-          sessions: filteredSessions,
-          activeSessionId: nextActiveId
-        };
+        return { sessions: filteredSessions, activeSessionId: nextActiveId };
       }),
 
       addMessage: (sessionId, message) => set((state) => ({
-        sessions: state.sessions.map(s => 
-          s.id === sessionId ? { ...s, messages: [...s.messages, message] } : s
-        )
+        sessions: state.sessions.map(s => s.id === sessionId ? { ...s, messages: [...s.messages, message] } : s)
       })),
 
       updateMessage: (sessionId, messageId, updates) => set((state) => ({
@@ -390,30 +342,16 @@ export const useAppStore = create<AppState>()(
       })),
 
       updateSession: (sessionId, updates) => set((state) => ({
-        sessions: state.sessions.map(s => 
-          s.id === sessionId ? { ...s, ...updates } : s
-        )
+        sessions: state.sessions.map(s => s.id === sessionId ? { ...s, ...updates } : s)
       })),
 
       updateSessionSettings: (sessionId, settings) => set((state) => ({
-        sessions: state.sessions.map(s => 
-          s.id === sessionId ? { ...s, settings: { ...s.settings, ...settings } } : s
-        )
+        sessions: state.sessions.map(s => s.id === sessionId ? { ...s, settings: { ...s.settings, ...settings } } : s)
       })),
 
       applyFramework: (sessionId, frameworkId) => {
-        const framework = get().frameworks.find(f => f.id === frameworkId);
         set((state) => ({
-          sessions: state.sessions.map(s => 
-            s.id === sessionId ? { 
-              ...s, 
-              frameworkId: s.frameworkId === frameworkId ? undefined : frameworkId,
-              settings: { 
-                ...s.settings, 
-                enabledTools: framework?.tools || s.settings.enabledTools 
-              }
-            } : s
-          )
+          sessions: state.sessions.map(s => s.id === sessionId ? { ...s, frameworkId: s.frameworkId === frameworkId ? undefined : frameworkId } : s)
         }));
       },
 
@@ -425,31 +363,15 @@ export const useAppStore = create<AppState>()(
             s.id === sessionId ? { 
               ...s, 
               personaId,
-              settings: {
-                ...s.settings,
-                temperature: persona.default_temp !== undefined ? persona.default_temp : s.settings.temperature
-              }
+              settings: { ...s.settings, temperature: persona.default_temp !== undefined ? persona.default_temp : s.settings.temperature }
             } : s
           )
         }));
       },
 
       applyLinguisticControl: (sessionId, linguisticId) => {
-        const control = get().linguisticControls.find(l => l.id === linguisticId);
         set((state) => ({
-          sessions: state.sessions.map(s => 
-            s.id === sessionId ? { 
-              ...s, 
-              linguisticId: s.linguisticId === linguisticId ? undefined : linguisticId,
-              settings: { 
-                ...s.settings, 
-                temperature: (s.linguisticId !== linguisticId && control?.temperature !== undefined) ? control.temperature : s.settings.temperature, 
-                topP: (s.linguisticId !== linguisticId && control?.topP !== undefined) ? control.topP : s.settings.topP, 
-                maxTokens: (s.linguisticId !== linguisticId && control?.maxTokens !== undefined) ? control.maxTokens : s.settings.maxTokens,
-                format: (s.linguisticId !== linguisticId && control?.format) ? (control.format as any) : s.settings.format
-              }
-            } : s
-          )
+          sessions: state.sessions.map(s => s.id === sessionId ? { ...s, linguisticId: s.linguisticId === linguisticId ? undefined : linguisticId } : s)
         }));
       },
 
@@ -461,36 +383,13 @@ export const useAppStore = create<AppState>()(
             if (tool === 'webSearch') settings.webSearchEnabled = !settings.webSearchEnabled;
             if (tool === 'reasoning') settings.reasoningEnabled = !settings.reasoningEnabled;
             if (tool === 'voice') settings.voiceResponseEnabled = !settings.voiceResponseEnabled;
-            if (tool === 'calculator') settings.calculatorEnabled = !settings.calculatorEnabled;
-            if (tool === 'code') settings.codeEnabled = !settings.codeEnabled;
-            if (tool === 'knowledge') settings.knowledgeEnabled = !settings.knowledgeEnabled;
-            if (tool === 'vision') settings.visionEnabled = !settings.visionEnabled;
-            if (tool === 'analysis') settings.analysisEnabled = !settings.analysisEnabled;
-            if (tool === 'planning') settings.planningEnabled = !settings.planningEnabled;
-            if (tool === 'research') settings.researchEnabled = !settings.researchEnabled;
-            if (tool === 'summary') settings.summaryEnabled = !settings.summaryEnabled;
-            if (tool === 'creative') settings.creativeEnabled = !settings.creativeEnabled;
-            
-            const enabledTools: string[] = [];
-            if (settings.webSearchEnabled) enabledTools.push('web_search');
-            if (settings.calculatorEnabled) enabledTools.push('calculator');
-            if (settings.codeEnabled) enabledTools.push('code_interpreter');
-            if (settings.knowledgeEnabled) enabledTools.push('knowledge_search');
-            if (settings.visionEnabled) enabledTools.push('vision');
-            if (settings.analysisEnabled) enabledTools.push('analysis');
-            if (settings.planningEnabled) enabledTools.push('planning');
-            if (settings.researchEnabled) enabledTools.push('research');
-            if (settings.summaryEnabled) enabledTools.push('summary');
-            if (settings.creativeEnabled) enabledTools.push('creative');
-
-            return { ...s, settings: { ...settings, enabledTools } };
+            return { ...s, settings };
           })
         }));
       },
 
       setActiveParameterTab: (tab) => set({ activeParameterTab: tab }),
       toggleInfoSidebar: () => set((state) => ({ showInfoSidebar: !state.showInfoSidebar })),
-      
       setTheme: (theme) => set({ activeTheme: theme }),
       cycleTheme: () => set((state) => {
         const order: Array<'auto' | 0 | 1 | 2 | 3 | 4 | 5 | 6> = ['auto', 0, 1, 2, 3, 4, 5, 6];
@@ -502,47 +401,26 @@ export const useAppStore = create<AppState>()(
 
       checkSessionExpiry: () => {
         const { sessionStartTime, currentUserRole, isSessionLocked, aiMode } = get();
-        if (!sessionStartTime) return;
-        
-        if (aiMode === 'offline') {
+        if (!sessionStartTime || aiMode === 'offline' || currentUserRole !== 'Viewer') {
           if (isSessionLocked) set({ isSessionLocked: false });
           return;
         }
-
-        if (currentUserRole !== 'Viewer') {
-          if (isSessionLocked) set({ isSessionLocked: false });
-          return;
-        }
-        
         const now = Date.now();
         const ONE_HOUR = 3600000;
-        const startDate = new Date(sessionStartTime).toDateString();
-        const currentDate = new Date(now).toDateString();
-        
-        if (startDate !== currentDate) {
-          set({ sessionStartTime: now, isSessionLocked: false });
-          return;
-        }
-
-        if (now - sessionStartTime > ONE_HOUR) {
-          set({ isSessionLocked: true });
-        }
+        if (now - sessionStartTime > ONE_HOUR) set({ isSessionLocked: true });
       }
     }),
     { 
-      name: 'zerogpt-storage-v15',
+      name: 'zerogpt-storage-v16',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
           const customPersonas = state.personas?.filter(p => p.isCustom) || [];
           state.personas = [...PERSONAS, ...customPersonas];
-          
           const customFrameworks = state.frameworks?.filter(f => f.isCustom) || [];
           state.frameworks = [...FRAMEWORKS, ...customFrameworks];
-          
           const customLinguistic = state.linguisticControls?.filter(l => l.isCustom) || [];
           state.linguisticControls = [...LINGUISTICS, ...customLinguistic];
-          
           state.checkSessionExpiry();
         }
       }
