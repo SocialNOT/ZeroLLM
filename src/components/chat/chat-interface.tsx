@@ -235,7 +235,10 @@ export function ChatInterface() {
         }),
       });
 
-      if (!response.ok) throw new Error(await response.text() || 'Node Error');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Node Error');
+      }
 
       const reader = response.body?.getReader();
       if (!reader) throw new Error("Stream Failure");

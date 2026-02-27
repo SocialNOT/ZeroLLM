@@ -171,12 +171,12 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
   const base = normalizeUrl(baseUrl);
   
   try {
+    // Optimized for LM Studio - Use only the supported 'model' key to avoid unrecognized_keys error
     const response = await resilientFetch(joinPath(base, '/api/v1/models/load'), {
       method: 'POST',
       headers: getHeaders(apiKey),
       body: JSON.stringify({ 
-        model: modelId, 
-        model_key: modelId 
+        model: modelId
       })
     });
     
