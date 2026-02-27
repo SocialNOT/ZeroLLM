@@ -152,7 +152,7 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
   const base = normalizeUrl(baseUrl);
   
   // LM Studio specific load endpoint requirements
-  // Synchronize both 'model' and 'model_key' to ensure compatibility with all versions
+  // Synchronize both 'model' and 'model_key' to ensure 100% compatibility with all versions
   try {
     const response = await fetch(joinPath(base, '/api/v1/models/load'), {
       method: 'POST',
