@@ -99,19 +99,21 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   };
 
   const operatorName = isAssistant 
-    ? isError ? "NODE_CRITICAL_ERROR" : "NEURAL_COMMAND_NODE" 
+    ? isError ? "NODE_CRITICAL_FAILURE" : "NEURAL_COMMAND_NODE" 
     : "HUMAN_CORE_IDENTITY";
 
   return (
     <div className={cn(
-      "flex w-full mb-6 animate-in fade-in slide-in-from-bottom-3 duration-500",
+      "flex w-full mb-6 px-2 sm:px-0 animate-in fade-in slide-in-from-bottom-3 duration-500",
       isAssistant ? "justify-start" : "justify-end"
     )}>
       <div className={cn(
-        "flex flex-col w-full max-w-[95%] sm:max-w-[85%] md:max-w-[80%] gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all bg-white",
+        "flex flex-col border-2 shadow-2xl transition-all bg-white overflow-hidden min-w-0",
         isAssistant 
-          ? isError ? "border-rose-600 shadow-rose-200/50" : "border-primary shadow-primary/10" 
-          : "border-slate-900 shadow-slate-200/50"
+          ? isError 
+            ? "max-w-full border-rose-600 shadow-rose-200/50" 
+            : "max-w-[95%] sm:max-w-[85%] border-primary shadow-primary/10" 
+          : "max-w-[90%] sm:max-w-[80%] border-slate-900 shadow-slate-200/50 w-fit ml-auto"
       )}>
         {/* Monolithic Terminal Header */}
         <div className={cn(
@@ -131,7 +133,10 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
 
         {/* Message Body */}
         <div className="p-4 sm:p-6 relative overflow-hidden min-w-0">
-          <div className="text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap text-slate-900">
+          <div className={cn(
+            "text-[13px] sm:text-[15px] leading-relaxed font-bold break-words whitespace-pre-wrap text-slate-900",
+            isError && "break-all font-mono text-[11px] text-rose-600"
+          )}>
             {isAssistant && !isError ? (
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
@@ -164,7 +169,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
                 {message.content}
               </ReactMarkdown>
             ) : (
-              <div className="font-black break-words break-all">{message.content}</div>
+              <div className="font-black">{message.content}</div>
             )}
           </div>
           

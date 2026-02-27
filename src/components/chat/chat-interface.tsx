@@ -18,6 +18,8 @@ import {
   Terminal,
   Database,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Activity,
   Cloud,
   Laptop,
@@ -72,6 +74,7 @@ export function ChatInterface() {
   
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("01:00:00");
   const [latency, setLatency] = useState("---");
@@ -235,7 +238,6 @@ export function ChatInterface() {
         linguistic ? `\n\n[LINGUISTIC CONSTRAINTS: ${linguistic.name}]\n${linguistic.system_instruction}` : ''
       ].filter(Boolean).join('\n\n').trim();
 
-      // EXECUTE REAL-TIME STREAM ORCHESTRATION
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -292,7 +294,6 @@ export function ChatInterface() {
               }
             } catch (e) {}
           } else {
-            // Check for raw JSON format
             try {
               const data = JSON.parse(trimmed);
               const text = data.choices?.[0]?.delta?.content || data.choices?.[0]?.text || "";
@@ -305,7 +306,6 @@ export function ChatInterface() {
         }
       }
 
-      // Voice auto-play after stream ends if enabled
       if (session.settings.voiceResponseEnabled && streamedContent) {
         try {
           const { audioUri } = await generateSpeech({ text: streamedContent });
@@ -362,217 +362,237 @@ export function ChatInterface() {
     <Sheet>
       <div className="flex h-full w-full flex-col overflow-hidden bg-background relative">
         
-        {/* Sleek Animated Temporal Marquee */}
-        <div className="flex-shrink-0 h-6 bg-primary border-b-2 border-border overflow-hidden relative flex items-center z-40">
-          <div className="whitespace-nowrap animate-marquee flex">
-            <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
-              {marqueeText}
-            </span>
-            <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
-              {marqueeText}
-            </span>
-          </div>
-        </div>
-
-        {showTimer && (
-          <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/10 z-30">
-            <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-none border-2 border-primary">
-              <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none">TTL:</span>
-              <Clock size={10} className="text-primary" />
-              <span className="text-[10px] font-black font-mono text-slate-900 leading-none">{timeLeft}</span>
+        {/* TOP HUD SECTION */}
+        <div className="flex-shrink-0 z-40 flex flex-col">
+          {/* Marquee */}
+          <div className="h-6 bg-primary border-b-2 border-border overflow-hidden relative flex items-center">
+            <div className="whitespace-nowrap animate-marquee flex">
+              <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
+                {marqueeText}
+              </span>
+              <span className="logo-shimmer text-[9px] font-black uppercase tracking-[0.3em] py-1 inline-block brightness-[200%] contrast-200">
+                {marqueeText}
+              </span>
             </div>
-            <Link href="/auth/login">
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-none bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
-                <span className="text-[7px] font-black uppercase tracking-widest leading-none">Upgrade</span>
-                <LogIn size={10} />
-              </div>
-            </Link>
           </div>
-        )}
 
-        <div className="flex-shrink-0 flex flex-col border-b-2 border-border px-2 py-2 sm:px-6 bg-white z-20 shadow-sm">
-          <div className="flex items-center justify-between gap-1 mb-2">
-            <SettingsDialog>
-              <button className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-none border-2 border-border shadow-sm active:scale-95 min-w-0">
-                <div className={cn(
-                  "h-6 w-6 sm:h-7 sm:w-7 rounded-none flex items-center justify-center border-2 shrink-0",
-                  connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
-                )}>
-                  {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3" /> : <Activity className="h-3 w-3" />}
+          {showTimer && (
+            <div className="flex items-center justify-center gap-2 py-1 border-b-2 border-border bg-primary/10">
+              <div className="flex items-center justify-center gap-1.5 bg-white px-2 py-0.5 rounded-none border-2 border-primary">
+                <span className="text-[7px] font-black uppercase tracking-widest text-primary leading-none">TTL:</span>
+                <Clock size={10} className="text-primary" />
+                <span className="text-[10px] font-black font-mono text-slate-900 leading-none">{timeLeft}</span>
+              </div>
+              <Link href="/auth/login">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-none bg-primary text-white hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
+                  <span className="text-[7px] font-black uppercase tracking-widest leading-none">Upgrade</span>
+                  <LogIn size={10} />
                 </div>
-                <div className="flex flex-col items-start overflow-hidden leading-none">
-                  <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter text-primary truncate w-full">
-                    {aiMode === 'online' ? "Cloud" : "Local"}
-                  </span>
-                  <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
-                    {activeModelId.split('/').pop()}
-                  </span>
-                </div>
-              </button>
-            </SettingsDialog>
+              </Link>
+            </div>
+          )}
 
-            {mounted && (
-              <button 
-                onClick={() => setIsSettingsOpen(true)}
-                className="flex flex-col items-start justify-center leading-none flex-1 min-w-0 px-4 hover:bg-slate-50 transition-colors cursor-pointer group rounded-none"
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className={cn("h-1.5 w-1.5 rounded-none shrink-0", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
-                  <span className={cn("text-[8px] font-black uppercase tracking-widest", connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600")}>
-                    SYNC
-                  </span>
-                  <span className="text-[8px] font-black text-primary font-mono opacity-80 border-l border-primary/20 pl-1.5 flex items-center gap-1.5">
-                    {latency}
-                    <span className="text-[6px] font-black text-white bg-primary px-1 rounded-none py-0.5 tracking-widest">
-                      {aiMode === 'online' ? 'CLOUD' : 'LOCAL'}
+          <div className="flex flex-col border-b-2 border-border px-2 py-2 sm:px-6 bg-white shadow-sm">
+            <div className="flex items-center justify-between gap-1 mb-2">
+              <SettingsDialog>
+                <button className="flex items-center gap-1 bg-slate-50 px-1 py-0.5 rounded-none border-2 border-border shadow-sm active:scale-95 min-w-0">
+                  <div className={cn(
+                    "h-6 w-6 sm:h-7 sm:w-7 rounded-none flex items-center justify-center border-2 shrink-0",
+                    connectionStatus === 'online' ? "bg-primary border-primary text-white" : "bg-destructive border-destructive text-white"
+                  )}>
+                    {aiMode === 'online' ? <Cloud className="animate-pulse h-3 w-3" /> : <Activity className="h-3 w-3" />}
+                  </div>
+                  <div className="flex flex-col items-start overflow-hidden leading-none">
+                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-tighter text-primary truncate w-full">
+                      {aiMode === 'online' ? "Cloud" : "Local"}
                     </span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[140px]">
-                    {activeModelId.replace('googleai/', '')}
-                  </span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {getModelFeatures(activeModelId)}
+                    <span className="text-[5px] sm:text-[7px] font-black text-slate-900 uppercase tracking-widest truncate w-full">
+                      {activeModelId.split('/').pop()}
+                    </span>
                   </div>
-                </div>
-              </button>
-            )}
-            
-            <div className="flex items-center gap-0.5 shrink-0">
-              <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
-                {aiMode === 'online' ? <Cloud size={10} /> : <Laptop size={10} />}
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
-                <Palette size={10} />
-              </Button>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
-                  <Settings2 size={10} />
-                </Button>
-              </SheetTrigger>
-              <SidebarTrigger className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-none" />
-            </div>
-          </div>
+                </button>
+              </SettingsDialog>
 
-          <div className="grid grid-cols-3 border-2 border-border rounded-none overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
-            <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
-                <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
-                <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{persona.name}</span>
-              </button>
-            </SheetTrigger>
-            <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
-                <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Arch</span>
-                <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{framework?.name || "None"}</span>
-              </button>
-            </SheetTrigger>
-            <SheetTrigger asChild>
-              <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
-                <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Logic</span>
-                <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{linguistic?.name || "Default"}</span>
-              </button>
-            </SheetTrigger>
+              {mounted && (
+                <button 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="flex flex-col items-start justify-center leading-none flex-1 min-w-0 px-4 hover:bg-slate-50 transition-colors cursor-pointer group rounded-none"
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className={cn("h-1.5 w-1.5 rounded-none shrink-0", connectionStatus === 'online' ? "bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
+                    <span className={cn("text-[8px] font-black uppercase tracking-widest", connectionStatus === 'online' ? "text-emerald-600" : "text-rose-600")}>
+                      SYNC
+                    </span>
+                    <span className="text-[8px] font-black text-primary font-mono opacity-80 border-l border-primary/20 pl-1.5 flex items-center gap-1.5">
+                      {latency}
+                      <span className="text-[6px] font-black text-white bg-primary px-1 rounded-none py-0.5 tracking-widest">
+                        {aiMode === 'online' ? 'CLOUD' : 'LOCAL'}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[140px]">
+                      {activeModelId.replace('googleai/', '')}
+                    </span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {getModelFeatures(activeModelId)}
+                    </div>
+                  </div>
+                </button>
+              )}
+              
+              <div className="flex items-center gap-0.5 shrink-0">
+                <Button variant="outline" size="icon" onClick={() => setAiMode(aiMode === 'online' ? 'offline' : 'online')} className={cn("h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border", aiMode === 'online' ? "bg-primary text-white border-primary" : "bg-white text-slate-900")}>
+                  {aiMode === 'online' ? <Cloud size={10} /> : <Laptop size={10} />}
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => cycleTheme()} className="h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                  <Palette size={10} />
+                </Button>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 rounded-none border-2 border-border text-slate-900 hover:bg-primary hover:text-white">
+                    <Settings2 size={10} />
+                  </Button>
+                </SheetTrigger>
+                <SidebarTrigger className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-border text-slate-900 hover:bg-primary hover:text-white rounded-none" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 border-2 border-border rounded-none overflow-hidden bg-slate-50 divide-x-2 divide-border shadow-inner">
+              <SheetTrigger asChild>
+                <button onClick={() => setActiveParameterTab('personas')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
+                  <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Identity</span>
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{persona.name}</span>
+                </button>
+              </SheetTrigger>
+              <SheetTrigger asChild>
+                <button onClick={() => setActiveParameterTab('frameworks')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
+                  <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Arch</span>
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{framework?.name || "None"}</span>
+                </button>
+              </SheetTrigger>
+              <SheetTrigger asChild>
+                <button onClick={() => setActiveParameterTab('linguistic')} className="flex flex-col items-center justify-center py-1 hover:bg-primary hover:text-white group transition-colors min-w-0">
+                  <span className="text-[6px] font-black uppercase tracking-widest text-slate-900 group-hover:text-white">Logic</span>
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase truncate w-full px-1 text-center text-slate-900 group-hover:text-white">{linguistic?.name || "Default"}</span>
+                </button>
+              </SheetTrigger>
+            </div>
           </div>
         </div>
 
-        <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
-          <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8 h-full">
-            {session.messages.length === 0 ? (
-              <div className="flex flex-1 flex-col items-center justify-center py-4 sm:py-8 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in duration-700 max-w-2xl mx-auto w-full overflow-hidden">
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter leading-none uppercase px-4">Neural Node Synchronized</h2>
-                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-primary mt-1">Establish command sequence to begin orchestration</p>
-                  </div>
-                </div>
+        {/* VAULTED LOGIC CANVAS (Redesigned for Containment) */}
+        <div className="flex-1 min-h-0 overflow-hidden relative p-2 sm:p-4 bg-slate-50/50">
+          <div className="sleek-animated-border-container h-full w-full">
+            <div className="app-surface h-full w-full flex flex-col overflow-hidden">
+              <ScrollArea ref={scrollAreaRef} className="flex-1 custom-scrollbar">
+                <div className="mx-auto flex w-full max-w-5xl flex-col py-4 px-4 sm:px-8">
+                  {session.messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 sm:py-20 text-center space-y-6 animate-in fade-in zoom-in duration-700">
+                      <div className="space-y-3">
+                        <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tighter uppercase">Neural Node Synchronized</h2>
+                        <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.5em] text-primary">Establish command sequence to begin orchestration</p>
+                      </div>
 
-                <div className="flex flex-col gap-2 w-full max-w-lg px-2">
-                  {starters.map((starter, idx) => (
-                    <button 
-                      key={idx} 
-                      onClick={() => setInput(starter.prompt)} 
-                      className={cn(
-                        "group flex items-center gap-3 p-2.5 sm:p-3 rounded-none bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left relative overflow-hidden animate-in slide-in-from-left duration-500",
-                        idx === 0 ? "delay-[100ms]" : idx === 1 ? "delay-[200ms]" : idx === 2 ? "delay-[300ms]" : "delay-[400ms]"
-                      )}
-                    >
-                      <div className="p-1.5 rounded-none bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
-                        <Zap size={12} />
+                      <div className="flex flex-col gap-2 w-full max-w-lg">
+                        {starters.map((starter, idx) => (
+                          <button 
+                            key={idx} 
+                            onClick={() => setInput(starter.prompt)} 
+                            className="group flex items-center gap-3 p-3 rounded-none bg-white border-2 border-border shadow-md hover:shadow-xl hover:border-primary transition-all text-left animate-in slide-in-from-left duration-500"
+                            style={{ animationDelay: `${idx * 100}ms` }}
+                          >
+                            <div className="p-1.5 rounded-none bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all border border-border shrink-0">
+                              <Zap size={12} />
+                            </div>
+                            <div className="flex flex-col min-w-0 overflow-hidden">
+                              <span className="text-[9px] sm:text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1 truncate">{starter.title}</span>
+                              <p className="text-[7px] sm:text-[9px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
+                            </div>
+                            <ChevronRight size={14} className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all" />
+                          </button>
+                        ))}
                       </div>
-                      <div className="flex flex-col min-w-0 overflow-hidden">
-                        <span className="text-[9px] sm:text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1 truncate">{starter.title}</span>
-                        <p className="text-[7px] sm:text-[9px] font-bold text-slate-900 truncate leading-none">{starter.desc}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {session.messages.map((msg) => (
+                        <ChatMessage key={msg.id} message={msg} onRegenerate={msg.role === 'assistant' ? handleRegenerate : undefined} />
+                      ))}
+                    </div>
+                  )}
+                  {isTyping && !session.messages[session.messages.length - 1]?.content && (
+                    <div className="flex items-center gap-3 px-6 py-6 text-[11px] text-primary font-black uppercase tracking-[0.3em] animate-pulse">
+                      <div className="flex gap-1">
+                        <div className="h-2 w-2 rounded-none bg-primary animate-bounce [animation-delay:-0.3s]" />
+                        <div className="h-2 w-2 rounded-none bg-primary animate-bounce [animation-delay:-0.15s]" />
+                        <div className="h-2 w-2 rounded-none bg-primary animate-bounce" />
                       </div>
-                      <div className="ml-auto text-primary opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                        <ChevronRight size={14} />
-                      </div>
-                    </button>
-                  ))}
+                      Orchestrating Logic...
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {session.messages.map((msg) => (
-                  <ChatMessage key={msg.id} message={msg} onRegenerate={msg.role === 'assistant' ? handleRegenerate : undefined} />
-                ))}
-              </div>
-            )}
-            {isTyping && !session.messages[session.messages.length - 1]?.content && (
-              <div className="flex items-center gap-3 px-6 py-6 text-[11px] text-primary font-black uppercase tracking-[0.3em] animate-pulse">
-                <div className="flex gap-1">
-                  <div className="h-2 w-2 rounded-none bg-primary animate-bounce [animation-delay:-0.3s]" />
-                  <div className="h-2 w-2 rounded-none bg-primary animate-bounce [animation-delay:-0.15s]" />
-                  <div className="h-2 w-2 rounded-none bg-primary animate-bounce" />
-                </div>
-                Orchestrating Logic...
-              </div>
-            )}
+              </ScrollArea>
+            </div>
           </div>
-        </ScrollArea>
+        </div>
 
+        {/* COMMAND CONSOLE (Collapsible Input Window) */}
         <div className="flex-shrink-0 p-2 sm:p-6 bg-white border-t-2 border-border z-30">
           <div className="mx-auto max-w-4xl border-2 border-border rounded-none overflow-hidden shadow-2xl bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all">
+            
+            {/* COLLAPSIBLE HANDLE */}
+            <button 
+              type="button"
+              onClick={() => setIsToolsExpanded(!isToolsExpanded)}
+              className="w-full h-4 sm:h-5 bg-slate-50 border-b-2 border-border hover:bg-slate-100 transition-colors flex items-center justify-center group cursor-pointer"
+              title={isToolsExpanded ? "Collapse Capabilities" : "Expand Capabilities"}
+            >
+              <div className={cn("transition-transform duration-300", !isToolsExpanded && "rotate-180")}>
+                <ChevronUp size={14} className={cn("transition-colors", isToolsExpanded ? "text-primary" : "text-slate-400 group-hover:text-primary")} />
+              </div>
+            </button>
+
             {/* High-Fidelity 6x2 Bento Tool Grid (Two Rows) */}
-            <div className="grid grid-cols-6 divide-x-2 divide-border border-b-2 border-border bg-slate-50">
-              {[
-                { id: 'webSearch', icon: <Search size={10} />, title: 'Ground' },
-                { id: 'reasoning', icon: <Brain size={10} />, title: 'Think' },
-                { id: 'vision', icon: <Eye size={10} />, title: 'Vision' },
-                { id: 'research', icon: <Microscope size={10} />, title: 'Research' },
-                { id: 'voice', icon: <Mic size={10} />, title: 'Voice' },
-                { id: 'calculator', icon: <Calculator size={10} />, title: 'Math' },
-                { id: 'code', icon: <Terminal size={10} />, title: 'Code' },
-                { id: 'analysis', icon: <LineChart size={10} />, title: 'Logic' },
-                { id: 'planning', icon: <Milestone size={10} />, title: 'Strategy' },
-                { id: 'knowledge', icon: <Database size={10} />, title: 'Vault' },
-                { id: 'summary', icon: <Activity size={10} />, title: 'Abstract' },
-                { id: 'creative', icon: <Sparkles size={10} />, title: 'Novelty' }
-              ].map((tool, idx) => {
-                const settingKey = tool.id === 'webSearch' ? 'webSearchEnabled' : 
-                                 tool.id === 'reasoning' ? 'reasoningEnabled' : 
-                                 tool.id === 'voice' ? 'voiceResponseEnabled' : 
-                                 tool.id + 'Enabled';
-                const isActive = (session.settings as any)[settingKey];
-                return (
-                  <button 
-                    key={tool.id} 
-                    onClick={() => toggleTool(session.id, tool.id as any)} 
-                    className={cn(
-                      "flex flex-col items-center justify-center py-2 sm:py-2.5 transition-all active:scale-95 min-w-0 rounded-none",
-                      idx < 6 && "border-b-2 border-border",
-                      isActive 
-                        ? "bg-primary text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]" 
-                        : "bg-transparent text-slate-900 hover:bg-primary/10"
-                    )}
-                  >
-                    <div className="mb-0.5">{tool.icon}</div>
-                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-tighter leading-none truncate w-full px-0.5 text-center">{tool.title}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {isToolsExpanded && (
+              <div className="grid grid-cols-6 divide-x-2 divide-border border-b-2 border-border bg-slate-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                {[
+                  { id: 'webSearch', icon: <Search size={10} />, title: 'Ground' },
+                  { id: 'reasoning', icon: <Brain size={10} />, title: 'Think' },
+                  { id: 'vision', icon: <Eye size={10} />, title: 'Vision' },
+                  { id: 'research', icon: <Microscope size={10} />, title: 'Research' },
+                  { id: 'voice', icon: <Mic size={10} />, title: 'Voice' },
+                  { id: 'calculator', icon: <Calculator size={10} />, title: 'Math' },
+                  { id: 'code', icon: <Terminal size={10} />, title: 'Code' },
+                  { id: 'analysis', icon: <LineChart size={10} />, title: 'Logic' },
+                  { id: 'planning', icon: <Milestone size={10} />, title: 'Strategy' },
+                  { id: 'knowledge', icon: <Database size={10} />, title: 'Vault' },
+                  { id: 'summary', icon: <Activity size={10} />, title: 'Abstract' },
+                  { id: 'creative', icon: <Sparkles size={10} />, title: 'Novelty' }
+                ].map((tool, idx) => {
+                  const settingKey = tool.id === 'webSearch' ? 'webSearchEnabled' : 
+                                   tool.id === 'reasoning' ? 'reasoningEnabled' : 
+                                   tool.id === 'voice' ? 'voiceResponseEnabled' : 
+                                   tool.id + 'Enabled';
+                  const isActive = (session.settings as any)[settingKey];
+                  return (
+                    <button 
+                      key={tool.id} 
+                      onClick={() => toggleTool(session.id, tool.id as any)} 
+                      className={cn(
+                        "flex flex-col items-center justify-center py-2 sm:py-2.5 transition-all active:scale-95 min-w-0 rounded-none",
+                        idx < 6 && "border-b-2 border-border",
+                        isActive 
+                          ? "bg-primary text-white shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]" 
+                          : "bg-transparent text-slate-900 hover:bg-primary/10"
+                      )}
+                    >
+                      <div className="mb-0.5">{tool.icon}</div>
+                      <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-tighter leading-none truncate w-full px-0.5 text-center">{tool.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center bg-white p-1">
               <button 
