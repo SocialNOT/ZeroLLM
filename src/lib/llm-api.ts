@@ -86,6 +86,7 @@ export async function testConnection(baseUrl: string, apiKey?: string): Promise<
   const endpoints = [
     joinPath(base, '/api/tags'),
     joinPath(base, '/v1/models'),
+    joinPath(base, '/api/v1/models'), // LM Studio specific
     base
   ];
 
@@ -108,7 +109,7 @@ export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLM
   if (!baseUrl) return [];
   const base = normalizeUrl(baseUrl);
   
-  // 1. Try OpenAI Compatible /v1/models
+  // 1. Try OpenAI Compatible /v1/models (Standard)
   try {
     const response = await fetch(joinPath(base, '/v1/models'), {
       method: 'GET',
@@ -119,7 +120,18 @@ export async function fetchModels(baseUrl: string, apiKey?: string): Promise<LLM
     if (data && data.data && Array.isArray(data.data)) return data.data;
   } catch (e) {}
 
-  // 2. Try Ollama /api/tags
+  // 2. Try LM Studio specific /api/v1/models
+  try {
+    const response = await fetch(joinPath(base, '/api/v1/models'), {
+      method: 'GET',
+      headers: getHeaders(apiKey),
+      signal: AbortSignal.timeout(5000)
+    });
+    const data = await safeJsonParse(response);
+    if (data && data.data && Array.isArray(data.data)) return data.data;
+  } catch (e) {}
+
+  // 3. Try Ollama /api/tags
   try {
     const response = await fetch(joinPath(base, '/api/tags'), {
       method: 'GET',
@@ -140,23 +152,26 @@ export async function loadModel(baseUrl: string, modelId: string, apiKey?: strin
   const base = normalizeUrl(baseUrl);
   
   // LM Studio specific load endpoint requirements
+  // Synchronize both 'model' and 'model_key' to ensure compatibility with all versions
   try {
     const response = await fetch(joinPath(base, '/api/v1/models/load'), {
       method: 'POST',
       headers: getHeaders(apiKey),
       body: JSON.stringify({ 
-        model: modelId, // Required by current LM Studio versions
-        model_key: modelId // Backup for compatibility
+        model: modelId, 
+        model_key: modelId 
       }),
       signal: AbortSignal.timeout(15000)
     });
     
     if (response.ok) return true;
     
-    // Fallback error check
+    // Check if it's just a 404 (endpoint doesn't exist on this engine version)
+    if (response.status === 404) return true;
+
     const err = await safeJsonParse(response);
     console.error("Model Load Protocol Error:", err);
-    return response.status === 404; // Assume success if endpoint missing
+    return false;
   } catch (e) {
     return true; // Silent success for engines without load endpoints
   }

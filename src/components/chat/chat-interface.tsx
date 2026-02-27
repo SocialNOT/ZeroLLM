@@ -44,7 +44,6 @@ import { ParameterControls } from "./parameter-controls";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { generateChatTitle } from "@/ai/actions/chat-actions";
-import { SettingsDialog } from "@/components/settings/settings-dialog";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 
@@ -434,7 +433,7 @@ export function ChatInterface() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[140px]">
+                    <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[140px] sm:max-w-[300px]">
                       {activeModelId.replace('googleai/', '')}
                     </span>
                     <div className="flex items-center gap-1 shrink-0">
@@ -483,7 +482,7 @@ export function ChatInterface() {
           </div>
         </div>
 
-        {/* VAULTED LOGIC CANVAS (Redesigned for Containment) */}
+        {/* VAULTED LOGIC CANVAS (Dedicated Desktop Track) */}
         <div className="flex-1 min-h-0 overflow-hidden relative p-2 sm:p-4 bg-slate-50/50">
           <div className="sleek-animated-border-container h-full w-full">
             <div className="app-surface h-full w-full flex flex-col overflow-hidden">
