@@ -13,7 +13,6 @@ import {
   Terminal,
   AlertTriangle,
   Search,
-  Brain,
   Zap,
   Clock,
   ChevronUp,
@@ -48,7 +47,6 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
   };
 
   const handleShare = () => {
-    // Generate a temporary mock share link
     const shareLink = `${window.location.origin}/share/${message.id}`;
     navigator.clipboard.writeText(shareLink);
     toast({ 
@@ -131,11 +129,11 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  p: ({...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                  h1: ({...props}) => <h1 className="text-lg font-black mb-2 mt-4 text-primary border-b-2 border-primary/10" {...props} />,
-                  h2: ({...props}) => <h2 className="text-md font-black mb-1 mt-3 text-primary" {...props} />,
-                  ul: ({...props}) => <ul className="list-disc pl-6 mb-2 space-y-0.5" {...props} />,
-                  ol: ({...props}) => <ol className="list-decimal pl-6 mb-2 space-y-0.5" {...props} />,
+                  p: ({...props}) => <p className="mb-1 last:mb-0" {...props} />,
+                  h1: ({...props}) => <h1 className="text-lg font-black mb-1 mt-2 text-primary border-b-2 border-primary/10" {...props} />,
+                  h2: ({...props}) => <h2 className="text-md font-black mb-1 mt-2 text-primary" {...props} />,
+                  ul: ({...props}) => <ul className="list-disc pl-6 mb-1 space-y-0" {...props} />,
+                  ol: ({...props}) => <ol className="list-decimal pl-6 mb-1 space-y-0" {...props} />,
                   strong: ({...props}) => <strong className="font-black text-primary" {...props} />,
                   code: ({node, inline, children, ...props}: any) => {
                     if (inline) return <code className="bg-primary/5 px-1 rounded text-[11px] font-mono text-primary border border-primary/10" {...props}>{children}</code>;
@@ -154,12 +152,12 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
                 {message.content}
               </ReactMarkdown>
             ) : (
-              <div className="font-black">{message.content}</div>
+              <div className="font-black leading-tight">{message.content}</div>
             )}
           </div>
         </div>
 
-        {isAssistant && !isError && (
+        {isAssistant && (
           <>
             <button 
               type="button"
