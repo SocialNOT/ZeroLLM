@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   Activity,
   LineChart,
-  Clock
+  Clock,
+  ChevronUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -51,6 +52,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
   const { addMessage, activeSessionId } = useAppStore();
 
   const handleCopy = () => {
@@ -112,7 +114,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
         isAssistant 
           ? isError 
             ? "max-w-full border-rose-600 shadow-rose-200/50" 
-            : "max-w-[95%] sm:max-w-[85%] border-primary shadow-primary/10" 
+            : "max-w-[95%] sm:max-w-[85%] border-primary shadow-primary/10 mr-auto" 
           : "max-w-[90%] sm:max-w-[80%] border-slate-900 shadow-slate-200/50 w-fit ml-auto"
       )}>
         {/* Monolithic Terminal Header */}
@@ -180,8 +182,25 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
           )}
         </div>
 
+        {/* COLLAPSIBLE HANDLE FOR MESSAGE TOOLS */}
+        {isAssistant && !isError && (
+          <button 
+            type="button"
+            onClick={() => setIsToolsExpanded(!isToolsExpanded)}
+            className="w-full h-4 bg-slate-50 border-t-2 border-slate-100 hover:bg-slate-100 transition-colors flex items-center justify-center group cursor-pointer"
+            title={isToolsExpanded ? "Collapse Node Tools" : "Expand Node Tools"}
+          >
+            <div className={cn("transition-transform duration-300", !isToolsExpanded && "rotate-180")}>
+              <ChevronUp size={14} className={cn("transition-colors", isToolsExpanded ? "text-primary" : "text-slate-400 group-hover:text-primary")} />
+            </div>
+          </button>
+        )}
+
         {/* High-Fidelity 6x2 Interaction Grid (Two Rows) */}
-        <div className="grid grid-cols-6 divide-x-2 divide-slate-100 border-t-2 border-slate-100 bg-slate-50">
+        <div className={cn(
+          "grid grid-cols-6 divide-x-2 divide-slate-100 border-t-2 border-slate-100 bg-slate-50 transition-all overflow-hidden",
+          isAssistant && !isError && !isToolsExpanded && "h-0 border-t-0"
+        )}>
           {isAssistant && !isError ? (
             <>
               {[
