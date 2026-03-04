@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -470,28 +471,55 @@ export function ChatInterface() {
 
           {isToolsExpanded && (
             <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); setSelectedCategory(null); }} className="w-full animate-in fade-in slide-in-from-top-2 duration-300">
-              <TabsList className="grid w-full grid-cols-4 bg-slate-50 h-10 p-0 rounded-none border-b-2 border-border relative overflow-hidden">
+              <TabsList className="grid w-full grid-cols-4 bg-slate-50 h-12 p-0 rounded-none border-b-2 border-border relative overflow-hidden">
                 {[
                   { id: 'caps', label: 'Caps', icon: <Zap size={12} /> },
                   { id: 'id', label: 'ID', icon: <UserCircle size={12} /> },
                   { id: 'arch', label: 'Arch', icon: <Layers size={12} /> },
                   { id: 'logic', label: 'Logic', icon: <Type size={12} /> }
-                ].map((tab, idx) => (
-                  <TabsTrigger 
-                    key={tab.id} 
-                    value={tab.id} 
-                    className={cn(
-                      "text-[9px] font-black uppercase tracking-widest h-full rounded-none gap-2 data-[state=active]:bg-white data-[state=active]:text-primary transition-all group relative",
-                      activeTab === tab.id && "animate-pulse-glow"
-                    )}
-                  >
-                    <span className="group-hover:scale-110 transition-transform flex items-center gap-2">
-                      {tab.icon}
-                      {tab.label}
-                    </span>
-                    {idx < 3 && <div className="absolute right-0 top-1/4 bottom-1/4 w-[1px] bg-border/20 animate-pulse" />}
-                  </TabsTrigger>
-                ))}
+                ].map((tab, idx) => {
+                  let activeLabel = "";
+                  if (tab.id === 'id') activeLabel = persona.name;
+                  if (tab.id === 'arch') activeLabel = framework?.name || "Standard";
+                  if (tab.id === 'logic') activeLabel = linguistic?.name || "Natural";
+                  if (tab.id === 'caps') {
+                    const activeCount = [
+                      session.settings.webSearchEnabled,
+                      session.settings.reasoningEnabled,
+                      session.settings.voiceResponseEnabled,
+                      session.settings.calculatorEnabled,
+                      session.settings.codeEnabled,
+                      session.settings.knowledgeEnabled,
+                      session.settings.visionEnabled,
+                      session.settings.analysisEnabled,
+                      session.settings.planningEnabled,
+                      session.settings.researchEnabled,
+                      session.settings.summaryEnabled,
+                      session.settings.creativeEnabled
+                    ].filter(Boolean).length;
+                    activeLabel = `${activeCount} Enabled`;
+                  }
+
+                  return (
+                    <TabsTrigger 
+                      key={tab.id} 
+                      value={tab.id} 
+                      className={cn(
+                        "flex flex-col items-center justify-center text-[9px] font-black uppercase tracking-widest h-full rounded-none data-[state=active]:bg-white data-[state=active]:text-primary transition-all group relative",
+                        activeTab === tab.id && "animate-pulse-glow"
+                      )}
+                    >
+                      <span className="group-hover:scale-110 transition-transform flex items-center gap-2">
+                        {tab.icon}
+                        {tab.label}
+                      </span>
+                      <span className="text-[6px] font-black text-accent animate-pulse truncate max-w-[80px] leading-none mt-0.5 opacity-80 group-data-[state=active]:opacity-100 [text-shadow:0_0_5px_hsl(var(--accent)/0.5)]">
+                        {activeLabel}
+                      </span>
+                      {idx < 3 && <div className="absolute right-0 top-1/4 bottom-1/4 w-[1px] bg-border/20" />}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
 
               <ScrollArea className="max-h-[300px] bg-white">
@@ -513,7 +541,7 @@ export function ChatInterface() {
                         { id: 'summary', icon: <Activity size={10} />, title: 'Abstract' },
                         { id: 'creative', icon: <Sparkles size={10} />, title: 'Novelty' }
                       ].map((tool, idx) => {
-                        const isActive = (session.settings as any)[tool.id === 'webSearch' ? 'webSearchEnabled' : tool.id === 'reasoning' ? 'reasoningEnabled' : tool.id + 'Enabled'];
+                        const isActive = (session.settings as any)[tool.id === 'webSearch' ? 'webSearchEnabled' : tool.id === 'reasoning' ? 'reasoningEnabled' : tool.id === 'voice' ? 'voiceResponseEnabled' : tool.id + 'Enabled'];
                         return (
                           <button 
                             key={tool.id} 
