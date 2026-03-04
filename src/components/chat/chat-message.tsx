@@ -37,7 +37,18 @@ interface ChatMessageProps {
 }
 
 const LANGUAGES = [
-  "Hindi", "Spanish", "French", "German", "Japanese", "Chinese", "Korean", "Russian", "Arabic", "Italian", "Portuguese"
+  { name: "Hindi", flag: "🇮🇳" },
+  { name: "Bengali", flag: "🇮🇳" },
+  { name: "Spanish", flag: "🇪🇸" },
+  { name: "French", flag: "🇫🇷" },
+  { name: "German", flag: "🇩🇪" },
+  { name: "Japanese", flag: "🇯🇵" },
+  { name: "Chinese", flag: "🇨🇳" },
+  { name: "Korean", flag: "🇰🇷" },
+  { name: "Russian", flag: "🇷🇺" },
+  { name: "Arabic", flag: "🇸🇦" },
+  { name: "Italian", flag: "🇮🇹" },
+  { name: "Portuguese", flag: "🇧🇷" }
 ];
 
 export function ChatMessage({ message, onAction }: ChatMessageProps) {
@@ -206,8 +217,9 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
                   <DropdownMenuContent align="start" className="rounded-none border-2 border-primary bg-white/95 backdrop-blur-xl">
                     <div className="grid grid-cols-2 gap-1 p-1">
                       {LANGUAGES.map(l => (
-                        <DropdownMenuItem key={l} onClick={() => executeAction('lang', l)} className="text-[9px] font-black uppercase px-3 py-1.5 focus:bg-primary focus:text-white rounded-none">
-                          {l}
+                        <DropdownMenuItem key={l.name} onClick={() => executeAction('lang', l.name)} className="text-[9px] font-black uppercase px-3 py-1.5 focus:bg-primary focus:text-white rounded-none gap-2">
+                          <span className="text-sm">{l.flag}</span>
+                          {l.name}
                         </DropdownMenuItem>
                       ))}
                     </div>
